@@ -99,10 +99,12 @@ const moveMobileNotch = (tab, animate = false) => {
   cancelAnimationFrame(mobileNotchAnimation);
   const start = mobileNotchCenter;
   const startedAt = performance.now();
-  const duration = 430;
+  const duration = 650;
   const frame = (now) => {
     const progress = Math.min(1, (now - startedAt) / duration);
-    const eased = 1 - Math.pow(1 - progress, 4);
+    const eased = progress < .5
+      ? 4 * Math.pow(progress, 3)
+      : 1 - Math.pow(-2 * progress + 2, 3) / 2;
     drawMobileNotch(start + (target - start) * eased);
     if (progress < 1) mobileNotchAnimation = requestAnimationFrame(frame);
   };
