@@ -82,7 +82,12 @@ const getMobileNotchCenter = (tab) => {
   if (!mobileNav || !tab) return mobileNotchCenter;
   const navBox = mobileNav.getBoundingClientRect();
   const tabBox = tab.getBoundingClientRect();
-  return ((tabBox.left + tabBox.width / 2 - navBox.left) / navBox.width) * 355;
+  const center = ((tabBox.left + tabBox.width / 2 - navBox.left) / navBox.width) * 355;
+  const edgeInset = (14 / navBox.width) * 355;
+  const tabIndex = mobileTabs.indexOf(tab);
+  if (tabIndex === 0) return center + edgeInset;
+  if (tabIndex === mobileTabs.length - 1) return center - edgeInset;
+  return center;
 };
 const drawMobileNotch = (center) => {
   mobileNotchCenter = center;

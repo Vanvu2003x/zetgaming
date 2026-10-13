@@ -84,6 +84,8 @@ dialog{border:1px solid #46404a;background:#141820;color:#fff;border-radius:12px
   .mobile-bottom-link.is-active{color:#ffad88}
   .mobile-bottom-link.is-active:before{display:none}
   .mobile-bottom-link.is-active .mobile-tab-icon{position:absolute;top:-17px;left:50%;width:62px;height:62px;transform:translateX(-50%);border:1px solid #e98763;border-radius:50%;background:radial-gradient(circle at 50% 40%,#cb6d48 0%,#a04632 46%,#381d1f 82%,#18141b 100%);box-shadow:0 0 0 3px #171318,0 0 0 4px #be654c75,0 0 14px 2px #d9654170,inset 0 1px 9px #ffc49c52;transition:top .32s ease,box-shadow .32s ease}
+  .mobile-bottom-nav .mobile-bottom-link:first-of-type.is-active .mobile-tab-icon{left:calc(50% + 14px)}
+  .mobile-bottom-nav .mobile-bottom-link:last-of-type.is-active .mobile-tab-icon{left:calc(50% - 14px)}
   .mobile-bottom-link.is-active .mobile-tab-icon:before,.mobile-bottom-link.is-active .mobile-tab-icon:after{display:none}
   .mobile-bottom-link.is-active .mobile-tab-icon:before{right:calc(100% + 5px)}
   .mobile-bottom-link.is-active .mobile-tab-icon:after{left:calc(100% + 5px);transform:rotate(180deg)}
