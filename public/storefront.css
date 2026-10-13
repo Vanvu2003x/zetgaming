@@ -201,7 +201,7 @@ dialog{border:1px solid #46404a;background:#141820;color:#fff;border-radius:12px
 }
 
 /* Use the same image-led identity on laptops as on phones. */
-@media (min-width:621px) and (max-width:1100px){
+@media (min-width:621px){
   .hero{display:block;padding:18px 0 0;background:none;border-radius:0}
   .hero:before,.hero:after{display:none}
   .hero-copy,.hero-visual{display:none}
