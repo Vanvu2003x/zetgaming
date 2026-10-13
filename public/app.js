@@ -71,7 +71,6 @@ const mobileNav = document.querySelector('.mobile-bottom-nav');
 const mobileBottomShapePath = document.querySelector('#mobileBottomShapePath');
 let mobileNotchCenter = 177.5;
 let mobileNotchAnimation;
-const mobileNavNormalPath = 'M20 8H335C346 8 354 17 354 28V59C354 70 346 79 335 79H20C9 79 1 70 1 59V28C1 17 9 8 20 8Z';
 const mobileNotchPath = (center) => {
   const left = Math.max(20, center - 64);
   const right = Math.min(335, center + 64);
@@ -84,26 +83,19 @@ const getMobileNotchCenter = (tab) => {
   const navBox = mobileNav.getBoundingClientRect();
   const tabBox = tab.getBoundingClientRect();
   const center = ((tabBox.left + tabBox.width / 2 - navBox.left) / navBox.width) * 355;
+  const edgeInset = (14 / navBox.width) * 355;
   const tabIndex = mobileTabs.indexOf(tab);
-  if (tabIndex === 0 || tabIndex === mobileTabs.length - 1) return null;
+  if (tabIndex === 0) return center + edgeInset;
+  if (tabIndex === mobileTabs.length - 1) return center - edgeInset;
   return center;
 };
 const drawMobileNotch = (center) => {
-  if (center === null) {
-    mobileBottomShapePath?.setAttribute('d', mobileNavNormalPath);
-    return;
-  }
   mobileNotchCenter = center;
   mobileBottomShapePath?.setAttribute('d', mobileNotchPath(center));
 };
 const moveMobileNotch = (tab, animate = false) => {
   if (!mobileNav || !mobileBottomShapePath || !tab) return;
   const target = getMobileNotchCenter(tab);
-  if (target === null) {
-    cancelAnimationFrame(mobileNotchAnimation);
-    drawMobileNotch(null);
-    return;
-  }
   if (!animate || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     cancelAnimationFrame(mobileNotchAnimation);
     drawMobileNotch(target);
