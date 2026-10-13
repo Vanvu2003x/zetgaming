@@ -82,7 +82,6 @@ dialog{border:1px solid #46404a;background:#141820;color:#fff;border-radius:12px
   .mobile-tab-icon svg{display:block;width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
   .mobile-tab-label{position:relative;z-index:1;white-space:nowrap}
   .mobile-bottom-link.is-active{color:#ffad88}
-  .mobile-bottom-link.is-current:not(.home-tab){color:#ffad88}
   .mobile-bottom-link.is-active:before{display:none}
   .mobile-bottom-link.is-active .mobile-tab-icon{position:absolute;top:-16px;left:50%;width:60px;height:60px;transform:translateX(-50%);border:1px solid #e98763;border-radius:50%;background:radial-gradient(circle at 50% 40%,#cb6d48 0%,#a04632 46%,#381d1f 82%,#18141b 100%);box-shadow:0 0 0 3px #171318,0 0 0 4px #be654c75,0 0 14px 2px #d9654170,inset 0 1px 9px #ffc49c52;transition:top .25s ease,box-shadow .25s ease}
   .mobile-bottom-link.is-active .mobile-tab-icon:before,.mobile-bottom-link.is-active .mobile-tab-icon:after{display:none}
