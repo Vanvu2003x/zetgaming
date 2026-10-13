@@ -41,3 +41,19 @@ dialog{border:1px solid #46404a;background:#141820;color:#fff;border-radius:12px
 @media(max-width:620px){.mobile-banner{background-image:linear-gradient(90deg,#08111fdd,#09101a70),url('/zetgaming-fire-bg.png') center/cover}}
 .hero{background-image:linear-gradient(90deg,#090b10f4 0%,#090b10cf 47%,#090b1099 100%),url('/zetgaming-hero-background-v2.png')}.hero:after{display:none}
 @media(max-width:620px){.mobile-banner{background-image:linear-gradient(90deg,#08111fdf,#09101a83),url('/zetgaming-hero-background-v2.png')}}
+/* Mobile hero: keep the login top-up message readable and the decorative card compact. */
+@media(max-width:620px){
+  .hero{padding-top:16px}
+  .mobile-banner{height:154px;padding:18px;border-radius:12px;background-position:center;border-color:#3b4658;box-shadow:0 14px 26px #0005}
+  .mobile-banner:before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 78% 41%,#ed4d3033,transparent 29%),linear-gradient(90deg,#080c14e8 0%,#080c14bd 53%,#080c1438 100%);pointer-events:none}
+  .mobile-banner:after{height:72%;background:linear-gradient(90deg,#070b13d9 0%,#070b138c 52%,transparent 100%)}
+  .mobile-banner span{font-size:9px;letter-spacing:1.7px;color:#ffad8d;margin-bottom:2px}
+  .mobile-banner strong{font-size:34px;line-height:.9;letter-spacing:.7px;max-width:180px}
+  .mobile-card-icon{right:30px;top:25px;width:62px;height:82px;border-radius:10px;transform:rotate(10deg);box-shadow:8px 13px 22px #0009,0 0 18px #ff5b4238}
+  .mobile-card-icon:after{inset:5px}
+  .mobile-card-icon span{font-size:35px}
+  .mobile-orbit-badges i{font-size:7px;padding:4px 6px;border-radius:5px;box-shadow:0 5px 12px #0008}
+  .mobile-orbit-badges i:nth-child(1){right:9px;top:10px}
+  .mobile-orbit-badges i:nth-child(2){right:9px;bottom:10px}
+  .mobile-orbit-badges i:nth-child(3){right:99px;top:72px}
+}
