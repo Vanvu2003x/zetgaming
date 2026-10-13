@@ -81,11 +81,11 @@ dialog{border:1px solid #46404a;background:#141820;color:#fff;border-radius:12px
   .mobile-tab-label{position:relative;z-index:1;white-space:nowrap}
   .mobile-bottom-link.is-active{color:#ffad88}
   .mobile-bottom-link.is-active:before{content:'';position:absolute;z-index:0;top:-2px;left:50%;width:74px;height:15px;transform:translateX(-50%);background:#0c121b;border-radius:0 0 40px 40px}
-  .mobile-bottom-link.is-active .mobile-tab-icon{position:absolute;top:-20px;left:50%;width:50px;height:50px;transform:translateX(-50%);border:1px solid #e98763;border-radius:50%;background:radial-gradient(circle at 50% 40%,#cb6d48 0%,#a04632 46%,#381d1f 82%,#18141b 100%);box-shadow:0 0 0 3px #171318,0 0 0 4px #be654c75,0 0 14px 2px #d9654170,inset 0 1px 9px #ffc49c52;transition:top .25s ease,box-shadow .25s ease}
-  .mobile-bottom-link.is-active .mobile-tab-icon:before,.mobile-bottom-link.is-active .mobile-tab-icon:after{content:'';position:absolute;top:18px;width:19px;height:1px;background:linear-gradient(90deg,transparent,#bd785a99)}
+  .mobile-bottom-link.is-active .mobile-tab-icon{position:absolute;top:-18px;left:50%;width:64px;height:64px;transform:translateX(-50%);border:1px solid #e98763;border-radius:50%;background:radial-gradient(circle at 50% 40%,#cb6d48 0%,#a04632 46%,#381d1f 82%,#18141b 100%);box-shadow:0 0 0 3px #171318,0 0 0 4px #be654c75,0 0 17px 3px #d9654170,inset 0 1px 10px #ffc49c52;transition:top .25s ease,box-shadow .25s ease}
+  .mobile-bottom-link.is-active .mobile-tab-icon:before,.mobile-bottom-link.is-active .mobile-tab-icon:after{content:'';position:absolute;top:24px;width:24px;height:1px;background:linear-gradient(90deg,transparent,#bd785a99)}
   .mobile-bottom-link.is-active .mobile-tab-icon:before{right:calc(100% + 5px)}
   .mobile-bottom-link.is-active .mobile-tab-icon:after{left:calc(100% + 5px);transform:rotate(180deg)}
-  .mobile-bottom-link.is-active .mobile-tab-icon svg{width:24px;height:24px;fill:none;stroke:#ffd3b4;stroke-width:1.8;filter:drop-shadow(0 0 3px #ffae83a0)}
+  .mobile-bottom-link.is-active .mobile-tab-icon svg{width:30px;height:30px;fill:none;stroke:#ffd3b4;stroke-width:1.8;filter:drop-shadow(0 0 3px #ffae83a0)}
   .home-tab.is-active .mobile-tab-icon svg{fill:#ffd1ae;stroke-width:1.5}
   .mobile-bottom-link.is-active .mobile-tab-label{visibility:hidden}
   .mobile-bottom-link.is-active .mobile-tab-label:after{display:none}
