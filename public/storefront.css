@@ -99,7 +99,7 @@ dialog{border:1px solid #46404a;background:#141820;color:#fff;border-radius:12px
   .mobile-bottom-link:active .mobile-tab-icon{transform:scale(.9)}
   .mobile-bottom-link.is-active .mobile-tab-icon{animation:mobile-tab-arrive .62s cubic-bezier(.16,1,.3,1),mobile-tab-aura 4.6s .62s ease-in-out infinite}
   .mobile-bottom-link.is-active .mobile-tab-icon svg{animation:mobile-icon-settle .62s cubic-bezier(.16,1,.3,1)}
-  @keyframes mobile-tab-arrive{0%{opacity:0;transform:translateX(-50%) scale(.56)}62%{opacity:1;transform:translateX(-50%) scale(1.08)}100%{opacity:1;transform:translateX(-50%) scale(1)}}
-  @keyframes mobile-icon-settle{0%{transform:scale(.55);opacity:.2}70%{transform:scale(1.12);opacity:1}100%{transform:scale(1);opacity:1}}
+  @keyframes mobile-tab-arrive{0%{opacity:0;transform:translate(-50%,15px) scale(.48);filter:blur(5px)}58%{opacity:.9;transform:translate(-50%,-3px) scale(1.06);filter:blur(.6px)}100%{opacity:1;transform:translate(-50%,0) scale(1);filter:blur(0)}}
+  @keyframes mobile-icon-settle{0%{transform:translateY(7px) scale(.5);opacity:0;filter:blur(3px)}65%{transform:translateY(-1px) scale(1.1);opacity:1;filter:blur(0)}100%{transform:translateY(0) scale(1);opacity:1;filter:blur(0)}}
   @keyframes mobile-tab-aura{0%,100%{box-shadow:0 0 0 3px #171318,0 0 0 4px #be654c75,0 0 14px 2px #d9654170,inset 0 1px 9px #ffc49c52}50%{box-shadow:0 0 0 3px #171318,0 0 0 4px #d574568f,0 0 21px 4px #e578527d,inset 0 1px 12px #ffc49c65}}
 }
