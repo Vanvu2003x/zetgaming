@@ -88,6 +88,7 @@ async function route(req, res) {
     if (method === 'GET' && path === '/app.js') { const js = await readFile(join(ROOT, 'public', 'app.js')); res.writeHead(200, { 'content-type': 'text/javascript; charset=utf-8' }); return res.end(js); }
     if (method === 'GET' && path === '/styles.css') { const css = await readFile(join(ROOT, 'public', 'storefront.css')); res.writeHead(200, { 'content-type': 'text/css; charset=utf-8' }); return res.end(css); }
     if (method === 'GET' && path === '/gameflow-fire-banner.png') { const image = await readFile(join(ROOT, 'public', 'gameflow-fire-banner.png')); res.writeHead(200, { 'content-type': 'image/png', 'cache-control': 'public, max-age=86400' }); return res.end(image); }
+    if (method === 'GET' && path === '/zetgaming-logo.png') { const image = await readFile(join(ROOT, 'public', 'zetgaming-logo.png')); res.writeHead(200, { 'content-type': 'image/png', 'cache-control': 'public, max-age=86400' }); return res.end(image); }
     json(res, 404, { error: 'Không tìm thấy đường dẫn' });
   } catch (e) { console.error(e); json(res, 500, { error: 'Lỗi máy chủ' }); }
 }
