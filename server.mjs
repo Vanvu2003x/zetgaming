@@ -91,6 +91,7 @@ async function route(req, res) {
     if (method === 'GET' && path === '/zetgaming-logo.png') { const image = await readFile(join(ROOT, 'public', 'zetgaming-logo.png')); res.writeHead(200, { 'content-type': 'image/png', 'cache-control': 'public, max-age=86400' }); return res.end(image); }
     if (method === 'GET' && path === '/zetgaming-fire-bg.png') { const image = await readFile(join(ROOT, 'public', 'zetgaming-fire-bg.png')); res.writeHead(200, { 'content-type': 'image/png', 'cache-control': 'public, max-age=86400' }); return res.end(image); }
     if (method === 'GET' && path === '/zetgaming-hero-logo.png') { const image = await readFile(join(ROOT, 'public', 'zetgaming-hero-logo.png')); res.writeHead(200, { 'content-type': 'image/png', 'cache-control': 'public, max-age=86400' }); return res.end(image); }
+    if (method === 'GET' && path === '/zetgaming-hero-background-v2.png') { const image = await readFile(join(ROOT, 'public', 'zetgaming-hero-background-v2.png')); res.writeHead(200, { 'content-type': 'image/png', 'cache-control': 'public, max-age=86400' }); return res.end(image); }
     json(res, 404, { error: 'Không tìm thấy đường dẫn' });
   } catch (e) { console.error(e); json(res, 500, { error: 'Lỗi máy chủ' }); }
 }
