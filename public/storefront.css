@@ -199,3 +199,27 @@ dialog{border:1px solid #46404a;background:#141820;color:#fff;border-radius:12px
   .hero-visual{transform:scale(.49)}
   .benefits .wrap{gap:10px}
 }
+
+/* Use the same image-led identity on laptops as on phones. */
+@media (min-width:621px) and (max-width:1100px){
+  .hero{display:block;padding:18px 0 0;background:none;border-radius:0}
+  .hero:before,.hero:after{display:none}
+  .hero-copy,.hero-visual{display:none}
+  .mobile-banner{isolation:isolate;display:flex;position:relative;height:236px;flex-direction:column;justify-content:flex-end;gap:3px;padding:24px;overflow:hidden;border:1px solid #3b4658;border-radius:13px;background-image:linear-gradient(90deg,#070a12ed 0%,#080b13b7 45%,#080b1325 100%),url('/zetgaming-hero-scene-v3.png');background-position:center;background-size:cover;box-shadow:0 18px 34px #0008,0 0 0 1px #ffffff05 inset}
+  .mobile-banner:before{content:'';position:absolute;z-index:0;inset:0;border-radius:inherit;background:linear-gradient(90deg,#070a12cc 0%,#070a126e 50%,transparent 100%);pointer-events:none}
+  .mobile-banner:after{content:'';position:absolute;z-index:1;right:0;bottom:0;left:0;height:49%;background:linear-gradient(90deg,#070b13da 0%,#070b1362 58%,transparent 100%);pointer-events:none}
+  .mobile-hero-characters{position:absolute;z-index:2;right:-4px;bottom:0;width:62%;height:276px;object-fit:contain;object-position:right bottom;clip-path:inset(-46px -6px 0 0);filter:drop-shadow(0 13px 18px #000c);pointer-events:none;animation:mobile-hero-characters 5.6s ease-in-out infinite}
+  .mobile-banner span,.mobile-banner strong{position:relative;z-index:4}
+  .mobile-banner span{color:#ffbd9e;font-size:10px;font-weight:800;letter-spacing:2px;text-shadow:0 1px 8px #000}
+  .mobile-banner strong{max-width:300px;color:#fff;font:800 48px/.9 'Barlow Condensed',Impact,sans-serif;letter-spacing:.7px;text-shadow:0 3px 12px #000}
+  .mobile-orbit-badges{position:absolute;z-index:5;left:24px;bottom:18px;display:flex;align-items:center;gap:10px;pointer-events:none}
+  .mobile-orbit-badges i{display:block;position:static;padding:0;border:0;background:transparent;color:#ffcfb5;font-size:9px;font-style:normal;font-weight:800;box-shadow:none;animation:none}
+  .mobile-orbit-badges i:nth-child(1)::after,.mobile-orbit-badges i:nth-child(2)::after{content:'';display:inline-block;height:12px;margin-left:10px;vertical-align:-3px;border-right:1px solid #ffffff2e}
+}
+
+@media (min-width:621px) and (max-width:760px){
+  .mobile-banner{height:205px;padding:20px}
+  .mobile-hero-characters{width:69%;height:240px}
+  .mobile-banner strong{font-size:41px}
+  .mobile-orbit-badges{left:20px;bottom:15px}
+}
