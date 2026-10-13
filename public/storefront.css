@@ -62,10 +62,12 @@ dialog{border:1px solid #46404a;background:#141820;color:#fff;border-radius:12px
 }
 @media(max-width:620px){
   .header-inner{position:relative;gap:0}
-  .brand img{width:134px;height:44px}
+  .site-header{background:#090d15f2;border-bottom-color:#202a38}
+  .header-inner{height:62px}
+  .brand img{width:148px;height:48px}
   .header-inner>.account-btn{display:none}
-  .mobile-actions{display:flex;align-items:center;justify-content:flex-end;gap:11px;margin-left:auto}
-  .mobile-icon{width:20px;height:36px;padding:0;border:0;background:transparent;color:#9ba8bb;display:grid;place-items:center;text-decoration:none;cursor:pointer}
+  .mobile-actions{display:flex;align-items:center;justify-content:flex-end;gap:12px;margin-left:auto}
+  .mobile-icon{width:19px;height:38px;padding:0;border:0;background:transparent;color:#aab6c8;display:grid;place-items:center;text-decoration:none;cursor:pointer}
   .mobile-icon:hover,.mobile-icon:focus-visible{color:#fff}
   .mobile-icon:focus-visible{outline:2px solid #ff765b;outline-offset:3px;border-radius:4px}
   .mobile-icon svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
@@ -107,4 +109,35 @@ dialog{border:1px solid #46404a;background:#141820;color:#fff;border-radius:12px
   @keyframes mobile-tab-arrive{0%{opacity:0;transform:translate(-50%,15px) scale(.48);filter:blur(5px)}58%{opacity:.9;transform:translate(-50%,-3px) scale(1.06);filter:blur(.6px)}100%{opacity:1;transform:translate(-50%,0) scale(1);filter:blur(0)}}
   @keyframes mobile-icon-settle{0%{transform:translateY(7px) scale(.5);opacity:0;filter:blur(3px)}65%{transform:translateY(-1px) scale(1.1);opacity:1;filter:blur(0)}100%{transform:translateY(0) scale(1);opacity:1;filter:blur(0)}}
   @keyframes mobile-tab-aura{0%,100%{box-shadow:0 0 0 3px #171318,0 0 0 4px #be654c75,0 0 14px 2px #d9654170,inset 0 1px 9px #ffc49c52}50%{box-shadow:0 0 0 3px #171318,0 0 0 4px #d574568f,0 0 21px 4px #e578527d,inset 0 1px 12px #ffc49c65}}
+}
+
+/* Mobile storefront polish: one compact, readable visual rhythm from header to game list. */
+@media(max-width:620px){
+  body{background:radial-gradient(ellipse at 78% 16%,#1d263537,transparent 34%),#090d15}
+  .hero{padding-top:14px}
+  .mobile-banner{height:168px;padding:18px;border-radius:14px;border-color:#38465a;background-position:center;box-shadow:0 18px 34px #0008,0 0 0 1px #ffffff05 inset}
+  .mobile-banner:before{background:linear-gradient(90deg,#070a12e7 0%,#070a129c 46%,#070a1214 100%)}
+  .mobile-banner:after{height:60%;background:linear-gradient(90deg,#070b13c8 0%,#070b1352 56%,transparent 100%)}
+  .mobile-hero-characters{right:-16px;bottom:-24px;width:92%;height:205px;filter:drop-shadow(0 13px 17px #000c)}
+  .mobile-banner span{font-size:8px;letter-spacing:1.9px}
+  .mobile-banner strong{font-size:36px;letter-spacing:.5px;max-width:178px}
+  .mobile-card-icon{right:20px;top:24px;width:58px;height:77px;border-radius:11px;box-shadow:7px 12px 21px #000a,0 0 18px #ff5b4240}
+  .mobile-card-icon span{font-size:32px}
+  .mobile-orbit-badges i{font-size:6.5px;padding:4px 5px;background:#151722e8;border-color:#ac5846}
+  .mobile-orbit-badges i:nth-child(1){right:8px;top:8px}
+  .mobile-orbit-badges i:nth-child(2){right:8px;bottom:9px}
+  .mobile-orbit-badges i:nth-child(3){right:90px;top:69px}
+  .games-section{padding:28px 0 48px}
+  .games-section .section-head{margin-bottom:14px}
+  .section-head h2{font-size:28px;letter-spacing:.15px}
+  .game-grid{gap:9px}
+  .game-card{min-height:70px;padding:8px;border-radius:10px;border-color:#273243;background:linear-gradient(110deg,#111925,#0f151f);box-shadow:0 7px 15px #0003}
+  .game-art{width:56px;height:56px;border-radius:8px}
+  .game-content{padding:0 10px}
+  .game-content h3{font-size:12px;line-height:1.2;margin-bottom:3px}
+  .game-content p{font-size:10px;color:#a6b0c0}
+  .game-bottom{margin-top:4px}
+  .game-bottom strong{font-size:11px;letter-spacing:.1px}
+  .game-bottom button{right:15px;top:21px;width:29px;height:29px;border-radius:8px}
+  .mobile-bottom-nav{left:10px;right:10px;bottom:calc(17px + env(safe-area-inset-bottom,0px));filter:drop-shadow(0 13px 26px #000b)}
 }
