@@ -221,3 +221,11 @@ dialog{border:1px solid #46404a;background:#141820;color:#fff;border-radius:12px
   .mobile-banner{aspect-ratio:2.08/1}
   .mobile-hero-characters{width:88%;height:121%}
 }
+
+/* Keep the mobile artwork, but give desktop a compact banner rhythm. */
+@media (min-width:621px){
+  .mobile-banner{height:clamp(210px,22vw,300px);aspect-ratio:auto;padding:clamp(20px,2.6vw,32px) clamp(22px,3.2vw,38px) clamp(42px,5.5vw,62px)}
+  .mobile-hero-characters{right:-1%;width:64%;height:calc(100% + 38px)}
+  .mobile-banner strong{max-width:48%;font-size:clamp(35px,4vw,52px)}
+  .mobile-orbit-badges{left:clamp(22px,3.2vw,38px);bottom:clamp(16px,2.4vw,27px)}
+}
