@@ -30,6 +30,11 @@ function renderGames() {
     const art = /^(https:\/\/|\/)/.test(image || '') ? `<img src="${escapeHtml(image)}" alt="Ảnh game ${escapeHtml(game.name)}" loading="lazy">` : `<span aria-hidden="true">${escapeHtml(image || '✦')}</span>`;
     return `<article class="game-card"><div class="game-art">${art}</div><div class="game-content"><h3>${escapeHtml(game.name)}</h3><p>${game.mode === 'login' ? 'Nạp bằng tài khoản' : 'Nạp bằng UID'}</p><div class="game-bottom"><div><small>Giá từ</small><strong>${money(Math.min(...prices))}</strong></div><button type="button" data-game="${escapeHtml(game.id)}" aria-label="Xem gói ${escapeHtml(game.name)}">↗</button></div></div></article>`;
   }).join('') || '<div class="empty-state">Không tìm thấy game phù hợp. Thử tên khác nhé.</div>';
+  $('#heroGameLogos').innerHTML = unique.slice(0, 5).map((game) => {
+    const image = game.slug === 'mobile-legends' ? 'https://static2.pisapapeles.net/uploads/2025/11/Mobile_Legends_Bang_Bang_ML.jpg' : game.image;
+    const art = /^(https:\/\/|\/)/.test(image || '') ? `<img src="${escapeHtml(image)}" alt="" loading="lazy">` : '<span aria-hidden="true">✦</span>';
+    return `<button class="hero-game-logo" type="button" data-game="${escapeHtml(game.id)}"><span>${art}</span><b>${escapeHtml(game.name)}</b></button>`;
+  }).join('');
 }
 
 function selectedPackage() { return selected?.rows.find((row) => row.package_id === $('.packages button.selected')?.dataset.package); }
@@ -59,6 +64,7 @@ async function renderOrders() {
 }
 
 $('#gameGrid').addEventListener('click', (event) => { const button = event.target.closest('[data-game]'); if (button) openOrder(button.dataset.game); });
+$('#heroGameLogos').addEventListener('click', (event) => { const button = event.target.closest('[data-game]'); if (button) openOrder(button.dataset.game); });
 $('#gameGrid').addEventListener('error', (event) => { if (event.target.tagName === 'IMG') event.target.outerHTML = '<span aria-hidden="true">✦</span>'; }, true);
 $('#packages').addEventListener('click', (event) => { const button = event.target.closest('[data-package]'); if (!button) return; $('#packages').querySelectorAll('button').forEach((item) => { item.classList.toggle('selected', item === button); item.setAttribute('aria-pressed', item === button ? 'true' : 'false'); }); updateTotal(); });
 $('#search').addEventListener('input', renderGames);
