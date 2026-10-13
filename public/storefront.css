@@ -73,16 +73,19 @@ dialog{border:1px solid #46404a;background:#141820;color:#fff;border-radius:12px
 }
 @media(max-width:620px){
   body{padding-bottom:calc(112px + env(safe-area-inset-bottom,0px))}
-  .mobile-bottom-nav{position:fixed;z-index:40;left:7px;right:7px;bottom:calc(20px + env(safe-area-inset-bottom,0px));height:72px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-items:end;border:1px solid #263240;border-radius:20px;background:linear-gradient(180deg,#121a26f7,#0e1520fa);box-shadow:0 10px 28px #0008,0 -3px 18px #0003;backdrop-filter:blur(18px);overflow:visible}
-  .mobile-bottom-link{position:relative;min-width:0;height:70px;padding:0 2px 10px;border:0;background:transparent;color:#d2dbe7;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:7px;text-decoration:none;cursor:pointer;font:600 11px/1.2 system-ui,sans-serif;letter-spacing:.05px}
-  .mobile-bottom-link:not(:first-child):after{content:'';position:absolute;left:0;top:17px;width:1px;height:30px;background:linear-gradient(transparent,#2833429c,transparent)}
+  .mobile-bottom-nav{position:fixed;z-index:40;left:7px;right:7px;bottom:calc(20px + env(safe-area-inset-bottom,0px));height:72px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-items:end;overflow:visible}
+  .mobile-bottom-shape{position:absolute;z-index:0;inset:0;width:100%;height:100%;pointer-events:none;filter:drop-shadow(0 10px 22px #0008)}
+  .mobile-bottom-link{position:relative;z-index:1;min-width:0;height:70px;padding:0 2px 10px;border:0;background:transparent;color:#d2dbe7;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:7px;text-decoration:none;cursor:pointer;font:600 11px/1.2 system-ui,sans-serif;letter-spacing:.05px}
+  .mobile-bottom-link:after{display:none}
+  .mobile-bottom-link:nth-child(3):after,.mobile-bottom-link:nth-child(5):after,.mobile-bottom-link:nth-child(6):after{content:'';display:block;position:absolute;left:0;top:20px;width:1px;height:28px;background:linear-gradient(transparent,#2833429c,transparent)}
   .mobile-tab-icon{position:relative;z-index:1;width:24px;height:24px;display:grid;place-items:center;flex:none;transition:transform .25s ease}
   .mobile-tab-icon svg{display:block;width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
   .mobile-tab-label{position:relative;z-index:1;white-space:nowrap}
   .mobile-bottom-link.is-active{color:#ffad88}
-  .mobile-bottom-link.is-active:before{content:'';position:absolute;z-index:0;top:-2px;left:50%;width:74px;height:15px;transform:translateX(-50%);background:#0c121b;border-radius:0 0 40px 40px}
-  .mobile-bottom-link.is-active .mobile-tab-icon{position:absolute;top:-18px;left:50%;width:64px;height:64px;transform:translateX(-50%);border:1px solid #e98763;border-radius:50%;background:radial-gradient(circle at 50% 40%,#cb6d48 0%,#a04632 46%,#381d1f 82%,#18141b 100%);box-shadow:0 0 0 3px #171318,0 0 0 4px #be654c75,0 0 17px 3px #d9654170,inset 0 1px 10px #ffc49c52;transition:top .25s ease,box-shadow .25s ease}
-  .mobile-bottom-link.is-active .mobile-tab-icon:before,.mobile-bottom-link.is-active .mobile-tab-icon:after{content:'';position:absolute;top:24px;width:24px;height:1px;background:linear-gradient(90deg,transparent,#bd785a99)}
+  .mobile-bottom-link.is-current:not(.home-tab){color:#ffad88}
+  .mobile-bottom-link.is-active:before{display:none}
+  .mobile-bottom-link.is-active .mobile-tab-icon{position:absolute;top:-16px;left:50%;width:60px;height:60px;transform:translateX(-50%);border:1px solid #e98763;border-radius:50%;background:radial-gradient(circle at 50% 40%,#cb6d48 0%,#a04632 46%,#381d1f 82%,#18141b 100%);box-shadow:0 0 0 3px #171318,0 0 0 4px #be654c75,0 0 14px 2px #d9654170,inset 0 1px 9px #ffc49c52;transition:top .25s ease,box-shadow .25s ease}
+  .mobile-bottom-link.is-active .mobile-tab-icon:before,.mobile-bottom-link.is-active .mobile-tab-icon:after{display:none}
   .mobile-bottom-link.is-active .mobile-tab-icon:before{right:calc(100% + 5px)}
   .mobile-bottom-link.is-active .mobile-tab-icon:after{left:calc(100% + 5px);transform:rotate(180deg)}
   .mobile-bottom-link.is-active .mobile-tab-icon svg{width:30px;height:30px;fill:none;stroke:#ffd3b4;stroke-width:1.8;filter:drop-shadow(0 0 3px #ffae83a0)}
