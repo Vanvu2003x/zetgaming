@@ -67,7 +67,12 @@ $('#loginBtn').addEventListener('click', () => openLogin());
 $('#mobileLoginBtn').addEventListener('click', () => openLogin());
 $('#bottomLoginBtn').addEventListener('click', () => openLogin());
 document.querySelectorAll('[data-mobile-tab]').forEach((item) => item.addEventListener('click', () => {
-  document.querySelectorAll('[data-mobile-tab]').forEach((tab) => tab.classList.toggle('is-active', tab === item));
+  document.querySelectorAll('[data-mobile-tab]').forEach((tab) => {
+    const active = tab === item;
+    tab.classList.toggle('is-active', active);
+    if (active) tab.setAttribute('aria-current', 'page');
+    else tab.removeAttribute('aria-current');
+  });
 }));
 $('#mobileMenuBtn').addEventListener('click', () => {
   const menu = $('#mobileMenu');
