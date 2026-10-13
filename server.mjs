@@ -56,6 +56,17 @@ function seed() {
   });
 }
 seed();
+const REAL_GAME_CATALOG = [
+  ['genshin-impact', 'Genshin Impact', 'uid', 'https://cdn.erisvn.net/unsafe/640x/filters:quality(80):format(webp)/https://storage.erisvn.net/images/2026/07/b732ebe5b058231230fd6f187581b1f4.webp', [['60 Genesis Crystals','60',20000,16000],['300 Genesis Crystals','300',85000,68000]]],
+  ['honkai-star-rail', 'Honkai: Star Rail', 'uid', 'https://cdn.erisvn.net/unsafe/640x/filters:quality(80):format(webp)/https://storage.erisvn.net/images/2026/07/34635ffebfa047e8a603b8cb246cd3ba.webp', [['60 Oneiric Shard','60',20000,16000],['300 Oneiric Shard','300',85000,68000]]],
+  ['zenless-zone-zero', 'Zenless Zone Zero', 'uid', 'https://cdn.erisvn.net/unsafe/640x/filters:quality(80):format(webp)/https://storage.erisvn.net/images/2026/07/053734c5e078d2e6c7f1968c83ec991d.webp', [['60 Monochromes','60',20000,16000],['300 Monochromes','300',85000,68000]]],
+  ['wuthering-waves', 'Wuthering Waves', 'uid', 'https://cdn.erisvn.net/unsafe/640x/filters:quality(80):format(webp)/https://storage.erisvn.net/images/2026/07/d8aff142f64e588bf5a7f3a230a9359f.webp', [['60 Lunites','60',20000,16000],['300 Lunites','300',85000,68000]]]
+];
+for (const [slug, name, mode, image, packages] of REAL_GAME_CATALOG) {
+  if (db.prepare('SELECT id FROM games WHERE slug=?').get(slug)) continue;
+  const gameId = id(); db.prepare('INSERT INTO games VALUES (?,?,?,?,?,?)').run(gameId, slug, name, mode, image, 1);
+  for (const [packageName, nominal, customerCents, ctvCents] of packages) { const packageId = id(); db.prepare('INSERT INTO packages VALUES (?,?,?,?,?)').run(packageId, gameId, packageName, nominal, 1); db.prepare('INSERT INTO prices VALUES (?,?,?,?)').run(packageId, 'standard', customerCents, ctvCents); }
+}
 
 async function route(req, res) {
   const url = new URL(req.url, `http://${req.headers.host}`); const path = url.pathname; const method = req.method;
@@ -75,7 +86,7 @@ async function route(req, res) {
     if (method === 'GET' && path.startsWith('/api/orders/')) { const u = requireUser(req, res); if (!u) return; const code = path.split('/')[3]; const o = db.prepare('SELECT o.code,o.status,o.price_cents,o.payment_method,o.created_at,o.updated_at,p.name package_name,g.name game_name,u.email customer FROM orders o JOIN packages p ON p.id=o.package_id JOIN games g ON g.id=o.game_id JOIN users u ON u.id=o.customer_id WHERE o.code=? AND (o.customer_id=? OR o.assigned_ctv_id=? OR ?=\'admin\')').get(code,u.id,u.id,u.role); if (!o) return json(res, 404, { error: 'Không tìm thấy đơn' }); return json(res, 200, o); }
     if (method === 'GET' && path === '/') { const html = await readFile(join(ROOT, 'public', 'index.html')); res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }); return res.end(html); }
     if (method === 'GET' && path === '/app.js') { const js = await readFile(join(ROOT, 'public', 'app.js')); res.writeHead(200, { 'content-type': 'text/javascript; charset=utf-8' }); return res.end(js); }
-    if (method === 'GET' && path === '/styles.css') { const css = await readFile(join(ROOT, 'public', 'styles.css')); res.writeHead(200, { 'content-type': 'text/css; charset=utf-8' }); return res.end(css); }
+    if (method === 'GET' && path === '/styles.css') { const css = await readFile(join(ROOT, 'public', 'styles.css')); const extra = await readFile(join(ROOT, 'public', 'real-images.css')); res.writeHead(200, { 'content-type': 'text/css; charset=utf-8' }); return res.end(`${css}\n${extra}`); }
     json(res, 404, { error: 'Không tìm thấy đường dẫn' });
   } catch (e) { console.error(e); json(res, 500, { error: 'Lỗi máy chủ' }); }
 }
