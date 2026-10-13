@@ -30,6 +30,12 @@ function renderGames() {
     const art = /^(https:\/\/|\/)/.test(image || '') ? `<img src="${escapeHtml(image)}" alt="Ảnh game ${escapeHtml(game.name)}" loading="lazy">` : `<span aria-hidden="true">${escapeHtml(image || '✦')}</span>`;
     return `<article class="game-card"><div class="game-art">${art}</div><div class="game-content"><h3>${escapeHtml(game.name)}</h3><p>${game.mode === 'login' ? 'Nạp bằng tài khoản' : 'Nạp bằng UID'}</p><div class="game-bottom"><div><small>Giá từ</small><strong>${money(Math.min(...prices))}</strong></div><button type="button" data-game="${escapeHtml(game.id)}" aria-label="Xem gói ${escapeHtml(game.name)}">↗</button></div></div></article>`;
   }).join('') || '<div class="empty-state">Không tìm thấy game phù hợp. Thử tên khác nhé.</div>';
+  $('#featuredGames').innerHTML = unique.slice(0, 3).map((game) => {
+    const prices = games.filter((row) => row.id === game.id).map((row) => row.customer_cents);
+    const image = game.slug === 'mobile-legends' ? 'https://static2.pisapapeles.net/uploads/2025/11/Mobile_Legends_Bang_Bang_ML.jpg' : game.image;
+    const art = /^(https:\/\/|\/)/.test(image || '') ? `<img src="${escapeHtml(image)}" alt="" loading="eager">` : `<span aria-hidden="true">✦</span>`;
+    return `<button class="featured-game" type="button" data-game="${escapeHtml(game.id)}"><span class="featured-art">${art}</span><span class="featured-details"><strong>${escapeHtml(game.name)}</strong><small>${game.mode === 'login' ? 'Nạp tài khoản' : 'Nạp UID'} · từ ${money(Math.min(...prices))}</small></span><span class="featured-arrow" aria-hidden="true">↗</span></button>`;
+  }).join('');
 }
 
 function selectedPackage() { return selected?.rows.find((row) => row.package_id === $('.packages button.selected')?.dataset.package); }
@@ -59,7 +65,9 @@ async function renderOrders() {
 }
 
 $('#gameGrid').addEventListener('click', (event) => { const button = event.target.closest('[data-game]'); if (button) openOrder(button.dataset.game); });
+$('#featuredGames').addEventListener('click', (event) => { const button = event.target.closest('[data-game]'); if (button) openOrder(button.dataset.game); });
 $('#gameGrid').addEventListener('error', (event) => { if (event.target.tagName === 'IMG') event.target.outerHTML = '<span aria-hidden="true">✦</span>'; }, true);
+$('#featuredGames').addEventListener('error', (event) => { if (event.target.tagName === 'IMG') event.target.outerHTML = '<span aria-hidden="true">✦</span>'; }, true);
 $('#packages').addEventListener('click', (event) => { const button = event.target.closest('[data-package]'); if (!button) return; $('#packages').querySelectorAll('button').forEach((item) => { item.classList.toggle('selected', item === button); item.setAttribute('aria-pressed', item === button ? 'true' : 'false'); }); updateTotal(); });
 $('#search').addEventListener('input', renderGames);
 $('#refresh').addEventListener('click', renderOrders);
