@@ -151,3 +151,51 @@ dialog{border:1px solid #46404a;background:#141820;color:#fff;border-radius:12px
   .mobile-bottom-link.is-active .mobile-tab-icon{top:-20px;width:72px;height:72px}
   .mobile-bottom-link.is-active .mobile-tab-icon svg{width:33px;height:33px}
 }
+
+/* Compact desktop: keep the laptop view dense and readable instead of scaling the wide-screen layout down. */
+@media (min-width:621px) and (max-width:1100px){
+  .wrap{width:min(920px,calc(100% - 48px))}
+  .topline .wrap{height:25px;font-size:9px}
+  .header-inner{height:56px;gap:24px}
+  .brand img{width:142px;height:40px}
+  .site-header nav{gap:20px}
+  .site-header nav a{font-size:11px}
+  .account-btn{padding:8px 12px;font-size:11px}
+  .hero{min-height:0;grid-template-columns:minmax(0,1.05fr) minmax(285px,.95fr);gap:2px;padding:22px 26px 20px;border-radius:9px}
+  .hero:before{inset:0 0 0 34%}
+  .hero h1{font-size:clamp(38px,5.1vw,54px);margin:10px 0 10px}
+  .eyebrow{font-size:8px;letter-spacing:1.6px}
+  .hero p{font-size:10px;letter-spacing:1px}
+  .hero-actions{gap:15px;margin-top:17px}
+  .primary-btn{min-height:37px;padding:8px 12px;gap:15px;font-size:11px}
+  .text-link{font-size:10px}
+  .hero-visual{height:205px;transform:scale(.59);transform-origin:center}
+  .benefits .wrap{padding-block:10px;font-size:10px}
+  .benefits b{font-size:13px;margin-right:6px}
+  .games-section,.orders-section{padding-block:31px}
+  .section-head{margin-bottom:14px}
+  .section-kicker{font-size:8px;letter-spacing:1.5px}
+  .section-head h2{font-size:29px;margin:5px 0}
+  .section-head p{font-size:10px}
+  .search-box{width:190px;height:34px;font-size:11px}
+  .game-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  .game-card{position:relative;display:flex;align-items:center;min-height:70px;padding:7px;border-radius:8px;background:#111720}
+  .game-art{width:56px;height:56px;flex:none;border-radius:6px}
+  .game-content{padding:0 42px 0 9px;flex:1}
+  .game-content h3{font-size:11px;line-height:1.2;margin:0 0 2px}
+  .game-content p{font-size:9px}
+  .game-bottom{display:block;margin-top:3px}
+  .game-bottom small{display:none}
+  .game-bottom strong{font-size:10px;color:#ffae90}
+  .game-bottom button{position:absolute;right:10px;top:20px;width:28px;height:28px;border-radius:7px;font-size:14px}
+}
+
+@media (min-width:621px) and (max-width:760px){
+  .wrap{width:calc(100% - 36px)}
+  .header-inner{gap:13px}
+  .site-header nav{gap:12px}
+  .hero{padding-inline:18px}
+  .hero h1{font-size:37px}
+  .hero-visual{transform:scale(.49)}
+  .benefits .wrap{gap:10px}
+}
