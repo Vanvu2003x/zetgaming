@@ -64,6 +64,17 @@ $('#packages').addEventListener('click', (event) => { const button = event.targe
 $('#search').addEventListener('input', renderGames);
 $('#refresh').addEventListener('click', renderOrders);
 $('#loginBtn').addEventListener('click', () => openLogin());
+$('#mobileLoginBtn').addEventListener('click', () => openLogin());
+$('#mobileMenuBtn').addEventListener('click', () => {
+  const menu = $('#mobileMenu');
+  const isOpen = !menu.hasAttribute('hidden');
+  menu.toggleAttribute('hidden', isOpen);
+  $('#mobileMenuBtn').setAttribute('aria-expanded', String(!isOpen));
+});
+$('#mobileMenu').addEventListener('click', () => {
+  $('#mobileMenu').setAttribute('hidden', '');
+  $('#mobileMenuBtn').setAttribute('aria-expanded', 'false');
+});
 document.querySelectorAll('[data-close]').forEach((button) => button.addEventListener('click', () => $('#' + button.dataset.close).close()));
 
 $('#loginForm').addEventListener('submit', async (event) => {

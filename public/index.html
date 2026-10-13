@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#090b10">
   <meta name="description" content="Chọn game, xem giá và tạo đơn nạp game rõ ràng tại ZetGaming.">
   <title>ZetGaming · Nạp game dễ dàng</title>
-  <link rel="stylesheet" href="/styles.css?v=mobile-hero-v4">
+  <link rel="stylesheet" href="/styles.css?v=mobile-actions-v5">
 </head>
 <body>
   <div class="topline"><div class="wrap"><span><i class="live-dot"></i> Đang nhận đơn</span><span>Giá hiển thị trước khi đặt · Theo dõi từng đơn</span></div></div>
@@ -14,6 +14,13 @@
     <a class="brand" href="/" aria-label="ZetGaming, về trang chủ"><img src="/zetgaming-logo-transparent.png?v=1" alt="ZetGaming"></a>
     <nav aria-label="Điều hướng chính"><a href="#games">Nạp game</a><a href="#orders">Đơn của tôi</a><a href="#how">Cách đặt đơn</a></nav>
     <button id="loginBtn" class="account-btn" type="button">Đăng nhập <span>↗</span></button>
+    <div class="mobile-actions" aria-label="Công cụ nhanh">
+      <a class="mobile-icon" href="#games" aria-label="Tìm game"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"></circle><path d="m16 16 4 4"></path></svg></a>
+      <button id="mobileMenuBtn" class="mobile-icon" type="button" aria-label="Mở menu" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></button>
+      <button class="mobile-icon" type="button" aria-label="Ngôn ngữ: Tiếng Việt" title="Tiếng Việt"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><path d="M4 12h16M12 4a12 12 0 0 1 0 16M12 4a12 12 0 0 0 0 16"></path></svg></button>
+      <button id="mobileLoginBtn" class="mobile-icon" type="button" aria-label="Đăng nhập"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 20c.7-3.5 3.1-5.3 7-5.3s6.3 1.8 7 5.3"></path></svg></button>
+    </div>
+    <div id="mobileMenu" class="mobile-menu" hidden><a href="#games">Nạp game</a><a href="#orders">Đơn của tôi</a><a href="#how">Cách đặt đơn</a></div>
   </div></header>
   <main>
     <section class="hero wrap" aria-labelledby="heroTitle">
@@ -29,6 +36,6 @@
   <footer><div class="wrap"><span class="footer-brand">GAME<span>FLOW</span></span><span>Chọn game. Chọn gói. Theo dõi đơn.</span></div></footer>
   <dialog id="loginDialog" class="small-dialog"><form id="loginForm"><button class="close-btn" type="button" data-close="loginDialog" aria-label="Đóng">×</button><div class="section-kicker">TÀI KHOẢN</div><h2>Đăng nhập</h2><p class="dialog-intro">Đăng nhập để thanh toán bằng ví và theo dõi đơn.</p><label for="email">Email</label><input id="email" type="email" autocomplete="username" placeholder="email@example.com" required><label for="password">Mật khẩu</label><input id="password" type="password" autocomplete="current-password" placeholder="Mật khẩu" required><button class="primary-btn full" type="submit">Đăng nhập <span>→</span></button><p id="loginMsg" class="form-message" role="alert"></p></form></dialog>
   <dialog id="orderDialog" class="order-dialog"><form id="orderForm"><button class="close-btn" type="button" data-close="orderDialog" aria-label="Đóng">×</button><div class="order-dialog-head"><div class="section-kicker">TẠO ĐƠN NẠP</div><h2 id="orderTitle">Chọn gói</h2><p id="orderGame">Giá và thông tin đơn được hiển thị trước khi xác nhận.</p></div><div class="checkout-columns"><div class="checkout-main"><div class="form-section-title"><span>01</span><strong>Chọn gói nạp</strong></div><div id="packages" class="packages" role="group" aria-label="Gói nạp"></div></div><div class="checkout-side"><div class="form-section-title"><span>02</span><strong>Thông tin đơn</strong></div><label id="targetLabel" for="target">UID game</label><input id="target" name="target" autocomplete="off" placeholder="Nhập UID game" required><p class="field-hint">Kiểm tra kỹ thông tin trước khi đặt đơn.</p><label for="payment">Thanh toán</label><select id="payment"><option value="direct">Thanh toán trực tiếp</option><option value="wallet">Số dư ví</option></select><div class="checkout-total"><span>Tổng thanh toán</span><strong id="orderTotal">—</strong></div><button id="createOrderBtn" class="primary-btn full" type="submit">Tạo đơn <span>→</span></button><p id="orderMsg" class="form-message" role="alert"></p></div></div></form></dialog>
-  <script src="/app.js"></script>
+  <script src="/app.js?v=mobile-actions-v5"></script>
 </body>
 </html>
