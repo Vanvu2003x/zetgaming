@@ -44,18 +44,21 @@ dialog{border:1px solid #46404a;background:#141820;color:#fff;border-radius:12px
 /* Mobile hero: keep the login top-up message readable and the decorative card compact. */
 @media(max-width:620px){
   .hero{padding-top:16px}
-  .mobile-banner{height:154px;padding:18px;border-radius:12px;background-position:center;border-color:#3b4658;box-shadow:0 14px 26px #0005}
-  .mobile-banner:before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 78% 41%,#ed4d3033,transparent 29%),linear-gradient(90deg,#080c14e8 0%,#080c14bd 53%,#080c1438 100%);pointer-events:none}
-  .mobile-banner:after{height:72%;background:linear-gradient(90deg,#070b13d9 0%,#070b138c 52%,transparent 100%)}
-  .mobile-banner span{font-size:9px;letter-spacing:1.7px;color:#ffad8d;margin-bottom:2px}
-  .mobile-banner strong{font-size:34px;line-height:.9;letter-spacing:.7px;max-width:180px}
-  .mobile-card-icon{right:30px;top:25px;width:62px;height:82px;border-radius:10px;transform:rotate(10deg);box-shadow:8px 13px 22px #0009,0 0 18px #ff5b4238}
+  .mobile-banner{isolation:isolate;height:164px;overflow:visible;padding:20px;border-radius:12px;background-image:linear-gradient(90deg,#070a12e9 0%,#080b13bf 46%,#080b1320 100%),url('/zetgaming-hero-scene-v3.png');background-position:center;border-color:#3b4658;box-shadow:0 14px 26px #0005}
+  .mobile-banner:before{z-index:0;content:'';position:absolute;inset:0;border-radius:inherit;background:linear-gradient(90deg,#070a12c9 0%,#070a1270 48%,transparent 100%);pointer-events:none}
+  .mobile-banner:after{z-index:1;height:72%;border-radius:0 0 12px 12px;background:linear-gradient(90deg,#070b13be 0%,#070b1340 55%,transparent 100%)}
+  .mobile-hero-characters{position:absolute;z-index:2;right:-19px;bottom:-28px;width:94%;height:202px;object-fit:contain;object-position:right bottom;pointer-events:none;filter:drop-shadow(0 11px 13px #000a);animation:mobile-hero-characters 5.6s ease-in-out infinite}
+  .mobile-banner span,.mobile-banner strong{z-index:4}
+  .mobile-banner span{font-size:9px;letter-spacing:1.7px;color:#ffbd9e;margin-bottom:2px;text-shadow:0 1px 8px #000}
+  .mobile-banner strong{font-size:34px;line-height:.9;letter-spacing:.7px;max-width:174px;text-shadow:0 3px 12px #000}
+  .mobile-card-icon{z-index:5;right:23px;top:27px;width:62px;height:82px;border-radius:10px;transform:rotate(10deg);box-shadow:8px 13px 22px #0009,0 0 18px #ff5b4238}
   .mobile-card-icon:after{inset:5px}
   .mobile-card-icon span{font-size:35px}
-  .mobile-orbit-badges i{font-size:7px;padding:4px 6px;border-radius:5px;box-shadow:0 5px 12px #0008}
+  .mobile-orbit-badges{z-index:6}.mobile-orbit-badges i{font-size:7px;padding:4px 6px;border-radius:5px;box-shadow:0 5px 12px #0008}
   .mobile-orbit-badges i:nth-child(1){right:9px;top:10px}
   .mobile-orbit-badges i:nth-child(2){right:9px;bottom:10px}
   .mobile-orbit-badges i:nth-child(3){right:99px;top:72px}
+  @keyframes mobile-hero-characters{50%{transform:translateY(-5px) scale(1.015)}}
 }
 @media(max-width:620px){
   .header-inner{position:relative;gap:0}
