@@ -114,11 +114,12 @@ dialog{border:1px solid #46404a;background:#141820;color:#fff;border-radius:12px
 /* Mobile storefront polish: one compact, readable visual rhythm from header to game list. */
 @media(max-width:620px){
   body{background:radial-gradient(ellipse at 78% 16%,#1d263537,transparent 34%),#090d15}
-  .hero{padding-top:14px}
+  .hero.wrap{width:calc(100% - 40px)}
+  .hero{padding-top:28px}
   .mobile-banner{height:164px;padding:18px 18px 40px;border-radius:14px;border-color:#38465a;background-position:center;box-shadow:0 18px 34px #0008,0 0 0 1px #ffffff05 inset}
   .mobile-banner:before{background:linear-gradient(90deg,#070a12ec 0%,#070a12a8 50%,#070a1218 100%)}
   .mobile-banner:after{height:49%;background:linear-gradient(90deg,#070b13d5 0%,#070b1369 59%,transparent 100%)}
-  .mobile-hero-characters{right:-6px;bottom:0;width:94%;height:212px;object-position:right bottom;clip-path:inset(-56px -8px 0 0);filter:drop-shadow(0 13px 17px #000c)}
+  .mobile-hero-characters{right:-4px;bottom:0;width:88%;height:198px;object-position:right bottom;clip-path:inset(-48px -6px 0 0);filter:drop-shadow(0 13px 17px #000c)}
   .mobile-banner span{font-size:8px;letter-spacing:1.9px}
   .mobile-banner strong{font-size:35px;letter-spacing:.4px;max-width:184px}
   .mobile-orbit-badges{display:flex;align-items:center;gap:8px;position:absolute;z-index:6;inset:auto;left:18px;bottom:12px;pointer-events:none}
