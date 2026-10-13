@@ -87,8 +87,8 @@ dialog{border:1px solid #46404a;background:#141820;color:#fff;border-radius:12px
   .mobile-bottom-link.is-active .mobile-tab-icon:after{left:calc(100% + 5px);transform:rotate(180deg)}
   .mobile-bottom-link.is-active .mobile-tab-icon svg{width:24px;height:24px;fill:none;stroke:#ffd3b4;stroke-width:1.8;filter:drop-shadow(0 0 3px #ffae83a0)}
   .home-tab.is-active .mobile-tab-icon svg{fill:#ffd1ae;stroke-width:1.5}
-  .mobile-bottom-link.is-active .mobile-tab-label{font-weight:700}
-  .mobile-bottom-link.is-active .mobile-tab-label:after{content:'';position:absolute;left:50%;bottom:-6px;width:19px;height:2px;transform:translateX(-50%);border-radius:2px;background:#e88b68}
+  .mobile-bottom-link.is-active .mobile-tab-label{visibility:hidden}
+  .mobile-bottom-link.is-active .mobile-tab-label:after{display:none}
   .mobile-bottom-link:focus-visible{outline:2px solid #ff8d6d;outline-offset:-2px;border-radius:10px}
 }
 @media(min-width:621px){.mobile-bottom-nav{display:none}}
