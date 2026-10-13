@@ -65,6 +65,10 @@ $('#search').addEventListener('input', renderGames);
 $('#refresh').addEventListener('click', renderOrders);
 $('#loginBtn').addEventListener('click', () => openLogin());
 $('#mobileLoginBtn').addEventListener('click', () => openLogin());
+$('#bottomLoginBtn').addEventListener('click', () => openLogin());
+document.querySelectorAll('[data-mobile-tab]').forEach((item) => item.addEventListener('click', () => {
+  document.querySelectorAll('[data-mobile-tab]').forEach((tab) => tab.classList.toggle('is-active', tab === item));
+}));
 $('#mobileMenuBtn').addEventListener('click', () => {
   const menu = $('#mobileMenu');
   const isOpen = !menu.hasAttribute('hidden');
