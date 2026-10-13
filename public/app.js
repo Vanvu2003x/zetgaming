@@ -69,6 +69,8 @@ $('#bottomLoginBtn').addEventListener('click', () => openLogin());
 const mobileTabs = [...document.querySelectorAll('[data-mobile-tab]')];
 const mobileNav = document.querySelector('.mobile-bottom-nav');
 const mobileBottomShapePath = document.querySelector('#mobileBottomShapePath');
+let mobileNotchCenter = 177.5;
+let mobileNotchAnimation;
 const mobileNotchPath = (center) => {
   const left = Math.max(20, center - 64);
   const right = Math.min(335, center + 64);
@@ -76,12 +78,35 @@ const mobileNotchPath = (center) => {
   const rightSpan = right - center;
   return `M20 8H${left.toFixed(2)}C${(left + leftSpan * .55).toFixed(2)} 8 ${(center - leftSpan * .6).toFixed(2)} 54 ${center.toFixed(2)} 54C${(center + rightSpan * .6).toFixed(2)} 54 ${(right - rightSpan * .55).toFixed(2)} 8 ${right.toFixed(2)} 8H335C346 8 354 17 354 28V59C354 70 346 79 335 79H20C9 79 1 70 1 59V28C1 17 9 8 20 8Z`;
 };
-const moveMobileNotch = (tab) => {
-  if (!mobileNav || !mobileBottomShapePath || !tab) return;
+const getMobileNotchCenter = (tab) => {
+  if (!mobileNav || !tab) return mobileNotchCenter;
   const navBox = mobileNav.getBoundingClientRect();
   const tabBox = tab.getBoundingClientRect();
-  const center = ((tabBox.left + tabBox.width / 2 - navBox.left) / navBox.width) * 355;
-  mobileBottomShapePath.setAttribute('d', mobileNotchPath(center));
+  return ((tabBox.left + tabBox.width / 2 - navBox.left) / navBox.width) * 355;
+};
+const drawMobileNotch = (center) => {
+  mobileNotchCenter = center;
+  mobileBottomShapePath?.setAttribute('d', mobileNotchPath(center));
+};
+const moveMobileNotch = (tab, animate = false) => {
+  if (!mobileNav || !mobileBottomShapePath || !tab) return;
+  const target = getMobileNotchCenter(tab);
+  if (!animate || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    cancelAnimationFrame(mobileNotchAnimation);
+    drawMobileNotch(target);
+    return;
+  }
+  cancelAnimationFrame(mobileNotchAnimation);
+  const start = mobileNotchCenter;
+  const startedAt = performance.now();
+  const duration = 430;
+  const frame = (now) => {
+    const progress = Math.min(1, (now - startedAt) / duration);
+    const eased = 1 - Math.pow(1 - progress, 4);
+    drawMobileNotch(start + (target - start) * eased);
+    if (progress < 1) mobileNotchAnimation = requestAnimationFrame(frame);
+  };
+  mobileNotchAnimation = requestAnimationFrame(frame);
 };
 const setMobileTab = (item) => {
   mobileTabs.forEach((tab) => {
@@ -91,7 +116,7 @@ const setMobileTab = (item) => {
     if (active) tab.setAttribute('aria-current', 'page');
     else tab.removeAttribute('aria-current');
   });
-  moveMobileNotch(item);
+  moveMobileNotch(item, true);
 };
 mobileTabs.forEach((item) => item.addEventListener('click', () => setMobileTab(item)));
 moveMobileNotch(document.querySelector('.mobile-bottom-link.is-active'));
