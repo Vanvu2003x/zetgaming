@@ -66,6 +66,21 @@ $('#refresh').addEventListener('click', renderOrders);
 $('#loginBtn').addEventListener('click', () => openLogin());
 $('#mobileLoginBtn').addEventListener('click', () => openLogin());
 $('#bottomLoginBtn').addEventListener('click', () => openLogin());
+let newsNoticeTimer;
+document.querySelectorAll('[data-news-action]').forEach((button) => button.addEventListener('click', () => {
+  let notice = document.querySelector('#newsNotice');
+  if (!notice) {
+    notice = document.createElement('div');
+    notice.id = 'newsNotice';
+    notice.className = 'news-notice';
+    notice.setAttribute('role', 'status');
+    document.body.append(notice);
+  }
+  notice.textContent = 'Tin tức đang được cập nhật.';
+  notice.classList.add('is-visible');
+  clearTimeout(newsNoticeTimer);
+  newsNoticeTimer = setTimeout(() => notice.classList.remove('is-visible'), 3000);
+}));
 const mobileTabs = [...document.querySelectorAll('[data-mobile-tab]')];
 const mobileNav = document.querySelector('.mobile-bottom-nav');
 const mobileBottomShapePath = document.querySelector('#mobileBottomShapePath');
