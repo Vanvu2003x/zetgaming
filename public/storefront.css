@@ -284,3 +284,7 @@ dialog{border:1px solid #46404a;background:#141820;color:#fff;border-radius:12px
   .game-bottom strong{font-size:15px}
   .mobile-hero-characters{height:118%}
 }
+
+@media (min-width:621px){
+  .mobile-actions,.mobile-menu{display:none}
+}
