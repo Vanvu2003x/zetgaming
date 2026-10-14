@@ -303,6 +303,11 @@ dialog{border:1px solid #46404a;background:#141820;color:#fff;border-radius:12px
   .mobile-hero-characters{right:-18px;clip-path:inset(-90px -24px 0 0)}
 }
 
+@media (max-width:620px){
+  .storefront[data-page=home] .mobile-banner{overflow:hidden}
+  .storefront[data-page=home] .mobile-banner:after{border-radius:0 0 14px 14px}
+}
+
 /* Keep the news action visually aligned with the header links. */
 .site-header nav :is(a,button){display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
 .site-header nav a{font-size:14px}
