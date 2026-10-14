@@ -3,11 +3,33 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=24" },
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "dev": "node --watch server.mjs",
     "start": "node server.mjs",
+    "backend": "node backend/server.mjs",
+    "backend:dev": "node --watch backend/server.mjs",
+    "db:local": "node scripts/dev-postgres.mjs",
+    "db:import-legacy": "node scripts/import-legacy.mjs",
+    "db:migrate": "node backend/db/migrate.mjs",
+    "db:seed": "node backend/db/seed.mjs",
     "test": "node --test",
     "build": "node scripts/check.mjs"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.1.0",
+    "pg": "^8.13.1",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "embedded-postgres": "^16.14.0-beta.17"
   }
 }

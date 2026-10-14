@@ -29,6 +29,46 @@ Typography tham khảo Naperis: Signika Negative, tự host ở `public/fonts/` 
 
 `npm test` có kiểm thử HTTP trên database tạm cho SSR, native forms, giá server, chống gửi đơn trùng và quyền xem đơn. Có thể đặt `DB_PATH` và `PORT` để chạy môi trường cô lập.
 
+## Backend Express + PostgreSQL
+
+Backend mới nằm trong `backend/` và giữ contract API `/api/*`, tách module theo `auth`, `catalog`, `orders`, `dispatch`, `health`, cùng migration PostgreSQL có version. Server SSR cũ vẫn được giữ tạm để frontend hiện tại không bị gãy trong giai đoạn chuyển đổi.
+
+Chạy PostgreSQL local bằng Docker:
+
+```powershell
+docker compose up -d postgres
+$env:DATABASE_URL="postgres://postgres:postgres@localhost:5432/zetgaming"
+$env:SESSION_SECRET="local-development-secret-change-me"
+npm run db:migrate
+$env:SEED_DEMO="true"
+npm run db:seed
+npm run backend
+```
+
+Backend chạy ở `http://localhost:4180`. Sau khi frontend chuyển sang API này ổn định, có thể bỏ SQLite khỏi server SSR cũ.
+
+### Bảo mật local đã bật
+
+- bcrypt cost 12 cho mật khẩu.
+- Prepared statements qua `pg`, không nối SQL từ input.
+- Zod validation cho login và tạo đơn; body có giới hạn kích thước.
+- CSRF double-submit token cho request thay đổi dữ liệu.
+- Rate limit toàn API và login riêng.
+- Helmet security headers, CORS allowlist và request ID logging.
+- RBAC kiểm tra ở backend; audit event cho thay đổi nghiệp vụ.
+- Secret bắt buộc khi chạy backend; không dùng secret mặc định ở production.
+- Auth BE: `GET /api/csrf`, `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/auth/me`, `POST /api/auth/logout`. Đăng ký hiện chưa yêu cầu xác minh email.
+- OAuth đã có endpoint kiểm tra provider tại `GET /api/auth/providers`, nhưng chưa bật Google/Facebook khi chưa có credentials thật.
+
+HTTPS/Let's Encrypt không chạy trực tiếp trên localhost. Khi đưa lên staging/production, đặt reverse proxy (Nginx/Caddy) ở trước backend và bật TLS/HSTS.
+
+Backup PostgreSQL thủ công:
+
+```powershell
+$env:DATABASE_URL="postgres://postgres:postgres@localhost:5432/zetgaming"
+.\scripts\backup-postgres.ps1
+```
+
 Tài khoản demo được seed lần đầu:
 
 - Admin: `admin@example.com` / `admin12345`

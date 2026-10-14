@@ -6,3 +6,6 @@ node_modules/
 *.sqlite-*
 dist/
 coverage/
+data/postgres/
+data/mail-outbox/
+*.log

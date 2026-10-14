@@ -143,11 +143,74 @@ body.storefront{font-family:'Signika Negative',system-ui,sans-serif;font-size:16
 .empty-panel{text-align:center;padding:48px 24px}.empty-panel h2{font-size:24px;margin:0 0 12px}.empty-panel p{color:var(--page-muted);font-size:15px;margin:0 0 24px}.order-detail{max-width:920px;margin:auto}.order-detail h2{font-size:26px;margin:20px 0}.order-detail dl{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;margin:24px 0}.order-detail dt{font-size:13px;color:var(--page-muted);margin-bottom:5px}.order-detail dd{margin:0;font-size:17px}.price-accent{color:var(--page-accent)}.order-timeline{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;list-style:none;margin:32px 0;padding:24px 0;border-block:1px solid var(--page-line)}.order-timeline li{display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;font-size:12px;color:#8491a5}.order-timeline li>span{width:28px;height:28px;display:grid;place-items:center;border:1px solid #455066;border-radius:50%;background:#1b2431}.order-timeline .reached>span{border-color:#c47e59;background:#6a3924;color:#ffcfaf}.order-timeline .reached{color:#e3c1aa}.order-timeline [aria-current=step]>span{box-shadow:0 0 0 4px #c47e591d}
 .editorial-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}.editorial-card{overflow:hidden;display:block;border:1px solid var(--page-line);border-radius:12px;background:var(--page-surface);text-decoration:none;transition:transform .3s,border-color .3s}.editorial-card:hover{transform:translateY(-4px);border-color:#ab765b}.editorial-card>div:last-child{padding:24px}.editorial-card h2{font-size:24px;line-height:1.25;margin:12px 0}.editorial-card p{font-size:15px;color:var(--page-muted);margin:0 0 24px}.editorial-art{height:190px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;padding:24px 36px;background:radial-gradient(ellipse at 70% 80%,#94381f88,transparent 70%),#1e202b}.editorial-art>span{font-size:80px;font-weight:700;letter-spacing:-4px;color:#ffffff16}.editorial-art b{font-size:72px;line-height:1;color:#ffb391;font-weight:400;transform:rotate(-12deg)}.art-02{background:radial-gradient(ellipse at 70% 80%,#43518d88,transparent 70%),#1b2030}.art-02 b{color:#b0c6ff}.art-03{background:radial-gradient(ellipse at 70% 80%,#26726a88,transparent 70%),#182928}.art-03 b{color:#a7e0d6}
 .article-layout{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:24px;max-width:1080px;margin:auto}.article-heading{grid-column:1/-1;max-width:750px;margin-bottom:8px}.article-heading h1{font-size:40px;margin:12px 0 16px}.article-heading p{font-size:18px;color:var(--page-muted);max-width:600px}.article-body{padding:32px}.article-body section{scroll-margin-top:110px;margin-bottom:32px}.article-body h2{font-size:23px;margin:8px 0 12px}.article-body p{font-size:17px;line-height:1.75;color:#b6c2d5;margin:0}.article-step{color:var(--page-accent);font-size:13px;letter-spacing:2px}.article-sidebar{position:sticky;top:104px;align-self:start}.article-sidebar h2{font-size:18px;margin:0 0 18px}.article-sidebar a{display:block;text-decoration:none;font-size:14px;color:#bdc9dc;line-height:1.5;margin-bottom:14px}.article-sidebar a:hover{color:var(--page-accent)}.article-sidebar hr{border:0;border-top:1px solid var(--page-line);margin:24px 0}
+
+/* Auth screens: fantasy key art with a calm, readable form surface. */
+.auth-container{max-width:1180px}
+.auth-layout{max-width:1080px;border:1px solid #31415b;border-radius:22px;overflow:hidden;background:#09101c;box-shadow:0 24px 70px #0009}
+.auth-story{min-height:620px;padding:52px 46px;background:linear-gradient(90deg,#07101db0 0%,#07101d78 48%,#07101d2b 100%),url('/zetgaming-auth-bg.png') left center/cover;border:0;border-right:1px solid #31415b;border-radius:0;justify-content:flex-end}
+.auth-story h2{font-size:48px;text-shadow:0 4px 20px #000}
+.auth-story p{color:#d0d9e9;max-width:360px}
+.auth-benefits{color:#f1d1bf}
+.auth-form{min-height:620px;padding:50px 42px;background:linear-gradient(145deg,#0f1a2bfa,#0a1220f5);border:0;border-radius:0}
+.auth-form h1{font-size:36px}
+.auth-form>p:not(.form-message):not(.form-success){color:#a9b8cf}
+.auth-form input{background:#111d30;border-color:#354965;height:48px}
+.auth-form input::placeholder{color:#8191aa}
+.auth-form input:focus{border-color:#9c7cff;box-shadow:0 0 0 3px #7d65ff22}
+.auth-form label{margin-top:17px}
+.auth-inline{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:16px 0 8px;font-size:12px}
+.auth-inline a,.auth-switch a,.dev-reset-link{color:#f5a77d;font-weight:700;text-decoration:none}
+.check-label{display:flex!important;align-items:center;gap:8px;margin:0!important;color:#aebcd0;font-size:12px!important}
+.check-label input{width:15px;height:15px;margin:0;accent-color:#895cff}
+.auth-consent{align-items:flex-start!important;line-height:1.45}
+.auth-consent input{flex:none;margin-top:3px}
+.auth-divider{display:flex;align-items:center;gap:14px;margin:23px 0 15px;color:#8492a8;font-size:12px;text-align:center}
+.auth-divider:before,.auth-divider:after{content:'';height:1px;flex:1;background:#2d3c52}
+.oauth-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.oauth-row a{display:grid;place-items:center;min-height:44px;border:1px solid #354965;border-radius:10px;background:#101c2e;color:#f4f6fb;font-weight:800;text-decoration:none;transition:background .2s,border-color .2s,transform .2s}
+.oauth-row a:hover{background:#192b45;border-color:#8a70ff;transform:translateY(-1px)}
+.oauth-row a[aria-disabled="true"]{opacity:.48;cursor:not-allowed;pointer-events:none}
+.auth-switch{text-align:center;color:#9eacc2;font-size:13px;margin:22px 0 0!important}
+.auth-note{display:block;margin-top:20px;color:#77869e;text-align:center;font-size:11px;line-height:1.5}
+.form-success{padding:11px 13px;border:1px solid #2c8b70;border-radius:9px;background:#1c5e4728;color:#9cf0cb;font-size:13px}
+.dev-reset-link{display:block;margin:-4px 0 12px;font-size:12px}
+.auth-center{justify-content:center}
+.auth-single .auth-story{background-position:15% center}
+.storefront[data-page="login"] .auth-story{background-image:linear-gradient(90deg,#07101db0 0%,#07101d78 48%,#07101d2b 100%),url('/zetgaming-auth-login-desktop.png')}
+.storefront[data-page="register"] .auth-story{background-image:linear-gradient(90deg,#07101da8 0%,#07101d64 48%,#07101d22 100%),url('/zetgaming-auth-register-desktop.png')}
+.storefront[data-page="forgot-password"] .auth-story,.storefront[data-page="reset-password"] .auth-story{background-image:linear-gradient(90deg,#07101db0 0%,#07101d78 48%,#07101d2b 100%),url('/zetgaming-auth-forgot-desktop.png')}
+@media(max-width:620px){
+  .storefront[data-page="login"],.storefront[data-page="register"],.storefront[data-page="forgot-password"],.storefront[data-page="reset-password"]{padding-bottom:0}
+  .storefront[data-page="login"] .mobile-bottom-nav,.storefront[data-page="register"] .mobile-bottom-nav,.storefront[data-page="forgot-password"] .mobile-bottom-nav,.storefront[data-page="reset-password"] .mobile-bottom-nav{display:none}
+  .storefront[data-page="login"] .auth-container,.storefront[data-page="register"] .auth-container,.storefront[data-page="forgot-password"] .auth-container,.storefront[data-page="reset-password"] .auth-container{padding-bottom:28px}
+  .auth-layout{position:relative;display:block;min-height:690px;border-radius:16px;border-color:#344865;background:#080f1b url('/zetgaming-auth-bg.png') 17% top/auto 430px no-repeat;overflow:hidden}
+  .auth-story{display:block;height:300px;min-height:300px;padding:0;border:0;background:linear-gradient(180deg,#07101d00 0%,#07101d00 34%,#07101df0 82%,#07101d 100%)}
+  .auth-story>*{display:none}
+  .auth-form{position:relative;z-index:1;min-height:0;margin:-26px 10px 18px;padding:26px 20px;border:1px solid #354967;border-radius:16px;background:#0a1220f5;box-shadow:0 18px 45px #0009}
+  .auth-form h1{font-size:31px}
+  .auth-form>p:not(.form-message):not(.form-success){font-size:14px}
+  .auth-form input{height:50px}
+  .auth-inline{font-size:11px}
+  .auth-single .auth-form{border-radius:16px}
+  .storefront[data-page="login"] .auth-layout{background-image:url('/zetgaming-auth-login-mobile.png')}
+  .storefront[data-page="register"] .auth-layout{background-image:url('/zetgaming-auth-register-mobile.png')}
+  .storefront[data-page="forgot-password"] .auth-layout,.storefront[data-page="reset-password"] .auth-layout{background-image:url('/zetgaming-auth-forgot-mobile.png')}
+}
 .storefront .site-footer{padding:44px 0 22px;background:linear-gradient(180deg,#101824,#0c121c);border-top:1px solid #303b4b}.storefront .site-footer .footer-grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:48px;align-items:start}.site-footer .footer-logo{display:inline-flex;align-items:center;text-decoration:none}.site-footer .footer-logo img{display:block;width:188px;max-width:100%;height:auto}.site-footer .footer-about p{color:#9dacc0;font-size:14px;line-height:1.5;margin:12px 0 0}.site-footer .footer-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}.site-footer .footer-links strong{display:block;color:#eef3fb;font-size:14px;font-weight:700;margin-bottom:13px}.site-footer .footer-links a{display:block;width:max-content;max-width:100%;color:#aab9cc;font-size:14px;text-decoration:none;margin:8px 0;transition:color .2s}.site-footer .footer-links a:hover{color:var(--page-accent)}.storefront .site-footer .footer-note{display:flex;align-items:center;justify-content:space-between;gap:16px;border-top:1px solid #283343;margin-top:36px;padding-top:18px;font-size:12px;color:#8495ab}
 @view-transition{navigation:auto}
 ::view-transition-old(page-content){animation:page-out .18s ease both}::view-transition-new(page-content){animation:page-in .45s cubic-bezier(.2,.7,.2,1) both}
 @keyframes page-out{to{opacity:0;transform:translateY(-8px)}}@keyframes page-in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 @media(prefers-reduced-motion:no-preference){.storefront main.route-leave{opacity:0;transform:translateY(-8px);transition:opacity .15s ease,transform .15s ease}.storefront main.route-enter{animation:page-in .45s cubic-bezier(.2,.7,.2,1) both}}
+@media(prefers-reduced-motion:no-preference){
+  .storefront main.route-leave .auth-layout{animation:auth-shell-leave .18s ease both}
+  .storefront main.route-enter .auth-layout{animation:auth-shell-enter .48s cubic-bezier(.2,.72,.22,1) both}
+  .storefront main.route-enter .auth-story{animation:auth-art-enter .55s cubic-bezier(.2,.72,.22,1) .04s both}
+  .storefront main.route-enter .auth-form{animation:auth-card-enter .5s cubic-bezier(.2,.72,.22,1) .08s both}
+  @keyframes auth-shell-leave{to{opacity:0;transform:scale(.985) translateY(-4px)}}
+  @keyframes auth-shell-enter{from{opacity:0;transform:scale(.985) translateY(12px)}to{opacity:1;transform:none}}
+  @keyframes auth-art-enter{from{opacity:.15;transform:translateX(-18px) scale(1.035)}to{opacity:1;transform:none}}
+  @keyframes auth-card-enter{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
+}
 @media(max-width:620px) and (prefers-reduced-motion:no-preference){.storefront .mobile-bottom-nav.has-interacted .mobile-bottom-link.is-active .mobile-tab-icon{animation:mobile-tab-aura 4.6s ease-in-out infinite}.storefront .mobile-bottom-nav.has-interacted .mobile-bottom-link.is-active .mobile-tab-icon svg{animation:none}}
 @media(prefers-reduced-motion:no-preference){.reveal-ready{opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s cubic-bezier(.2,.65,.3,1)}.reveal-ready.is-visible{opacity:1;transform:none}}
 @media(max-width:1100px){.storefront .header-inner{height:68px;gap:22px}.storefront .brand img{width:150px}.storefront .site-header nav{gap:16px}.storefront .site-header nav :is(a,button){font-size:14px;gap:6px}.storefront .account-btn{min-width:112px;font-size:13px;padding:9px 14px}.catalog-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.game-checkout{grid-template-columns:minmax(0,1fr) 320px;gap:18px}.package-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.surface-panel{padding:20px}.editorial-card>div:last-child{padding:20px}}
@@ -172,7 +235,28 @@ body.storefront{font-family:'Signika Negative',system-ui,sans-serif;font-size:16
 
 
 @media(max-width:620px){.page-section .page-heading>.quiet-link{display:none}}
+
+/* Laptop desktop: keep the primary navigation at desktop scale.
+   The previous max-width:1100 rules made the header read like a mobile/tablet bar
+   even when there was enough room for the full desktop treatment. */
+@media (min-width:761px) and (max-width:1100px){
+  .storefront .header-inner{height:72px;gap:20px}
+  .storefront .brand{flex:0 0 auto}
+  .storefront .brand img{width:158px}
+  .storefront .site-header nav{flex:1;justify-content:center;gap:20px}
+  .storefront .site-header nav :is(a,button){font-size:16px;gap:8px}
+  .storefront .site-header nav svg{width:21px;height:21px}
+  .storefront .account-btn{min-width:164px;min-height:53px;padding:12px 20px;border-radius:30px;font-size:16px;background:linear-gradient(135deg,#9100ff,#4d00f4);border-color:#8b22ff;box-shadow:0 10px 24px #6500ff38}
+}
+
+/* Desktop navigation: Home leads the menu and the active rule covers icon + label. */
+@media (min-width:621px){
+  .storefront .site-header nav a[href="/"]{order:-1}
+  .storefront .site-header nav a.is-current:after{left:0}
+}
+
 .storefront[data-page=home] .category-section{padding-bottom:64px}
+@media(max-width:620px){.storefront:not(:has(.auth-container)) main{padding-bottom:calc(112px + env(safe-area-inset-bottom,0px))}}
 @media(max-width:620px){.storefront{padding-bottom:0}.storefront[data-page=home] .category-section{padding-bottom:42px}.storefront .site-footer{padding:32px 0 calc(120px + env(safe-area-inset-bottom,0px))}.storefront .site-footer .footer-grid{display:block}.site-footer .footer-logo img{width:164px}.site-footer .footer-about p{font-size:13px}.site-footer .footer-links{margin-top:28px;gap:18px}.site-footer .footer-links strong{font-size:13px;margin-bottom:10px}.site-footer .footer-links a{font-size:13px;margin:8px 0}.storefront .site-footer .footer-note{display:flex;flex-direction:column;align-items:flex-start;gap:5px;margin-top:26px;padding-top:16px;font-size:11px}}
 .storefront .account-btn{max-width:180px}.storefront .account-btn .account-label{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .profile-card>div:last-child{min-width:0}.profile-email{overflow-wrap:anywhere}

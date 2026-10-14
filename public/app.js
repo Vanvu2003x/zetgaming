@@ -3,7 +3,7 @@ const $ = (selector) => document.querySelector(selector);
 const money = (value) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 async function api(path, body, headers = {}) {
-  const response = await fetch(path, { method: 'POST', credentials: 'same-origin', headers: { 'content-type': 'application/json', ...headers }, body: JSON.stringify(body) });
+  const response = await fetch(path, { method: 'POST', credentials: 'same-origin', headers: { 'content-type': 'application/json', 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content || '', ...headers }, body: JSON.stringify(body) });
   const data = await response.json();
   if (!response.ok) throw new Error(data.error || 'Có lỗi xảy ra. Vui lòng thử lại.');
   return data;
@@ -18,20 +18,34 @@ function bindForms() {
     button.disabled = true;
     message.textContent = 'Đang đăng nhập…';
     try {
-      await api('/api/auth/login', { email: loginForm.elements.email.value, password: loginForm.elements.password.value });
+      await api('/api/auth/login', { email: loginForm.elements.email.value, password: loginForm.elements.password.value, remember: loginForm.elements.remember.checked });
       await visitPage(loginForm.elements.next.value || '/tai-khoan');
     } catch (error) {
       message.textContent = error.message;
       button.disabled = false;
     }
   });
-  $('#passwordToggle')?.addEventListener('click', () => {
-    const input = $('#password');
+  const togglePassword = (button, input) => {
+    if (!input) return;
     const visible = input.type === 'password';
     input.type = visible ? 'text' : 'password';
-    $('#passwordToggle').textContent = visible ? 'Ẩn' : 'Hiện';
-    $('#passwordToggle').setAttribute('aria-label', visible ? 'Ẩn mật khẩu' : 'Hiện mật khẩu');
-    $('#passwordToggle').setAttribute('aria-pressed', String(visible));
+    button.textContent = visible ? 'Ẩn' : 'Hiện';
+    button.setAttribute('aria-label', visible ? 'Ẩn mật khẩu' : 'Hiện mật khẩu');
+    button.setAttribute('aria-pressed', String(visible));
+  };
+  $('#passwordToggle')?.addEventListener('click', (event) => togglePassword(event.currentTarget, $('#password')));
+  document.querySelectorAll('[data-password-toggle]').forEach(button => button.addEventListener('click', () => togglePassword(button, document.getElementById(button.dataset.passwordToggle))));
+
+  const registerForm = $('#registerForm');
+  registerForm?.addEventListener('submit', (event) => {
+    const password = registerForm.elements.password;
+    const confirmation = registerForm.elements.password_confirm;
+    const message = registerForm.querySelector('[role=alert]');
+    if (password.value !== confirmation.value) {
+      event.preventDefault();
+      message.textContent = 'Mật khẩu nhập lại không khớp.';
+      confirmation.focus();
+    }
   });
 
   const orderForm = $('#orderForm');
@@ -44,6 +58,19 @@ function bindForms() {
     if (submitAmount) submitAmount.textContent = total;
     $('#selectedPackageName').textContent = selected.dataset.name;
   };
+  const targetInput = $('#target');
+  const targetValue = $('#orderTargetValue');
+  targetInput?.addEventListener('input', () => { if (targetValue) targetValue.textContent = targetInput.value.trim() || '—'; });
+  document.querySelectorAll('[data-verify-uid]').forEach(button => button.addEventListener('click', () => {
+    const hint = $('#uidHint');
+    if (!targetInput?.value.trim()) { hint.textContent = 'Nhập UID trước rồi bấm kiểm tra.'; hint.dataset.state = 'error'; targetInput?.focus(); return; }
+    hint.textContent = 'Đã nhận UID. Bạn có thể chọn gói nạp.';
+    hint.dataset.state = 'ok';
+  }));
+  document.querySelectorAll('.package-tab').forEach(tab => tab.addEventListener('click', () => {
+    document.querySelectorAll('.package-tab').forEach(item => item.classList.remove('is-active'));
+    tab.classList.add('is-active');
+  }));
   orderForm?.addEventListener('change', updatePackage);
   orderForm?.querySelectorAll('[data-payment-choice]').forEach(choice => choice.addEventListener('change', () => {
     if (choice.checked) $('#payment').value = choice.dataset.paymentChoice;
@@ -73,7 +100,7 @@ function bindForms() {
   logoutForm?.addEventListener('submit', async (event) => {
     event.preventDefault();
     try {
-      const response = await fetch(logoutForm.action, { method: 'POST', credentials: 'same-origin' });
+      const response = await fetch(logoutForm.action, { method: 'POST', credentials: 'same-origin', headers: { 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content || '' } });
       if (!response.ok) throw new Error('Không đăng xuất được');
       await visitPage('/');
     } catch { logoutForm.submit(); }
@@ -129,7 +156,7 @@ const tabForPath = (path) => {
   const href = path.startsWith('/nap-game') ? '/nap-game'
     : path.startsWith('/lich-su') ? '/lich-su'
     : path.startsWith('/tin-tuc') ? '/tin-tuc'
-    : path === '/tai-khoan' || path === '/dang-nhap' ? '/tai-khoan' : '/';
+    : ['/tai-khoan', '/dang-nhap', '/dang-ky', '/quen-mat-khau', '/dat-lai-mat-khau'].includes(path) ? '/tai-khoan' : '/';
   return mobileTabs.find(tab => tab.getAttribute('href') === href);
 };
 const moveNavTo = (tab) => {
@@ -164,13 +191,24 @@ const moveNavTo = (tab) => {
   };
   notchAnimation = requestAnimationFrame(frame);
 };
-if (mobileNav && getComputedStyle(mobileNav).display !== 'none') drawNotch(getNotchCenter(activeTab));
-window.addEventListener('resize', () => {
+function syncMobileNav() {
   if (!mobileNav || getComputedStyle(mobileNav).display === 'none') return;
   cancelAnimationFrame(notchAnimation);
-  activeTab?.querySelector('.mobile-tab-icon')?.style.removeProperty('transform');
+  activeTab = tabForPath(location.pathname);
+  mobileTabs.forEach(tab => {
+    tab.classList.toggle('is-active', tab === activeTab);
+    if (tab === activeTab) tab.setAttribute('aria-current', 'page');
+    else tab.removeAttribute('aria-current');
+    tab.querySelector('.mobile-tab-icon')?.style.removeProperty('transform');
+  });
   drawNotch(getNotchCenter(activeTab));
-});
+}
+syncMobileNav();
+window.addEventListener('resize', syncMobileNav);
+window.addEventListener('pageshow', syncMobileNav);
+if (mobileNav && 'ResizeObserver' in window) {
+  new ResizeObserver(syncMobileNav).observe(mobileNav);
+}
 
 function revealPage() {
   if (reducedMotion.matches || !('IntersectionObserver' in window)) return;
@@ -218,8 +256,11 @@ async function visitPage(destination, { push = true, scrollY = 0 } = {}) {
     document.title = page.title;
     const description = page.querySelector('meta[name=description]')?.content;
     if (description) document.querySelector('meta[name=description]').content = description;
+    document.querySelector('meta[name="csrf-token"]').content = page.querySelector('meta[name="csrf-token"]')?.content || '';
     document.body.dataset.page = page.body.dataset.page;
     document.body.dataset.authenticated = page.body.dataset.authenticated;
+    // Auth hides the persistent nav. Re-measure after the destination reveals it.
+    syncMobileNav();
     window.scrollTo({ top: scrollY, behavior: 'instant' });
     if (!reducedMotion.matches) {
       nextMain.classList.add('route-enter');
@@ -246,7 +287,7 @@ mobileTabs.forEach(tab => tab.addEventListener('click', (event) => {
   if (tab.href === location.href) { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
   void visitPage(tab.href);
 }));
-const storefrontRoute = /^\/(?:$|nap-game(?:\/[a-z0-9-]+)?\/?$|lich-su(?:\/[a-zA-Z0-9-]+)?\/?$|tin-tuc(?:\/[a-z0-9-]+)?\/?$|tai-khoan\/?$|dang-nhap\/?$)/;
+const storefrontRoute = /^\/(?:$|nap-game(?:\/[a-z0-9-]+)?\/?$|lich-su(?:\/[a-zA-Z0-9-]+)?\/?$|tin-tuc(?:\/[a-z0-9-]+)?\/?$|tai-khoan\/?$|dang-nhap\/?$|dang-ky\/?$|quen-mat-khau\/?$|dat-lai-mat-khau\/?$)/;
 document.addEventListener('click', (event) => {
   if (event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
   const link = event.target.closest?.('a[href]');
