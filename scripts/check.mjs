@@ -1,0 +1,8 @@
+import { readdir } from 'node:fs/promises';
+import { spawnSync } from 'node:child_process';
+const files = ['server.mjs', 'public/app.js', 'public/navigation.js', ...(await readdir('storefront')).filter(file => file.endsWith('.mjs')).map(file => 'storefront/' + file)];
+for (const file of files) {
+  const result = spawnSync(process.execPath, ['--check', file], { stdio: 'inherit' });
+  if (result.status !== 0) process.exit(result.status || 1);
+}
+console.log(`Checked ${files.length} server and browser modules.`);

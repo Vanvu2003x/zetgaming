@@ -8,6 +8,6 @@
     "dev": "node --watch server.mjs",
     "start": "node server.mjs",
     "test": "node --test",
-    "build": "node --check server.mjs"
+    "build": "node scripts/check.mjs"
   }
 }
