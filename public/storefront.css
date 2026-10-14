@@ -243,3 +243,44 @@ dialog{border:1px solid #46404a;background:#141820;color:#fff;border-radius:12px
   .mobile-orbit-badges{left:46px;bottom:26px}
   .games-section{padding-top:46px}
 }
+
+.desktop-banner-description,.desktop-banner-action{display:none}
+
+@media (min-width:621px){
+  .hero{padding-top:24px}
+  .mobile-banner{height:clamp(260px,29vw,344px);justify-content:center;gap:0;padding:34px clamp(28px,4vw,52px);background-position:center 46%;box-shadow:0 20px 44px #0007}
+  .mobile-banner:before{background:linear-gradient(90deg,#070a12f5 0%,#070a12ec 27%,#070a12a8 46%,#070a1240 67%,transparent 85%)}
+  .mobile-banner:after{height:38%;background:linear-gradient(90deg,#070b1396 0%,#070b1335 54%,transparent 78%)}
+  .mobile-hero-characters{right:-2%;width:76%;height:125%;object-position:right bottom}
+  .mobile-banner>span{font-size:11px;letter-spacing:2px}
+  .mobile-banner strong{max-width:50%;margin-top:8px;font-size:clamp(44px,5.2vw,64px);line-height:.95}
+  .mobile-banner .desktop-banner-description{position:relative;z-index:4;display:block;max-width:350px;margin:18px 0 0;color:#c4cad5;font-size:13px;font-weight:500;line-height:1.6;letter-spacing:0;text-shadow:0 2px 8px #000b}
+  .desktop-banner-action{position:relative;z-index:4;display:inline-flex;align-items:center;justify-content:space-between;align-self:flex-start;gap:20px;margin-top:20px;padding:10px 14px;border:1px solid #ff8a66;border-radius:7px;background:#ff6548;color:#190e0d;font-size:12px;font-weight:800;text-decoration:none;box-shadow:0 8px 24px #ff5b422f;transition:background .2s,transform .2s}
+  .desktop-banner-action:hover{background:#ff8062;transform:translateY(-2px)}
+  .desktop-banner-action:focus-visible{outline:2px solid #fff;outline-offset:3px}
+  .desktop-banner-action span{color:inherit;font-size:16px;line-height:1}
+  .mobile-orbit-badges{left:clamp(28px,4vw,52px);bottom:22px}
+  .mobile-orbit-badges i{font-size:10px}
+  .benefits{display:none}
+  .games-section{padding-top:44px}
+}
+
+@media (min-width:621px) and (max-width:850px){
+  .mobile-banner{height:270px;padding:28px}
+  .mobile-banner strong{font-size:44px}
+  .mobile-banner .desktop-banner-description{max-width:260px;font-size:11px;margin-top:12px}
+  .desktop-banner-action{margin-top:14px;padding:8px 11px;font-size:11px}
+  .mobile-hero-characters{width:73%;height:116%}
+  .mobile-orbit-badges{left:28px;bottom:18px}
+}
+
+@media (min-width:1101px){
+  .wrap,.hero.wrap{width:min(1320px,calc(100% - 64px))}
+  .game-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}
+  .game-art{height:142px}
+  .game-content{padding:14px}
+  .game-content h3{font-size:14px}
+  .game-bottom{margin-top:14px}
+  .game-bottom strong{font-size:15px}
+  .mobile-hero-characters{height:118%}
+}
