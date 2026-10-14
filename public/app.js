@@ -38,10 +38,16 @@ function bindForms() {
   const updatePackage = () => {
     const selected = orderForm?.querySelector('[name=package_id]:checked');
     if (!selected) return;
-    $('#orderTotal').textContent = money(Number(selected.dataset.price));
+    const total = money(Number(selected.dataset.price));
+    $('#orderTotal').textContent = total;
+    const submitAmount = $('#orderSubmitAmount');
+    if (submitAmount) submitAmount.textContent = total;
     $('#selectedPackageName').textContent = selected.dataset.name;
   };
   orderForm?.addEventListener('change', updatePackage);
+  orderForm?.querySelectorAll('[data-payment-choice]').forEach(choice => choice.addEventListener('change', () => {
+    if (choice.checked) $('#payment').value = choice.dataset.paymentChoice;
+  }));
   orderForm?.addEventListener('submit', async (event) => {
     event.preventDefault();
     const selected = orderForm.querySelector('[name=package_id]:checked');
