@@ -32,6 +32,8 @@ test('SSR routes and native forms support a complete customer journey', { timeou
       assert.match(html, /class="catalog-card"[^>]*href="\/nap-game\/genshin-impact"/);
       assert.match(html, /Game bán chạy/);
       assert.match(html, /Danh mục game/);
+      assert.match(html, /class="page-heading compact-heading"/);
+      assert.doesNotMatch(html, /CHỌN GAME\. CHỌN GÓI\. BẮT ĐẦU\./);
       assert.match(html, /class="game-category" href="\/nap-game\/genshin-impact"/);
       assert.equal((html.match(/home-section-panel/g) || []).length, 2);
       assert.doesNotMatch(html, /20\.000/);
