@@ -58,6 +58,40 @@ body.storefront{font-family:'Signika Negative',system-ui,sans-serif;font-size:16
 .catalog-search{display:flex;align-items:center;width:280px;border:1px solid var(--page-line);background:var(--page-surface);border-radius:10px;flex:none}
 .catalog-search input{height:44px;min-width:0;border:0;background:transparent;padding:0 14px;margin:0;color:#fff;outline:none}
 .catalog-search button{border:0;background:none;color:#b8c5d9;padding:0 14px;font-size:24px}
+.topup-page{padding-block:28px 72px}
+.topup-page .breadcrumbs{margin-bottom:22px}
+.topup-intro{min-height:300px;display:flex;align-items:center;position:relative;isolation:isolate;overflow:hidden;padding:42px clamp(24px,5vw,64px);border:1px solid #5d3a36;border-radius:20px;background:radial-gradient(ellipse at 78% 58%,#853620 0,#351b1d 30%,transparent 65%),linear-gradient(110deg,#111622 0%,#1a1720 58%,#180d12 100%);box-shadow:0 20px 52px #0005}
+.topup-intro:before{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,#0e1420 2%,#0e1420e8 36%,transparent 75%)}
+.topup-intro:after{content:'';position:absolute;width:360px;height:360px;right:11%;top:8%;border:1px solid #fa8a5e2c;border-radius:50%;box-shadow:0 0 0 55px #fa8a5e0a,0 0 0 110px #fa8a5e07;pointer-events:none}
+.topup-intro-copy{position:relative;z-index:2}
+.topup-intro .eyebrow-label{color:#ff9d79;letter-spacing:2.2px}
+.topup-intro h1{font:700 clamp(44px,5vw,72px)/.98 'Signika Negative',sans-serif;letter-spacing:-2px;margin:16px 0}
+.topup-intro h1 em{font-style:normal;color:#ff8d68}
+.topup-intro p{color:#bbc6d5;font-size:16px;margin:0}
+.topup-spotlight{position:absolute;inset:0 0 0 43%;z-index:0;pointer-events:none}
+.topup-spotlight img{position:absolute;width:clamp(130px,17vw,220px);aspect-ratio:1;object-fit:cover;border:1px solid #ffc0a44f;border-radius:22px;box-shadow:0 26px 44px #0009,0 0 30px #f5683736}
+.topup-spotlight img:nth-child(1){right:38%;top:24%;transform:rotate(-14deg);z-index:1}
+.topup-spotlight img:nth-child(2){right:21%;top:7%;transform:rotate(7deg);z-index:2}
+.topup-spotlight img:nth-child(3){right:4%;top:27%;transform:rotate(16deg);z-index:3}
+.topup-list{padding-top:46px}
+.topup-list-head{display:flex;justify-content:space-between;align-items:end;gap:24px;margin-bottom:22px}
+.topup-list-head h2{font:700 30px/1.1 'Signika Negative',sans-serif;margin:0;letter-spacing:-.5px}
+.topup-list-head h2 span{display:inline-grid;place-items:center;vertical-align:middle;min-width:27px;height:27px;padding:0 6px;border:1px solid #9d523c;border-radius:8px;color:#ff9d79;font:600 14px/1 'Signika Negative',sans-serif;letter-spacing:0}
+.topup-search{display:flex;align-items:center;gap:10px;min-width:290px;height:46px;padding:0 5px 0 14px;border:1px solid #384353;border-radius:12px;background:#141b27;transition:border-color .2s,box-shadow .2s}
+.topup-search:focus-within{border-color:#ff9d79;box-shadow:0 0 0 3px #ff8d6820}
+.topup-search svg{width:20px;height:20px;fill:none;stroke:#aebbd0;stroke-width:1.8;flex:none}
+.topup-search input{min-width:0;width:100%;height:100%;padding:0;border:0;outline:0;background:transparent;color:#fff;font-size:15px}
+.topup-search input::placeholder{color:#8190a4}
+.topup-search button{border:0;border-radius:8px;background:#ff7958;color:#171017;font-size:13px;font-weight:700;padding:7px 14px;cursor:pointer}
+.topup-game-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px}
+.topup-game-card{display:block;position:relative;isolation:isolate;aspect-ratio:.92;min-width:0;overflow:hidden;border:1px solid #344052;border-radius:16px;background:#17202d;color:#fff;text-decoration:none;box-shadow:0 8px 26px #0004;transition:transform .3s cubic-bezier(.2,.7,.2,1),border-color .3s,box-shadow .3s}
+.topup-game-card:after{content:'';position:absolute;inset:0;z-index:0;background:linear-gradient(180deg,#090d1610 24%,#090d16ae 65%,#070a12f5 100%)}
+.topup-game-card>img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s cubic-bezier(.2,.7,.2,1)}
+.topup-game-type{position:absolute;top:12px;left:12px;z-index:1;padding:3px 8px;border:1px solid #ffffff45;border-radius:7px;background:#090e18c7;backdrop-filter:blur(8px);color:#eef3fa;font-size:10px;font-weight:700;letter-spacing:1px}
+.topup-game-caption{position:absolute;inset:auto 12px 12px;z-index:1;display:flex;align-items:end;justify-content:space-between;gap:8px}
+.topup-game-caption strong{font-size:20px;font-weight:700;line-height:1.1;min-width:0;text-wrap:balance}
+.topup-game-arrow{display:grid;place-items:center;flex:none;width:32px;height:32px;border:1px solid #ffffff63;border-radius:9px;background:#ff7958;color:#1c1215;font-size:19px;font-weight:700}
+@media(hover:hover){.topup-game-card:hover{transform:translateY(-5px);border-color:#ff9e7e;box-shadow:0 18px 36px #0008}.topup-game-card:hover>img{transform:scale(1.06)}}
 .discovery-section{display:grid;grid-template-columns:1fr 1.2fr;gap:64px;padding-block:36px 64px}
 .discovery-section h2{font-size:30px;line-height:1.2;margin:0 0 12px}
 .discovery-section>.quiet-link,.discovery-section>div>.quiet-link{margin-top:20px}
@@ -111,6 +145,8 @@ body.storefront{font-family:'Signika Negative',system-ui,sans-serif;font-size:16
 @media(max-width:620px) and (prefers-reduced-motion:no-preference){.storefront .mobile-bottom-nav.has-interacted .mobile-bottom-link.is-active .mobile-tab-icon{animation:mobile-tab-aura 4.6s ease-in-out infinite}.storefront .mobile-bottom-nav.has-interacted .mobile-bottom-link.is-active .mobile-tab-icon svg{animation:none}}
 @media(prefers-reduced-motion:no-preference){.reveal-ready{opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s cubic-bezier(.2,.65,.3,1)}.reveal-ready.is-visible{opacity:1;transform:none}}
 @media(max-width:1100px){.storefront .header-inner{height:68px;gap:22px}.storefront .brand img{width:150px}.storefront .site-header nav{gap:16px}.storefront .site-header nav :is(a,button){font-size:14px;gap:6px}.storefront .account-btn{min-width:112px;font-size:13px;padding:9px 14px}.catalog-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.game-checkout{grid-template-columns:minmax(0,1fr) 320px;gap:18px}.package-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.surface-panel{padding:20px}.editorial-card>div:last-child{padding:20px}}
+@media(max-width:1100px){.topup-game-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:620px){.topup-page{padding-block:18px 48px}.topup-page .breadcrumbs{margin-bottom:15px}.topup-intro{min-height:215px;padding:25px 20px;border-radius:15px}.topup-intro:before{background:linear-gradient(90deg,#0e1420 0%,#0e1420ed 40%,#0e14209c 76%,transparent)}.topup-intro:after{width:180px;height:180px;right:-24px;top:25px;box-shadow:0 0 0 28px #fa8a5e0a}.topup-intro h1{font-size:40px;letter-spacing:-1.4px;margin:12px 0}.topup-intro p{font-size:12px;max-width:160px}.topup-intro .eyebrow-label{font-size:9px;letter-spacing:1.3px}.topup-spotlight{left:65%}.topup-spotlight img{width:112px;border-radius:13px}.topup-spotlight img:nth-child(1),.topup-spotlight img:nth-child(3){display:none}.topup-spotlight img:nth-child(2){right:-35%;top:23%;opacity:.8}.topup-list{padding-top:32px}.topup-list-head{display:block;margin-bottom:16px}.topup-list-head h2{font-size:25px}.topup-search{width:100%;min-width:0;margin-top:16px}.topup-game-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.topup-game-card{aspect-ratio:.9;border-radius:12px}.topup-game-type{top:9px;left:9px;font-size:9px;padding:2px 6px}.topup-game-caption{inset:auto 9px 9px}.topup-game-caption strong{font-size:14px}.topup-game-arrow{width:25px;height:25px;border-radius:7px;font-size:15px}}
 @media(max-width:620px){.page-heading h2{font-size:28px;letter-spacing:-.3px}.category-section{padding-top:10px}.game-category-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:27px 16px}.game-category{gap:4px}.game-category img{border-radius:17px}.game-category strong{font-size:14px;max-width:100%}.game-category span{font-size:12px}}
 @media(min-width:621px) and (max-width:760px){.storefront .header-inner{gap:12px}.storefront .brand img{width:116px}.storefront .site-header nav{gap:10px}.storefront .site-header nav :is(a,button){font-size:12px;gap:5px}.storefront .site-header nav svg{width:18px;height:18px}.storefront .account-btn{min-width:100px;padding:8px 12px;font-size:12px}.catalog-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:850px){.game-checkout{grid-template-columns:1fr}.checkout-panel{position:static}.package-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.game-identity>.quiet-link{display:none}.discovery-section{gap:32px}.editorial-grid{gap:16px}.editorial-card h2{font-size:21px}.editorial-art{height:150px;padding:20px}.auth-story{padding:32px 24px}.auth-story h2{font-size:34px}.auth-form{padding:28px}.article-layout{grid-template-columns:1fr}.article-sidebar{position:static;grid-row:2}.article-heading h1{font-size:34px}.account-overview{gap:16px}.account-stats{gap:16px}}

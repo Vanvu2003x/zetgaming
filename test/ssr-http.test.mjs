@@ -39,7 +39,9 @@ test('SSR routes and native forms support a complete customer journey', { timeou
       assert.doesNotMatch(html, /Đang tải danh sách|{{\w+}}/);
       assert.equal((html.match(/<h1\b/g) || []).length, 1);
       const filtered = await (await get('/nap-game?q=genshin')).text();
-      assert.match(filtered, /20\.000/);
+      assert.match(filtered, /Chọn game\.<br><em>Nạp ngay\./);
+      assert.match(filtered, /class="topup-game-card" href="\/nap-game\/genshin-impact"/);
+      assert.doesNotMatch(filtered, /20\.000/);
       assert.match(filtered, /honkai-star-rail" hidden data-catalog-card/);
       assert.match(filtered, /id="catalogCount">1</);
     });
@@ -49,6 +51,7 @@ test('SSR routes and native forms support a complete customer journey', { timeou
       assert.match(game, /name="idempotency_key"/);
       assert.match(game, /action="\/dat-don"/);
       assert.match(game, /60 Genesis Crystals/);
+      assert.match(game, /20\.000/);
       const article = await (await get('/tin-tuc/kiem-tra-uid-truoc-khi-nap')).text();
       assert.match(article, /Tìm UID trong trò chơi/);
       assert.doesNotMatch(article, /class="catalog-grid"/);
