@@ -84,16 +84,27 @@ window.addEventListener('pageshow', () => document.querySelectorAll('form button
 
 function bindCatalogSearch() {
   const catalogSearch = $('#catalogSearch');
-  catalogSearch?.addEventListener('input', () => {
-    const query = catalogSearch.value.trim().toLocaleLowerCase('vi');
+  const filters = [...document.querySelectorAll('[data-platform-filter]')];
+  if (!catalogSearch && !filters.length) return;
+  let activePlatform = 'all';
+  const updateCatalog = () => {
+    const query = catalogSearch?.value.trim().toLocaleLowerCase('vi') || '';
     let count = 0;
     document.querySelectorAll('[data-catalog-card]').forEach(card => {
-      card.hidden = !card.dataset.search.includes(query);
+      card.hidden = !card.dataset.search.includes(query) || (activePlatform !== 'all' && card.dataset.platform !== activePlatform);
       if (!card.hidden) count++;
     });
-    $('#catalogCount').textContent = count;
-    $('#catalogEmpty').hidden = count > 0;
-  });
+    const catalogCount = $('#catalogCount');
+    if (catalogCount) catalogCount.textContent = count;
+    const catalogEmpty = $('#catalogEmpty');
+    if (catalogEmpty) catalogEmpty.hidden = count > 0;
+  };
+  catalogSearch?.addEventListener('input', updateCatalog);
+  filters.forEach(filter => filter.addEventListener('click', () => {
+    activePlatform = filter.dataset.platformFilter;
+    filters.forEach(item => item.classList.toggle('is-active', item === filter));
+    updateCatalog();
+  }));
 }
 bindCatalogSearch();
 

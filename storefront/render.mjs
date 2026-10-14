@@ -9,7 +9,7 @@ export function renderStorefront({ url, user, db, layout }) {
   const path = url.pathname;
   if (path.length > 1 && path.endsWith('/')) return { redirect: path.replace(/\/+$/, '') + url.search, status: 308 };
   const needsCatalog = path === '/' || path === '/nap-game' || path.startsWith('/nap-game/');
-  const rows = needsCatalog ? db.prepare(`SELECT g.id,g.slug,g.name,g.mode,g.image,p.id package_id,p.name package_name,pr.customer_cents
+  const rows = needsCatalog ? db.prepare(`SELECT g.id,g.slug,g.name,g.mode,g.image,g.platform,p.id package_id,p.name package_name,pr.customer_cents
     FROM games g JOIN packages p ON p.game_id=g.id JOIN prices pr ON pr.package_id=p.id
     WHERE g.active=1 AND p.active=1 AND pr.tier=? ORDER BY g.name,pr.customer_cents`).all(user?.tier || 'standard') : [];
   const games = new Map();

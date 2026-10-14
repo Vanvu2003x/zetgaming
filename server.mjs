@@ -16,7 +16,7 @@ const db = new DatabaseSync(DB_PATH);
 db.exec('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000;');
 db.exec(`
 CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, role TEXT NOT NULL DEFAULT 'customer', tier TEXT NOT NULL DEFAULT 'standard', wallet_cents INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL);
-CREATE TABLE IF NOT EXISTS games (id TEXT PRIMARY KEY, slug TEXT UNIQUE NOT NULL, name TEXT NOT NULL, mode TEXT NOT NULL, image TEXT NOT NULL, active INTEGER NOT NULL DEFAULT 1);
+CREATE TABLE IF NOT EXISTS games (id TEXT PRIMARY KEY, slug TEXT UNIQUE NOT NULL, name TEXT NOT NULL, mode TEXT NOT NULL, image TEXT NOT NULL, active INTEGER NOT NULL DEFAULT 1, platform TEXT NOT NULL DEFAULT 'mobile');
 CREATE TABLE IF NOT EXISTS packages (id TEXT PRIMARY KEY, game_id TEXT NOT NULL REFERENCES games(id), name TEXT NOT NULL, nominal TEXT NOT NULL, active INTEGER NOT NULL DEFAULT 1);
 CREATE TABLE IF NOT EXISTS prices (package_id TEXT NOT NULL REFERENCES packages(id), tier TEXT NOT NULL, customer_cents INTEGER NOT NULL, ctv_cents INTEGER NOT NULL, PRIMARY KEY(package_id,tier));
 CREATE TABLE IF NOT EXISTS orders (id TEXT PRIMARY KEY, code TEXT UNIQUE NOT NULL, customer_id TEXT NOT NULL REFERENCES users(id), package_id TEXT NOT NULL REFERENCES packages(id), game_id TEXT NOT NULL REFERENCES games(id), tier TEXT NOT NULL, price_cents INTEGER NOT NULL, ctv_cents INTEGER NOT NULL, target_json TEXT NOT NULL, payment_method TEXT NOT NULL, status TEXT NOT NULL, assigned_ctv_id TEXT REFERENCES users(id), idempotency_key TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS sessions (token TEXT PRIMARY KEY, user_id TEXT NOT NU
 CREATE TABLE IF NOT EXISTS audit (id TEXT PRIMARY KEY, actor_id TEXT, action TEXT NOT NULL, entity_id TEXT, metadata_json TEXT, created_at TEXT NOT NULL);
 `);
 try { db.exec("ALTER TABLE orders ADD COLUMN dispatched_ctv_ids TEXT NOT NULL DEFAULT '[]'"); } catch (error) { if (!String(error.message).includes('duplicate column')) throw error; }
+try { db.exec("ALTER TABLE games ADD COLUMN platform TEXT NOT NULL DEFAULT 'mobile'"); } catch (error) { if (!String(error.message).includes('duplicate column')) throw error; }
 
 const now = () => new Date().toISOString();
 const id = () => randomUUID();
@@ -52,8 +53,8 @@ function seed() {
     u.run(admin.id, admin.email, admin.password_hash, 'admin', 'standard', 0, now());
     u.run(ctv.id, ctv.email, ctv.password_hash, 'ctv', 'standard', 0, now());
     u.run(customer.id, customer.email, customer.password_hash, 'customer', 'standard', 500000, now());
-    const game = { id: id(), slug: 'mobile-legends', name: 'Mobile Legends', mode: 'uid', image: '◆', active: 1 };
-    db.prepare('INSERT INTO games VALUES (?,?,?,?,?,?)').run(game.id, game.slug, game.name, game.mode, game.image, 1);
+    const game = { id: id(), slug: 'mobile-legends', name: 'Mobile Legends', mode: 'uid', image: '◆', active: 1, platform: 'mobile' };
+    db.prepare('INSERT INTO games VALUES (?,?,?,?,?,?,?)').run(game.id, game.slug, game.name, game.mode, game.image, 1, game.platform);
     for (const [name, nominal, price, ctvPrice] of [['86 Diamonds','86',20000,16000],['172 Diamonds','172',40000,32000],['429 Diamonds','429',95000,76000]]) {
       const pkg = { id: id() }; db.prepare('INSERT INTO packages VALUES (?,?,?,?,?)').run(pkg.id, game.id, name, nominal, 1); db.prepare('INSERT INTO prices VALUES (?,?,?,?)').run(pkg.id, 'standard', price, ctvPrice);
     }
@@ -68,7 +69,7 @@ const REAL_GAME_CATALOG = [
 ];
 for (const [slug, name, mode, image, packages] of REAL_GAME_CATALOG) {
   if (db.prepare('SELECT id FROM games WHERE slug=?').get(slug)) continue;
-  const gameId = id(); db.prepare('INSERT INTO games VALUES (?,?,?,?,?,?)').run(gameId, slug, name, mode, image, 1);
+  const gameId = id(); db.prepare('INSERT INTO games VALUES (?,?,?,?,?,?,?)').run(gameId, slug, name, mode, image, 1, 'mobile');
   for (const [packageName, nominal, customerCents, ctvCents] of packages) { const packageId = id(); db.prepare('INSERT INTO packages VALUES (?,?,?,?,?)').run(packageId, gameId, packageName, nominal, 1); db.prepare('INSERT INTO prices VALUES (?,?,?,?)').run(packageId, 'standard', customerCents, ctvCents); }
 }
 
@@ -80,7 +81,9 @@ async function route(req, res) {
   try {
     if (formRequest && req.headers.origin && new URL(req.headers.origin).host !== url.host) return json(res, 403, { error: 'Yêu cầu không hợp lệ' });
     if (method === 'GET' && path === '/api/health') return json(res, 200, { ok: true, service: 'topup-api', time: now() });
-    if (method === 'GET' && path === '/api/games') return json(res, 200, db.prepare(`SELECT g.id,g.slug,g.name,g.mode,g.image,p.id package_id,p.name package_name,p.nominal,pr.tier,pr.customer_cents FROM games g JOIN packages p ON p.game_id=g.id JOIN prices pr ON pr.package_id=p.id WHERE g.active=1 AND p.active=1 ORDER BY g.name,pr.customer_cents`).all());
+    if (method === 'GET' && path === '/api/games') return json(res, 200, db.prepare(`SELECT g.id,g.slug,g.name,g.mode,g.image,g.platform,p.id package_id,p.name package_name,p.nominal,pr.tier,pr.customer_cents FROM games g JOIN packages p ON p.game_id=g.id JOIN prices pr ON pr.package_id=p.id WHERE g.active=1 AND p.active=1 ORDER BY g.name,pr.customer_cents`).all());
+    if (method === 'GET' && path === '/api/admin/games') { const u = requireUser(req, res, ['admin']); if (!u) return; return json(res, 200, db.prepare('SELECT id,slug,name,mode,image,platform,active FROM games ORDER BY name').all()); }
+    if (method === 'PATCH' && path.match(/^\/api\/admin\/games\/[^/]+$/)) { const u = requireUser(req, res, ['admin']); if (!u) return; const gameId = path.split('/')[4]; const body = await parseBody(req); const current = db.prepare('SELECT * FROM games WHERE id=?').get(gameId); if (!current) return json(res, 404, { error: 'Không tìm thấy game' }); const name = String(body.name ?? current.name).trim().slice(0, 120); const mode = String(body.mode ?? current.mode).trim().toLowerCase().slice(0, 40); const platform = String(body.platform ?? current.platform).trim().toLowerCase().slice(0, 20); const image = String(body.image ?? current.image).trim().slice(0, 1000); const active = body.active === undefined ? current.active : (body.active ? 1 : 0); if (!name || !mode || !platform || !image || /[<>]/.test(image)) return json(res, 400, { error: 'Thông tin game không hợp lệ' }); db.prepare('UPDATE games SET name=?,mode=?,image=?,platform=?,active=? WHERE id=?').run(name, mode, image, platform, active, gameId); audit(u, 'game.updated', gameId, { fields: ['name', 'mode', 'image', 'platform', 'active'] }); return json(res, 200, db.prepare('SELECT id,slug,name,mode,image,platform,active FROM games WHERE id=?').get(gameId)); }
     if (method === 'POST' && path === '/api/auth/login') { const body = await parseBody(req); const u = db.prepare('SELECT * FROM users WHERE lower(email)=lower(?)').get(String(body.email || '')); if (!u || !verifyPassword(String(body.password || ''), u.password_hash)) { if (formRequest) return redirect(res, '/dang-nhap?error=1&next=' + encodeURIComponent(safeNext(body.next))); return json(res, 401, { error: 'Email hoặc mật khẩu không đúng' }); } const token = randomBytes(32).toString('hex'); db.prepare('INSERT INTO sessions VALUES (?,?,?)').run(token, u.id, new Date(Date.now() + 86400000).toISOString()); const cookie = { 'set-cookie': `session=${encodeURIComponent(token)}; HttpOnly; SameSite=Lax; Path=/; Max-Age=86400` }; if (formRequest) return redirect(res, safeNext(body.next), cookie); return json(res, 200, { user: { id: u.id, email: u.email, role: u.role, tier: u.tier, wallet_cents: u.wallet_cents } }, cookie); }
     if (method === 'POST' && path === '/api/auth/logout') { const c = headers(req).session; if (c) db.prepare('DELETE FROM sessions WHERE token=?').run(c); if (formRequest) return redirect(res, '/', { 'set-cookie': 'session=; Max-Age=0; Path=/' }); return json(res, 200, { ok: true }, { 'set-cookie': 'session=; Max-Age=0; Path=/' }); }
     if (method === 'GET' && path === '/api/me') { const u = requireUser(req, res); if (!u) return; return json(res, 200, { id: u.id, email: u.email, role: u.role, tier: u.tier, wallet_cents: u.wallet_cents }); }
