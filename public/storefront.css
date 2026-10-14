@@ -232,6 +232,7 @@ dialog{border:1px solid #46404a;background:#141820;color:#fff;border-radius:12px
 
 /* Wide screens need the artwork and copy to share the banner more evenly. */
 @media (min-width:1101px){
+  .hero.wrap{width:min(1320px,calc(100% - 64px))}
   .hero{padding-top:24px}
   .mobile-banner{height:clamp(240px,18vw,280px);padding:30px 46px;justify-content:center}
   .mobile-banner:before{background:linear-gradient(90deg,#070a12f0 0%,#070a12dc 34%,#070a1282 57%,#070a1212 78%,transparent 100%)}
