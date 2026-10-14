@@ -106,6 +106,13 @@ async function route(req, res) {
     if (method === 'GET' && path === '/zetgaming-hero-background-v2.png') { const image = await readFile(join(ROOT, 'public', 'zetgaming-hero-background-v2.png')); res.writeHead(200, { 'content-type': 'image/png', 'cache-control': 'public, max-age=86400' }); return res.end(image); }
     if (method === 'GET' && path === '/zetgaming-hero-scene-v3.png') { const image = await readFile(join(ROOT, 'public', 'zetgaming-hero-scene-v3.png')); res.writeHead(200, { 'content-type': 'image/png', 'cache-control': 'public, max-age=86400' }); return res.end(image); }
     if (method === 'GET' && path === '/zetgaming-hero-characters-v3.png') { const image = await readFile(join(ROOT, 'public', 'zetgaming-hero-characters-v3.png')); res.writeHead(200, { 'content-type': 'image/png', 'cache-control': 'public, max-age=86400' }); return res.end(image); }
+    if (method === 'GET' && path.startsWith('/game-images/')) {
+      const file = path.slice('/game-images/'.length);
+      if (!/^[a-z0-9-]+\.(?:webp|jpg)$/.test(file)) return json(res, 404, { error: 'Không tìm thấy ảnh' });
+      const image = await readFile(join(ROOT, 'public', 'game-images', file));
+      res.writeHead(200, { 'content-type': file.endsWith('.jpg') ? 'image/jpeg' : 'image/webp', 'cache-control': 'public, max-age=86400' });
+      return res.end(image);
+    }
     const extraAssets = { '/pages.css': ['pages.css', 'text/css; charset=utf-8'], '/navigation.js': ['navigation.js', 'text/javascript; charset=utf-8'], '/fonts/signika-negative-variable.ttf': ['fonts/signika-negative-variable.ttf', 'font/ttf'], '/fonts/OFL-Signika-Negative.txt': ['fonts/OFL-Signika-Negative.txt', 'text/plain; charset=utf-8'] };
     if (method === 'GET' && Object.hasOwn(extraAssets, path)) { const [file, type] = extraAssets[path]; const asset = await readFile(join(ROOT, 'public', file)); res.writeHead(200, { 'content-type': type, 'cache-control': path.startsWith('/fonts/') ? 'public, max-age=31536000' : 'no-cache' }); return res.end(asset); }
     if (method === 'GET' && !path.startsWith('/api/')) {
