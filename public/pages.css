@@ -174,5 +174,9 @@ body.storefront{font-family:'Signika Negative',system-ui,sans-serif;font-size:16
 .storefront .account-btn{max-width:180px}.storefront .account-btn .account-label{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .profile-card>div:last-child{min-width:0}.profile-email{overflow-wrap:anywhere}
 
+.home-section-panel{margin-block:28px;padding-inline:36px;border:1px solid #273142;border-radius:20px;background:linear-gradient(145deg,#111927,#0e1520);box-shadow:0 14px 34px #0003}
+.home-section-panel.category-section{padding-top:36px}
+@media(max-width:620px){.home-section-panel{margin-block:18px;padding:26px 16px 34px;border-radius:18px}.home-section-panel.category-section{padding-top:26px}.home-section-panel .page-heading{margin-bottom:22px}}
+
 
 @media(max-width:620px){.auth-story{display:none}.auth-layout{max-width:480px;margin-inline:auto}.auth-form{border-radius:12px}}
