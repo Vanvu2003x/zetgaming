@@ -1,0 +1,7 @@
+.git
+node_modules
+data/*.sqlite-shm
+data/*.sqlite-wal
+.env
+coverage
+dist
