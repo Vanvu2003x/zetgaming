@@ -295,3 +295,10 @@ dialog{border:1px solid #46404a;background:#141820;color:#fff;border-radius:12px
   .mobile-banner:after{border-radius:0 0 14px 14px}
   .mobile-hero-characters{right:calc(-1 * clamp(7px,1.1vw,14px));height:120%;clip-path:inset(-80px -16px 0 0)}
 }
+
+@media (min-width:1101px){
+  .hero{padding-top:80px}
+  .mobile-banner{overflow:visible}
+  .mobile-banner:after{border-radius:0 0 14px 14px}
+  .mobile-hero-characters{right:-18px;clip-path:inset(-90px -24px 0 0)}
+}
