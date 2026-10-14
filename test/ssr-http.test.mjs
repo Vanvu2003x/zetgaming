@@ -40,11 +40,11 @@ test('SSR routes and native forms support a complete customer journey', { timeou
       assert.doesNotMatch(html, /Đang tải danh sách|{{\w+}}/);
       assert.equal((html.match(/<h1\b/g) || []).length, 1);
       const filtered = await (await get('/nap-game?q=genshin')).text();
-      assert.match(filtered, /Chọn game\.<br><em>Nạp ngay\./);
+      assert.match(filtered, /Chọn danh mục nạp/);
+      assert.match(filtered, /Nạp UID/);
+      assert.doesNotMatch(filtered, /class="topup-intro"/);
       assert.match(filtered, /class="topup-game-card" href="\/nap-game\/genshin-impact"/);
-      assert.doesNotMatch(filtered, /20\.000/);
-      assert.match(filtered, /honkai-star-rail" hidden data-catalog-card/);
-      assert.match(filtered, /id="catalogCount">1</);
+      assert.doesNotMatch(filtered, /honkai-star-rail/);
     });
     await t.test('game, coming-soon news and not-found routes render independent documents', async () => {
       const game = await (await get('/nap-game/genshin-impact')).text();
