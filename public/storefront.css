@@ -316,4 +316,15 @@ dialog{border:1px solid #46404a;background:#141820;color:#fff;border-radius:12px
   .news-notice{top:76px;max-width:calc(100vw - 28px)}
   .mobile-menu button{display:block;width:100%;border:0;background:none;padding:10px 11px;border-radius:6px;color:#d9e0ec;text-align:left;font-size:12px;font-weight:700}
   .mobile-menu button:hover{background:#252d39;color:#fff}
+  .brand img{width:clamp(96px,calc(100vw - 239px),148px);height:auto}
+  .mobile-actions{gap:7px}
+  .mobile-login-btn{height:44px;min-width:120px;padding:0 13px;display:inline-flex;align-items:center;justify-content:center;gap:7px;flex:none;border:1px solid #6758ff;border-radius:24px;background:linear-gradient(135deg,#5741ff,#4938ef);box-shadow:0 7px 20px #4836ff35;color:#fff;font-size:13px;font-weight:800;white-space:nowrap}
+  .mobile-login-btn:hover{background:linear-gradient(135deg,#6854ff,#5343fa);box-shadow:0 8px 23px #4836ff55}
+  .mobile-login-btn:focus-visible{outline:2px solid #d2cbff;outline-offset:3px}
+  .mobile-login-btn svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+}
+@media (max-width:359px){
+  .mobile-actions{gap:5px}
+  .mobile-login-btn{min-width:112px;height:40px;padding:0 9px;font-size:12px;gap:5px}
+  .mobile-login-btn svg{width:16px;height:16px}
 }
