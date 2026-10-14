@@ -42,7 +42,7 @@ test('SSR routes and native forms support a complete customer journey', { timeou
       assert.doesNotMatch(html, /Đang tải danh sách|{{\w+}}/);
       assert.equal((html.match(/<h1\b/g) || []).length, 1);
       const filtered = await (await get('/nap-game?q=genshin')).text();
-      assert.match(filtered, /Danh sách game/);
+      assert.match(filtered, /Danh mục game/);
       assert.match(filtered, /data-platform="mobile"/);
       assert.match(filtered, /data-platform-filter="mobile"/);
       assert.doesNotMatch(filtered, /class="topup-intro"/);
