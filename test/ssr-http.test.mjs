@@ -45,16 +45,21 @@ test('SSR routes and native forms support a complete customer journey', { timeou
       assert.match(filtered, /honkai-star-rail" hidden data-catalog-card/);
       assert.match(filtered, /id="catalogCount">1</);
     });
-    await t.test('game, editorial and not-found routes render independent documents', async () => {
+    await t.test('game, coming-soon news and not-found routes render independent documents', async () => {
       const game = await (await get('/nap-game/genshin-impact')).text();
       assert.match(game, /name="package_id"/);
       assert.match(game, /name="idempotency_key"/);
       assert.match(game, /action="\/dat-don"/);
       assert.match(game, /60 Genesis Crystals/);
       assert.match(game, /20\.000/);
-      const article = await (await get('/tin-tuc/kiem-tra-uid-truoc-khi-nap')).text();
-      assert.match(article, /Tìm UID trong trò chơi/);
-      assert.doesNotMatch(article, /class="catalog-grid"/);
+      const news = await (await get('/tin-tuc')).text();
+      assert.match(news, /Tin tức sắp ra mắt/);
+      assert.match(news, /notification-character/);
+      assert.doesNotMatch(news, /Tìm UID trong trò chơi/);
+      const retiredArticle = await (await get('/tin-tuc/kiem-tra-uid-truoc-khi-nap')).text();
+      assert.equal((await get('/tin-tuc/kiem-tra-uid-truoc-khi-nap')).status, 200);
+      assert.match(retiredArticle, /Tin tức sắp ra mắt/);
+      assert.doesNotMatch(retiredArticle, /Tìm UID trong trò chơi/);
       assert.equal((await get('/nap-game/does-not-exist')).status, 404);
       assert.equal((await get('/unknown')).status, 404);
       assert.equal((await get('/api/unknown')).headers.get('content-type'), 'application/json; charset=utf-8');

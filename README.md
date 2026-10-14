@@ -20,7 +20,7 @@ Các trang dùng URL riêng, HTML được Node render từ SQLite trước khi 
 - `/nap-game`: danh sách game, tìm kiếm bằng `?q=`.
 - `/nap-game/:slug`: gói nạp, thông tin người chơi và tổng tiền.
 - `/lich-su`, `/lich-su/:code`: lịch sử và chi tiết đơn thuộc tài khoản hiện tại.
-- `/tin-tuc`, `/tin-tuc/:slug`: hướng dẫn riêng của ZetGaming.
+- `/tin-tuc`: trang thông báo Tin tức sắp ra mắt.
 - `/dang-nhap`, `/tai-khoan`: đăng nhập và thông tin/số dư tài khoản.
 
 Template dùng chung ở `views/layout.html`; route và các view ở `storefront/`. `public/app.js` chỉ tăng cường tương tác: chọn gói, lọc game, hiện mật khẩu, notch mobile và reveal/chuyển trang. Khi bấm liên kết nội bộ, trình duyệt lấy HTML SSR mới và giữ bottom nav đang hiển thị để nút cam trượt liên tục; Back/Forward cũng tải lại HTML từ server. Nội dung, đường dẫn và form đăng nhập/đặt đơn/đăng xuất vẫn hoạt động khi JavaScript bị tắt. API JSON hiện có giữ nguyên contract. HTML cá nhân dùng `private, no-store`; chi tiết đơn luôn kiểm tra chủ sở hữu.

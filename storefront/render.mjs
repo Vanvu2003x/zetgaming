@@ -1,9 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { escapeHtml as e, safeNext, statusText } from './shared.mjs';
-import { articles } from './content.mjs';
 import { homePage, catalogPage, gamePage } from './catalog-pages.mjs';
 import { loginPage, gatePage, accountPage, historyPage, orderPage } from './account-pages.mjs';
-import { newsPage, articlePage, notFoundPage } from './news-pages.mjs';
+import { newsPage, notFoundPage } from './news-pages.mjs';
 import { navPath } from '../public/navigation.js';
 
 export function renderStorefront({ url, user, db, layout }) {
@@ -45,11 +44,7 @@ export function renderStorefront({ url, user, db, layout }) {
       const order = db.prepare(`SELECT o.code,o.status,o.price_cents,o.payment_method,o.created_at,o.updated_at,p.name package_name,g.name game_name FROM orders o JOIN packages p ON p.id=o.package_id JOIN games g ON g.id=o.game_id WHERE o.code=? AND o.customer_id=?`).get(path.split('/')[2], user.id);
       if (order) set('order', '/lich-su', `Đơn ${order.code}`, orderPage(order));
     }
-  } else if (path === '/tin-tuc') set('news', '/tin-tuc', 'Tin tức & hướng dẫn', newsPage());
-  else if (/^\/tin-tuc\/[a-z0-9-]+$/.test(path)) {
-    const article = articles.find(item => item.slug === path.split('/')[2]);
-    if (article) set('article', '/tin-tuc', article.title, articlePage(article), article.excerpt);
-  }
+  } else if (path === '/tin-tuc' || /^\/tin-tuc\/[a-z0-9-]+$/.test(path)) set('news', '/tin-tuc', 'Tin tức sắp ra mắt', newsPage(), 'Tin tức và hướng dẫn của ZetGaming sắp ra mắt.');
   let shell = layout.replace(/<a\b([^>]*href="([^"]+)"[^>]*)>/g, (tag, attrs, href) => {
     if (href !== active) return tag;
     const className = attrs.includes('mobile-bottom-link') ? 'is-active' : 'is-current';
