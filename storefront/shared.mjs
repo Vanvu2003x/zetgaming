@@ -10,7 +10,7 @@ export function safeNext(value, fallback = '/tai-khoan') {
   return url.pathname + url.search;
 }
 export const loginHref = (next) => `/dang-nhap?next=${encodeURIComponent(safeNext(next))}`;
-export function gameImage(game) {
-  const image = game.slug === 'mobile-legends' ? 'https://static2.pisapapeles.net/uploads/2025/11/Mobile_Legends_Bang_Bang_ML.jpg' : game.image;
+export function gameImage(game, type = 'banner') {
+  const image = type === 'thumbnail' ? game.thumbnail || game.image : game.image;
   return /^(https:\/\/|\/(?!\/))/.test(image || '') ? image : '/zetgaming-fire-bg.png';
 }

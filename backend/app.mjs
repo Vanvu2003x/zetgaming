@@ -12,6 +12,7 @@ import { csrfToken, requireCsrf } from './middleware/csrf.mjs';
 import { requestLogging } from './middleware/logging.mjs';
 import { healthRouter } from './modules/health/routes.mjs';
 import { catalogRouter } from './modules/catalog/routes.mjs';
+import { createUploadsRouter } from './modules/catalog/uploads.mjs';
 import { authRouter } from './modules/auth/routes.mjs';
 import { ordersRouter } from './modules/orders/routes.mjs';
 import { dispatchRouter } from './modules/dispatch/routes.mjs';
@@ -35,6 +36,7 @@ export function createApp() {
   app.use('/api', healthRouter);
   app.get('/api/csrf', (req, res) => res.json({ csrf_token: req.csrfToken }));
   app.use('/api', catalogRouter);
+  app.use('/api', createUploadsRouter());
   app.use('/api', storefrontRouter);
   app.use('/api/auth', requireCsrf, authRouter);
   app.use('/api', requireCsrf, requireAuth, ordersRouter);

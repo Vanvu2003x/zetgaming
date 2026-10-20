@@ -29,6 +29,7 @@ export function createFrontend({backendUrl=process.env.BACKEND_URL || 'http://12
     strictTransportSecurity:production ? {maxAge:31536000,includeSubDomains:true} : false,
     referrerPolicy:{policy:'no-referrer'},
   }));
+  app.use('/api/admin/uploads', express.raw({type:['image/png','image/jpeg','image/webp'],limit:'5mb'}));
   app.use(express.json({limit:'64kb'}));
   app.use(express.urlencoded({extended:false,limit:'64kb'}));
   const backend=async(req,res,path,body)=>{
@@ -36,10 +37,10 @@ export function createFrontend({backendUrl=process.env.BACKEND_URL || 'http://12
     if(req.headers.cookie)headers.cookie=req.headers.cookie;
     for(const name of ['origin','sec-fetch-site','x-csrf-token','idempotency-key'])if(req.headers[name])headers[name]=req.headers[name];
     headers['x-forwarded-for']=req.ip;
-    if(body!==undefined)headers['content-type']='application/json';
+    if(body!==undefined)headers['content-type']=Buffer.isBuffer(body) ? req.get('content-type') : 'application/json';
     const response=await fetch(new URL(path,backendUrl),{
       method:body===undefined ? 'GET' : req.method,headers,
-      body:body===undefined ? undefined : JSON.stringify(body),
+      body:body===undefined ? undefined : Buffer.isBuffer(body) ? body : JSON.stringify(body),
       signal:AbortSignal.timeout(10000),redirect:'manual',
     });
     const cookies=response.headers.getSetCookie();

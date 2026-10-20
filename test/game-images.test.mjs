@@ -1,0 +1,50 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import express from 'express';
+import cookieParser from 'cookie-parser';
+import { once } from 'node:events';
+import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { createUploadsRouter } from '../backend/modules/catalog/uploads.mjs';
+import { csrfToken } from '../backend/middleware/csrf.mjs';
+import { catalogPage } from '../storefront/catalog-pages.mjs';
+import { gameImage } from '../storefront/shared.mjs';
+
+const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/l9sAAAAASUVORK5CYII=', 'base64');
+test('game cards use distinct banner and thumbnail and retain fallback for existing games', () => {
+  const game = { id: 'g', slug: 'mobile-legends', name: 'Mobile Legends', image: '/uploads/games/banner.png', thumbnail: '/uploads/games/icon.png' };
+  const html = catalogPage([game]);
+  assert.match(html, /<img src="\/uploads\/games\/banner.png"/);
+  assert.match(html, /class="directory-card-icon" src="\/uploads\/games\/icon.png"/);
+  assert.equal(gameImage(game), game.image);
+  assert.equal(gameImage({ image: '/old.png' }, 'thumbnail'), '/old.png');
+  assert.equal(gameImage({ image: 'javascript:alert(1)' }), '/zetgaming-fire-bg.png');
+});
+
+test('image uploads enforce admin/CSRF, inspect bytes and store generated files in the chosen directory', async t => {
+  const directory = await mkdtemp(join(tmpdir(), 'zet-image-test-'));
+  const app = express();
+  app.use(cookieParser(), csrfToken, (req, _res, next) => { if (req.get('x-test-role')) req.user = { role: req.get('x-test-role') }; next(); });
+  app.get('/csrf', (req, res) => res.json({ token: req.csrfToken }));
+  app.use(createUploadsRouter({ directory }));
+  app.use((error, _req, res, _next) => res.status(error.type === 'entity.too.large' ? 413 : 500).end());
+  const server = app.listen(0, '127.0.0.1'); await once(server, 'listening');
+  t.after(async () => { server.closeAllConnections(); server.close(); await rm(directory, { recursive: true, force: true }); });
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const response = await fetch(base + '/csrf');
+  const cookie = response.headers.getSetCookie()[0].split(';')[0];
+  const { token } = await response.json();
+  const upload = (role, body = png, type = 'image/png', csrf = token) => fetch(base + '/admin/uploads', { method: 'POST', headers: { cookie, 'content-type': type, 'x-csrf-token': csrf, ...(role ? { 'x-test-role': role } : {}) }, body });
+  assert.equal((await upload(null)).status, 401);
+  assert.equal((await upload('customer')).status, 403);
+  assert.equal((await upload('admin', png, 'image/png', 'bad')).status, 403);
+  assert.equal((await upload('admin', Buffer.from('<svg onload="alert(1)"/>'), 'image/png')).status, 400);
+  assert.equal((await upload('admin', png, 'image/jpeg')).status, 400);
+  assert.equal((await upload('admin', Buffer.alloc(5 * 1024 * 1024 + 1))).status, 413);
+  const saved = await upload('admin'); assert.equal(saved.status, 201);
+  const { url } = await saved.json();
+  assert.match(url, /^\/uploads\/games\/[a-f0-9-]{36}\.png$/);
+  assert.deepEqual(await readFile(join(directory, url.split('/').at(-1))), png);
+  assert.equal((await readdir(directory)).length, 1);
+});

@@ -7,7 +7,7 @@ import { requireCsrf } from '../../middleware/csrf.mjs';
 export const catalogRouter = Router();
 catalogRouter.get('/games', async (req, res, next) => {
   try {
-    const { rows } = await req.db.query(`SELECT g.id,g.slug,g.name,g.mode,g.image,g.platform,p.id package_id,p.name package_name,p.nominal,p.image package_image,p.badge,pr.tier,pr.customer_cents
+    const { rows } = await req.db.query(`SELECT g.id,g.slug,g.name,g.mode,g.image,g.thumbnail,g.platform,p.id package_id,p.name package_name,p.nominal,p.image package_image,p.badge,pr.tier,pr.customer_cents
       FROM games g JOIN packages p ON p.game_id=g.id JOIN prices pr ON pr.package_id=p.id
       WHERE g.active=true AND p.active=true ORDER BY g.name,pr.customer_cents`);
     res.json(rows);
@@ -16,7 +16,7 @@ catalogRouter.get('/games', async (req, res, next) => {
 
 catalogRouter.get('/admin/games', requireRole('admin'), async (req, res, next) => {
   try {
-    const { rows } = await req.db.query(`SELECT g.id,g.slug,g.name,g.mode,g.image,g.platform,g.active,
+    const { rows } = await req.db.query(`SELECT g.id,g.slug,g.name,g.mode,g.image,g.thumbnail,g.platform,g.active,
       COALESCE(json_agg(json_build_object('id',p.id,'name',p.name,'nominal',p.nominal,'image',p.image,'badge',p.badge,'active',p.active,'tier',pr.tier,'customer_cents',pr.customer_cents,'ctv_cents',pr.ctv_cents) ORDER BY pr.customer_cents) FILTER (WHERE p.id IS NOT NULL),'[]') packages
       FROM games g LEFT JOIN packages p ON p.game_id=g.id LEFT JOIN prices pr ON pr.package_id=p.id AND pr.tier='standard'
       GROUP BY g.id ORDER BY g.name`);
@@ -33,10 +33,12 @@ catalogRouter.patch('/admin/games/:id', requireCsrf, requireRole('admin'), async
     const mode = String(req.body.mode ?? current.mode).trim().toLowerCase().slice(0, 40);
     const platform = String(req.body.platform ?? current.platform).trim().toLowerCase().slice(0, 20);
     const image = String(req.body.image ?? current.image).trim().slice(0, 1000);
+    const thumbnail = String(req.body.thumbnail ?? current.thumbnail).trim().slice(0, 1000);
     const active = req.body.active === undefined ? current.active : Boolean(req.body.active);
-    if (!name || !['uid', 'login'].includes(mode) || !platform || !image || /[<>]/.test(image)) return res.status(400).json({ error: 'Thông tin game không hợp lệ' });
-    const result = await req.db.query('UPDATE games SET name=$1,mode=$2,image=$3,platform=$4,active=$5 WHERE id=$6 RETURNING id,slug,name,mode,image,platform,active', [name, mode, image, platform, active, req.params.id]);
-    await audit(req.db, req.user.id, 'game.updated', req.params.id, { fields: ['name', 'mode', 'image', 'platform', 'active'] });
+    const validImage = value => /^(https:\/\/|\/(?!\/))/.test(value) && !/[<>]/.test(value);
+    if (!name || !['uid', 'login'].includes(mode) || !platform || !validImage(image) || (thumbnail && !validImage(thumbnail))) return res.status(400).json({ error: 'Thông tin game không hợp lệ' });
+    const result = await req.db.query('UPDATE games SET name=$1,mode=$2,image=$3,platform=$4,active=$5,thumbnail=$7 WHERE id=$6 RETURNING id,slug,name,mode,image,thumbnail,platform,active', [name, mode, image, platform, active, req.params.id, thumbnail]);
+    await audit(req.db, req.user.id, 'game.updated', req.params.id, { fields: ['name', 'mode', 'image', 'thumbnail', 'platform', 'active'] });
     res.json(result.rows[0]);
   } catch (error) { next(error); }
 });

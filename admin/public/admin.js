@@ -12,7 +12,8 @@ export function toast(message, error = false) {
   clearTimeout(toastTimer); toastTimer = setTimeout(() => { target.hidden = true; }, 5000);
 }
 export async function api(path, body, method = 'PATCH') {
-  const response = await fetch(path, { credentials: 'same-origin', headers: body === undefined ? {} : { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf }, ...(body === undefined ? {} : { method, body: JSON.stringify(body) }) });
+  const upload = body instanceof File;
+  const response = await fetch(path, { credentials: 'same-origin', headers: body === undefined ? {} : { 'Content-Type': upload ? body.type : 'application/json', 'X-CSRF-Token': csrf }, ...(body === undefined ? {} : { method, body: upload ? body : JSON.stringify(body) }) });
   const data = await response.json().catch(() => ({}));
   if (response.status === 401) { location.assign('/login?error=' + encodeURIComponent('Phiên đăng nhập đã hết hạn.')); throw new Error('Vui lòng đăng nhập lại.'); }
   if (!response.ok) throw new Error(data.error || 'Không thể kết nối hệ thống. Vui lòng thử lại.');
@@ -100,10 +101,10 @@ function updateTable() {
   const result = paginate(items, state.page);
   state.page = result.page;
   document.querySelector('#result-count').textContent = `${items.length} kết quả`;
-  const headers = { orders: orderHeaders, games: ['Game', 'Kiểu nạp', 'Nền tảng', 'Gói nạp', 'Trạng thái', ''], packages: ['Gói nạp', 'Game', 'Giá khách', 'Giá CTV', 'Trạng thái', ''], ctvs: ['Cộng tác viên', 'Vai trò', 'Số dư ví', ''] };
+  const headers = { orders: orderHeaders, games: ['Game / thumbnail', 'Ảnh nền', 'Kiểu nạp', 'Nền tảng', 'Gói nạp', 'Trạng thái', ''], packages: ['Gói nạp', 'Game', 'Giá khách', 'Giá CTV', 'Trạng thái', ''], ctvs: ['Cộng tác viên', 'Vai trò', 'Số dư ví', ''] };
   const rows = result.items.map(item => {
     if (type === 'orders') return orderRow(item);
-    if (type === 'games') return `<tr><td>${resource(item, '/' + item.slug)}</td><td>${item.mode === 'uid' ? 'Nạp UID' : 'Nạp login'}</td><td>${e({ mobile: 'Mobile', pc: 'PC', other: 'Khác' }[item.platform] || item.platform)}</td><td>${item.packages.length} gói</td><td>${badge(item.active ? 'Đang hiển thị' : 'Đang ẩn', item.active ? 'green' : '')}</td><td>${editButton('game', item.id, item.name)}</td></tr>`;
+    if (type === 'games') return `<tr><td>${resource({ ...item, image: item.thumbnail || item.image }, '/' + item.slug, true)}</td><td class="banner-cell">${image(item.image, item.name)}</td><td>${item.mode === 'uid' ? 'Nạp UID' : 'Nạp login'}</td><td>${e({ mobile: 'Mobile', pc: 'PC', other: 'Khác' }[item.platform] || item.platform)}</td><td>${item.packages.length} gói</td><td>${badge(item.active ? 'Đang hiển thị' : 'Đang ẩn', item.active ? 'green' : '')}</td><td>${editButton('game', item.id, item.name)}</td></tr>`;
     if (type === 'packages') return `<tr><td>${resource(item, item.badge || item.nominal, true)}</td><td>${e(item.game_name)}</td><td class="amount">${money(item.customer_cents)}</td><td>${money(item.ctv_cents)}</td><td>${badge(item.active ? 'Đang bán' : 'Đang ẩn', item.active ? 'green' : '')}</td><td>${editButton('package', item.id, item.name)}</td></tr>`;
     return `<tr><td><div class="row-resource"><span class="avatar">${e(item.email.slice(0, 1).toUpperCase())}</span><strong>${e(item.email)}</strong></div></td><td>${badge('Cộng tác viên', 'blue')}</td><td class="amount">${money(item.wallet_cents)}</td><td><a class="button subtle" href="/orders?status=pending_admin">Phân đơn ${symbol('arrow')}</a></td></tr>`;
   });

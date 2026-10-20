@@ -69,4 +69,8 @@ Chạy admin bằng `npm run admin` dưới process manager, khởi động lạ
 
 ## Phạm vi tiếp theo
 
-Tạo/xóa game, danh mục do admin tự tạo, khách hàng, nạp ví, phân quyền chi tiết, upload ảnh và log hoạt động cần API/schema riêng. Không hiển thị menu giả cho những chức năng chưa có. Bản thiết kế này giữ nguyên dữ liệu và các quy tắc nghiệp vụ hiện tại.
+### Ảnh game trong repo
+
+Kho game có hai trường riêng: `image` là ảnh nền/banner và `thumbnail` là icon vuông. Chọn ảnh từ máy trong dialog rồi bấm Lưu thay đổi; API admin tải từng file PNG/JPG/WebP (tối đa 5 MB) vào `public/uploads/games/`, đặt tên UUID và lưu đường dẫn `/uploads/games/...` trong PostgreSQL. Thư mục này được Git theo dõi; file mới có thể commit/push cùng source, HTTP không tự chạy Git. File chỉ được tải khi bấm Lưu. Nếu cập nhật metadata lỗi sau upload, đường dẫn đã tải được giữ lại trong form để thử lưu lại. Game cũ chưa có thumbnail dùng ảnh nền làm dự phòng. Chạy migration `005_game_thumbnail.sql` trước khi khởi động backend mới.
+
+Tạo/xóa game, danh mục do admin tự tạo, khách hàng, nạp ví, phân quyền chi tiết và log hoạt động cần API/schema riêng. Không hiển thị menu giả cho những chức năng chưa có. Bản thiết kế này giữ nguyên dữ liệu và các quy tắc nghiệp vụ hiện tại.

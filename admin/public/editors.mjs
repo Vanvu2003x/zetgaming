@@ -6,11 +6,12 @@ const input = (name, label, value, { type = 'text', full = false, required = fal
 const select = (name, label, current, options) => `<label>${label}<select name="${name}">${options.map(([value, text]) => `<option value="${value}" ${value === current ? 'selected' : ''}>${text}</option>`).join('')}</select></label>`;
 const safeImage = url => /^(https:\/\/|\/(?!\/))/.test(url || '');
 const preview = (url, name) => `<div class="editor-preview"><img ${safeImage(url) ? `src="${e(imageUrl(url))}"` : 'hidden'} alt="Xem trước ảnh"><span>${e(name)}</span></div>`;
+const imagePicker = (field, label, value, help) => `<div class="image-picker"><label>${label}<span class="image-picker-preview ${field === 'thumbnail' ? 'square' : ''}"><img ${safeImage(value) ? `src="${e(imageUrl(value))}"` : 'hidden'} alt="Xem trước ${label.toLowerCase()}"><span>${field === 'thumbnail' ? 'Ảnh vuông' : 'Ảnh ngang'}</span></span><input type="file" data-upload-field="${field}" accept="image/png,image/jpeg,image/webp" aria-label="Chọn ${label.toLowerCase()}"></label><input type="hidden" name="${field}" value="${e(value || '')}"><small>${help} · PNG, JPG, WebP ≤ 5 MB</small></div>`;
 function mount(title, description, body, context, submit = '') {
   const target = dialog();
   target.dataset.generation = String(++dialogGeneration);
   target.innerHTML = `<div class="dialog-head"><div><h2 id="dialog-title">${e(title)}</h2><p>${e(description)}</p></div><button class="icon-button" data-close aria-label="Đóng">${context.symbol('close')}</button></div>${submit ? '<form id="resource-form">' : ''}<div class="dialog-body"><div class="inline-error" id="form-error" role="alert" hidden></div>${body}</div><div class="dialog-footer"><button class="button" type="button" data-close>${submit ? 'Hủy' : 'Đóng'}</button>${submit ? `<button class="button primary" type="submit">${context.symbol('check')} ${submit}</button>` : ''}</div>${submit ? '</form>' : ''}`;
-  target.querySelectorAll('[data-close]').forEach(button => button.addEventListener('click', () => target.close()));
+  target.querySelectorAll('[data-close]').forEach(button => button.addEventListener('click', () => { if (target.querySelector('form')?.dataset.saving !== 'true') target.close(); }));
   if (!target.open) target.showModal();
   target.querySelector('[data-close]').focus();
   return target;
@@ -21,17 +22,47 @@ function showError(error) {
   target.scrollIntoView({ block: 'nearest' });
 }
 function editor(type, item, fields, context) {
-  const target = mount(type === 'games' ? 'Chỉnh sửa game' : 'Chỉnh sửa gói nạp', type === 'games' ? 'Cập nhật thông tin hiển thị trên cửa hàng.' : item.game_name + ' · Giá nhập theo đồng Việt Nam', preview(item.image, item.name) + `<div class="field-grid">${fields}</div>`, context, 'Lưu thay đổi');
+  const target = mount(type === 'games' ? 'Chỉnh sửa game' : 'Chỉnh sửa gói nạp', type === 'games' ? 'Ảnh nền và thumbnail được quản lý riêng.' : item.game_name + ' · Giá nhập theo đồng Việt Nam', (type === 'games' ? '' : preview(item.image, item.name)) + `<div class="field-grid">${fields}</div>`, context, 'Lưu thay đổi');
   const form = target.querySelector('form');
-  form.querySelector('[name="image"]').addEventListener('input', event => {
+  const preventBusyClose = event => { if (form.dataset.saving === 'true') event.preventDefault(); };
+  target.addEventListener('cancel', preventBusyClose);
+  form.querySelector('[name="image"]:not([type="hidden"])')?.addEventListener('input', event => {
     const url = event.target.value.trim(); const image = target.querySelector('.editor-preview img');
     if (safeImage(url)) { image.src = imageUrl(url); image.hidden = false; } else { image.removeAttribute('src'); image.hidden = true; }
   });
+  const objectUrls = new Map();
+  const cleanup = () => { for (const url of objectUrls.values()) URL.revokeObjectURL(url); target.removeEventListener('cancel', preventBusyClose); };
+  target.addEventListener('close', cleanup, { once: true });
+  form.querySelectorAll('[data-upload-field]').forEach(input => input.addEventListener('change', () => {
+    const file = input.files[0];
+    const field = input.dataset.uploadField;
+    const image = input.closest('.image-picker').querySelector('img');
+    if (objectUrls.has(field)) { URL.revokeObjectURL(objectUrls.get(field)); objectUrls.delete(field); }
+    const restorePreview = () => { const original = imageUrl(form.elements[field].value); image.hidden = !original; if (original) image.src = original; else image.removeAttribute('src'); };
+    if (!file) { restorePreview(); return; }
+    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) {
+      input.value = ''; restorePreview(); showError(new Error('Chọn ảnh PNG, JPG hoặc WebP không quá 5 MB.')); return;
+    }
+    const url = URL.createObjectURL(file); objectUrls.set(field, url);
+    image.src = url; image.hidden = false;
+    target.querySelector('#form-error').hidden = true;
+  }));
   form.addEventListener('submit', async event => {
     event.preventDefault();
     const button = form.querySelector('[type="submit"]');
+    form.dataset.saving = 'true'; form.setAttribute('aria-busy', 'true');
+    form.querySelectorAll('[data-upload-field]').forEach(input => { input.disabled = true; });
     button.disabled = true; target.querySelector('#form-error').hidden = true;
     try {
+      for (const input of form.querySelectorAll('[data-upload-field]')) {
+        const file = input.files[0];
+        if (!file) continue;
+        button.textContent = 'Đang tải ảnh…';
+        const result = await context.api('/api/admin/uploads', file, 'POST');
+        form.elements[input.dataset.uploadField].value = result.url;
+        input.value = '';
+      }
+      button.textContent = 'Đang lưu…';
       const values = Object.fromEntries(new FormData(form));
       values.active = form.elements.active.checked;
       if (type === 'packages') {
@@ -40,17 +71,22 @@ function editor(type, item, fields, context) {
         delete values.customer_price; delete values.ctv_price;
       }
       if (values.image && !safeImage(values.image.trim())) throw new Error('Ảnh cần là đường dẫn /… hoặc URL https://…');
+      if (values.thumbnail && !safeImage(values.thumbnail.trim())) throw new Error('Đường dẫn thumbnail không hợp lệ.');
       await context.api(`/api/admin/${type}/${encodeURIComponent(item.id)}`, values);
       target.close(); context.toast('Đã lưu thay đổi.'); await context.refresh();
     } catch (error) { showError(error); }
-    finally { button.disabled = false; }
+    finally {
+      form.dataset.saving = 'false'; form.setAttribute('aria-busy', 'false');
+      form.querySelectorAll('[data-upload-field]').forEach(input => { input.disabled = false; });
+      button.disabled = false; button.innerHTML = `${context.symbol('check')} Lưu thay đổi`;
+    }
   });
 }
 export function openGameEditor(game, context) {
   if (!game) return;
   editor('games', game, [
     input('name', 'Tên game', game.name, { full: true, required: true }),
-    input('image', 'Ảnh banner / card', game.image, { full: true, required: true, max: '1000', help: 'URL HTTPS hoặc đường dẫn ảnh trên cửa hàng.' }),
+    `<div class="full game-image-pickers">${imagePicker('image', 'Ảnh nền / banner', game.image, 'Nền ngang của card và trang game')}${imagePicker('thumbnail', 'Thumbnail', game.thumbnail, 'Icon vuông cạnh tên game')}</div>`,
     select('mode', 'Kiểu nạp', game.mode, [['uid', 'Nạp UID'], ['login', 'Nạp login']]),
     select('platform', 'Nền tảng', game.platform, [['mobile', 'Mobile'], ['pc', 'PC'], ['other', 'Khác']]),
     `<label class="check-field full"><input name="active" type="checkbox" ${game.active ? 'checked' : ''}> Hiển thị game trên cửa hàng</label>`,
