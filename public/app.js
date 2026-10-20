@@ -102,7 +102,7 @@ function bindForms() {
     try {
       const response = await fetch(logoutForm.action, { method: 'POST', credentials: 'same-origin', headers: { 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content || '' } });
       if (!response.ok) throw new Error('Không đăng xuất được');
-      await visitPage('/');
+      await visitPage('/da-dang-xuat');
     } catch { logoutForm.submit(); }
   });
 }

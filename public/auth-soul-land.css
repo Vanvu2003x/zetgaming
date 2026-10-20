@@ -1,0 +1,57 @@
+/* Shared Soul Land artwork and form treatment, isolated from the catalog. */
+body.storefront:has(.auth-container){
+  --auth-desktop:url('/zetgaming-auth-soul-land-desktop-v2.png');
+  --auth-mobile:url('/zetgaming-auth-soul-land-mobile-v2.png');
+  height:auto;min-height:100svh;overflow-x:clip;overflow-y:auto;background:#071121;
+}
+.storefront:has(.auth-container) main{min-height:100svh;height:auto;overflow:clip;background:#071121}
+.storefront:has(.auth-container) main::before{inset:0;background:var(--auth-desktop) center/cover no-repeat;filter:none}
+.storefront:has(.auth-container) main::after{background:linear-gradient(90deg,transparent 38%,#07112130 60%,#07112180);pointer-events:none}
+.storefront:has(.auth-container) .auth-container{width:100%;max-width:1320px;height:auto;min-height:100svh;padding:130px 40px 40px}
+.storefront:has(.auth-container) .auth-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(340px,420px);gap:48px;width:100%;height:auto;min-height:calc(100svh - 170px);align-items:center}
+.storefront:has(.auth-container) .auth-story{display:block;padding:0;align-self:stretch}
+.storefront:has(.auth-container) .auth-form{padding:30px;max-height:none;overflow:visible;border:1px solid #637c9e66;border-radius:20px;background:#091424ed;box-shadow:0 24px 70px #0006;backdrop-filter:blur(16px)}
+.storefront:has(.auth-container) .auth-form h1{font:650 28px/1.2 'Signika Negative',system-ui,sans-serif;letter-spacing:0;color:#f6f8fc;margin:24px 0 8px}
+.storefront:has(.auth-container) .auth-form>p:not(.form-message):not(.form-success):not(.auth-switch){color:#c4cede;font-size:14px;margin-bottom:22px}
+.storefront:has(.auth-container) .auth-form label:not(.check-label){color:#e0e7f2;font-size:13px;font-weight:500;margin:16px 0 7px}
+.storefront:has(.auth-container) .auth-form input:not([type=checkbox]):not([type=hidden]){height:48px;border-color:#425771;background:#101e31;color:#fff;border-radius:9px;font-size:16px}
+.storefront:has(.auth-container) .auth-form input::placeholder{color:#a2b0c4}
+.storefront:has(.auth-container) .auth-form input:focus-visible{outline:2px solid #edb876;outline-offset:2px;border-color:#edb876;box-shadow:none}
+.storefront:has(.auth-container) .auth-form .action-button{min-height:48px;border-radius:9px;background:linear-gradient(110deg,#ff9b50,#f27637);color:#201307;text-shadow:none;box-shadow:0 7px 20px #d3762626;font-weight:700}
+.storefront:has(.auth-container) .auth-form .action-button:hover{background:#ffb36d;transform:none}
+.storefront:has(.auth-container) .auth-form :is(a,button):focus-visible{outline:2px solid #f5cb8d;outline-offset:4px}
+.storefront:has(.auth-container) .auth-form .password-field button{color:#e4ccaa;min-width:52px;min-height:44px}
+.storefront:has(.auth-container) .check-label{color:#ced7e5;gap:8px}
+.storefront:has(.auth-container) .check-label input{accent-color:#efa75e;flex-shrink:0}
+.storefront:has(.auth-container) .auth-inline a,.storefront:has(.auth-container) .auth-switch a{color:#ffbf83}
+.storefront:has(.auth-container) .auth-inline{flex-wrap:wrap;row-gap:10px}
+.storefront:has(.auth-container) .auth-switch{color:#c4cede;text-align:center;margin-top:22px!important}
+.storefront:has(.auth-container) .auth-back{display:block;text-align:center;color:#c5d2e5;margin-top:20px}
+/* OAuth is not configured; keep the working email forms as the primary actions. */
+.storefront:has(.auth-container) .oauth-row,.storefront:has(.auth-container) .auth-divider{display:none}
+.auth-tabs{display:flex;gap:6px;padding:4px;border:1px solid #32455f;border-radius:10px;background:#06101e}
+.auth-tabs a{display:flex;flex:1;align-items:center;justify-content:center;min-height:42px;border-radius:7px;color:#b8c6d9;font-size:14px;font-weight:600;text-decoration:none}
+.auth-tabs a[aria-current=page]{background:#22334b;color:#ffe0b3;box-shadow:inset 0 0 0 1px #e7ba7f3d}
+.auth-tabs a:hover{color:#fff}
+.auth-success-mark{display:grid;place-items:center;width:56px;height:56px;margin:0 auto 18px;border:1px solid #d6b57c66;border-radius:50%;background:#b9934820;color:#f4d39b;font-size:28px}
+.auth-signed-out{text-align:center}
+.storefront:has(.auth-container) .auth-signed-out h1{margin-top:0}
+@media(min-width:621px) and (max-width:900px){
+  .storefront:has(.auth-container) .auth-container{padding-inline:24px}
+  .storefront:has(.auth-container) .auth-layout{grid-template-columns:minmax(0,1fr) minmax(310px,380px);gap:24px}
+  .storefront:has(.auth-container) .auth-form{padding:24px}
+  .storefront:has(.auth-container) main::before{background-position:38% center}
+}
+@media(max-width:620px){
+  .storefront:has(.auth-container) main{display:block;min-height:100svh;height:auto;overflow:visible}
+  .storefront:has(.auth-container) main::before,.storefront:has(.auth-container) main::after{display:none}
+  body.storefront:has(.auth-container) .auth-container{display:block;width:100%;max-width:500px;min-height:100svh;height:auto;padding:clamp(265px,75vw,355px) 16px max(24px,env(safe-area-inset-bottom));background-image:linear-gradient(180deg,transparent 150px,#07112120 220px,#071121 490px),var(--auth-mobile);background-size:100% 580px,100% auto;background-position:center top;background-repeat:no-repeat}
+  .storefront:has(.auth-container) .auth-layout{display:block;min-height:0;height:auto;padding:0}
+  .storefront:has(.auth-container) .auth-story{display:none}
+  .storefront:has(.auth-container) .auth-form{padding:22px 20px;border-radius:16px;background:#091424f5;max-height:none;overflow:visible}
+  .storefront:has(.auth-container) .auth-form h1{font-size:25px;margin-top:20px}
+  .storefront:has(.auth-container) .auth-form>p:not(.form-message):not(.form-success):not(.auth-switch){font-size:13px;margin-bottom:18px}
+  .storefront:has(.auth-container) .auth-form label:not(.check-label){margin-top:13px}
+  .storefront:has(.auth-container) .auth-form .auth-back{display:block}
+  .storefront:has(.auth-container) .auth-signed-out h1{margin-top:0}
+}

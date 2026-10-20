@@ -137,7 +137,8 @@ test('SSR routes and native forms support a complete customer journey', { timeou
       const me = await (await get('/api/me', cookie)).json();
       assert.equal(me.wallet_cents, before.wallet_cents - (beforeOrders.some(order => order.code === walletResult.code) ? 0 : expectedPrice));
       const logout = await form('/dang-xuat', {}, cookie);
-      assert.equal(logout.headers.get('location'), '/');
+      assert.equal(logout.headers.get('location'), '/da-dang-xuat');
+      assert.match(await (await get('/da-dang-xuat', cookie)).text(), /Đã đăng xuất/);
       assert.equal((await get('/api/me', cookie)).status, 401);
     });
   } finally {

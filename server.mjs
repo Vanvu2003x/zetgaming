@@ -75,7 +75,7 @@ export function createFrontend({backendUrl=process.env.BACKEND_URL || 'http://12
         return res.redirect(303,destination.pathname+destination.search);
       }
       if(req.path==='/dang-nhap'||req.path==='/dang-ky')return res.redirect(303,safeNext(body.next));
-      if(req.path==='/dang-xuat')return res.redirect(303,'/');
+      if(req.path==='/dang-xuat')return res.redirect(303,'/da-dang-xuat');
       if(req.path==='/quen-mat-khau')return res.redirect(303,'/quen-mat-khau?sent=1');
       if(req.path==='/dat-lai-mat-khau')return res.redirect(303,'/dat-lai-mat-khau?success=1');
       return res.redirect(303,'/lich-su/'+encodeURIComponent(result.code));

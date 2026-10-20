@@ -4,6 +4,7 @@ import { homePage, catalogPage, gamePage } from './catalog-pages.mjs';
 import { loginPage, registerPage, forgotPasswordPage, resetPasswordPage, gatePage, accountPage, historyPage, orderPage } from './account-pages.mjs';
 import { newsPage, notFoundPage } from './news-pages.mjs';
 import { navPath } from '../public/navigation.js';
+import { signedOutPage } from './auth-feedback.mjs';
 
 export function renderStorefront({ url, user, db, data, csrfToken = '', layout }) {
   const path = url.pathname;
@@ -32,6 +33,9 @@ export function renderStorefront({ url, user, db, data, csrfToken = '', layout }
   } else if (path === '/dang-ky') {
     if (user) return { redirect: safeNext(url.searchParams.get('next'), '/tai-khoan'), status: 303 };
     set('register', '/tai-khoan', 'Đăng ký', registerPage(url.searchParams.get('next'), url.searchParams.get('error')));
+  } else if (path === '/da-dang-xuat') {
+    if (user) return { redirect: '/tai-khoan', status: 303 };
+    set('logout', '/tai-khoan', 'Đã đăng xuất', signedOutPage());
   } else if (path === '/quen-mat-khau') {
     set('forgot-password', '/tai-khoan', 'Quên mật khẩu', forgotPasswordPage(url.searchParams.get('sent') === '1', url.searchParams.get('token')));
   } else if (path === '/dat-lai-mat-khau') {
@@ -58,7 +62,12 @@ export function renderStorefront({ url, user, db, data, csrfToken = '', layout }
     attrs = /class="/.test(attrs) ? attrs.replace(/class="([^"]*)"/, (_, cls) => `class="${cls} ${className}"`) : attrs + ` class="${className}"`;
     return `<a${attrs} aria-current="page">`;
   });
-  shell = shell.replace('</head>', '<link rel="stylesheet" href="/home-discovery.css?v=1"><link rel="stylesheet" href="/checkout.css?v=1"><link rel="stylesheet" href="/directory.css?v=1"></head>');
+  shell = shell.replace('</head>', '<link rel="stylesheet" href="/home-discovery.css?v=1"><link rel="stylesheet" href="/checkout.css?v=1"><link rel="stylesheet" href="/directory.css?v=1"><link rel="stylesheet" href="/auth-soul-land.css?v=1"></head>');
+  if (page === 'login' || page === 'register') {
+    const next = encodeURIComponent(safeNext(url.searchParams.get('next'), '/tai-khoan'));
+    const tabs = `<nav class="auth-tabs" aria-label="Tài khoản"><a href="/dang-nhap?next=${next}" ${page === 'login' ? 'aria-current="page"' : ''}>Đăng nhập</a><a href="/dang-ky?next=${next}" ${page === 'register' ? 'aria-current="page"' : ''}>Đăng ký</a></nav>`;
+    content = content.replace('<span class="eyebrow-label">', tabs + '<span class="eyebrow-label">');
+  }
   const center = { '/nap-game': 49.5, '/lich-su': 106.5, '/': 177.5, '/tin-tuc': 248.5, '/tai-khoan': 305.5 }[active];
   shell = shell.replace(/(<path id="mobileBottomShapePath" d=")[^"]+/, (_, prefix) => prefix + navPath(center));
   const name = user ? user.email.split('@')[0] : '';
