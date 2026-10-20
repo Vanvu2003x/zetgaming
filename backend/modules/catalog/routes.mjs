@@ -16,9 +16,15 @@ catalogRouter.get('/games', async (req, res, next) => {
 
 catalogRouter.get('/admin/games', requireRole('admin'), async (req, res, next) => {
   try {
-    const { rows } = await req.db.query(`SELECT g.id,g.slug,g.name,g.mode,g.image,g.thumbnail,g.platform,g.active,
-      COALESCE(json_agg(json_build_object('id',p.id,'name',p.name,'nominal',p.nominal,'image',p.image,'badge',p.badge,'active',p.active,'tier',pr.tier,'customer_cents',pr.customer_cents,'ctv_cents',pr.ctv_cents) ORDER BY pr.customer_cents) FILTER (WHERE p.id IS NOT NULL),'[]') packages
+    const { rows } = await req.db.query(`WITH game_orders AS (
+        SELECT game_id,COUNT(*)::int total FROM orders GROUP BY game_id
+      ), package_orders AS (
+        SELECT package_id,COUNT(*)::int total FROM orders GROUP BY package_id
+      )
+      SELECT g.id,g.slug,g.name,g.mode,g.image,g.thumbnail,g.platform,g.active,COALESCE(MAX(go.total),0) order_count,
+      COALESCE(json_agg(json_build_object('id',p.id,'name',p.name,'nominal',p.nominal,'image',p.image,'badge',p.badge,'active',p.active,'tier',pr.tier,'customer_cents',pr.customer_cents,'ctv_cents',pr.ctv_cents,'order_count',COALESCE(po.total,0)) ORDER BY pr.customer_cents) FILTER (WHERE p.id IS NOT NULL),'[]') packages
       FROM games g LEFT JOIN packages p ON p.game_id=g.id LEFT JOIN prices pr ON pr.package_id=p.id AND pr.tier='standard'
+      LEFT JOIN game_orders go ON go.game_id=g.id LEFT JOIN package_orders po ON po.package_id=p.id
       GROUP BY g.id ORDER BY g.name`);
     res.json(rows);
   }

@@ -83,7 +83,7 @@ function toolbar() {
 function collection() {
   const type = page.slice(1);
   const counts = { games: `${state.games.length} game trong kho`, packages: `${state.packages.length} gói nạp`, orders: `${state.orders.length} đơn hàng`, ctvs: `${state.ctvs.length} cộng tác viên` };
-  content.innerHTML = `<div class="collection-summary"><span><strong>${counts[type]}</strong></span><span>Thay đổi được đồng bộ với cửa hàng</span></div><section class="panel table-panel">${toolbar()}<div id="table-content"></div><div id="table-pagination"></div></section>`;
+  content.innerHTML = `<div class="collection-summary"><span><strong>${counts[type]}</strong></span><span>${['games', 'packages'].includes(type) ? 'Số đơn gồm tất cả trạng thái' : 'Thay đổi được đồng bộ với cửa hàng'}</span></div><section class="panel table-panel">${toolbar()}<div id="table-content"></div><div id="table-pagination"></div></section>`;
   document.querySelector('#search').value = state.query;
   const status = document.querySelector('#status-filter');
   if (status) status.value = state.status;
@@ -101,11 +101,11 @@ function updateTable() {
   const result = paginate(items, state.page);
   state.page = result.page;
   document.querySelector('#result-count').textContent = `${items.length} kết quả`;
-  const headers = { orders: orderHeaders, games: ['Game / thumbnail', 'Ảnh nền', 'Kiểu nạp', 'Nền tảng', 'Gói nạp', 'Trạng thái', ''], packages: ['Gói nạp', 'Game', 'Giá khách', 'Giá CTV', 'Trạng thái', ''], ctvs: ['Cộng tác viên', 'Vai trò', 'Số dư ví', ''] };
+  const headers = { orders: orderHeaders, games: ['Game / thumbnail', 'Ảnh nền', 'Kiểu nạp', 'Nền tảng', 'Gói nạp', 'Số đơn', 'Trạng thái', ''], packages: ['Gói nạp', 'Game', 'Giá khách', 'Giá CTV', 'Số đơn', 'Trạng thái', ''], ctvs: ['Cộng tác viên', 'Vai trò', 'Số dư ví', ''] };
   const rows = result.items.map(item => {
     if (type === 'orders') return orderRow(item);
-    if (type === 'games') return `<tr><td>${resource({ ...item, image: item.thumbnail || item.image }, '/' + item.slug, true)}</td><td class="banner-cell">${image(item.image, item.name)}</td><td>${item.mode === 'uid' ? 'Nạp UID' : 'Nạp login'}</td><td>${e({ mobile: 'Mobile', pc: 'PC', other: 'Khác' }[item.platform] || item.platform)}</td><td>${item.packages.length} gói</td><td>${badge(item.active ? 'Đang hiển thị' : 'Đang ẩn', item.active ? 'green' : '')}</td><td>${editButton('game', item.id, item.name)}</td></tr>`;
-    if (type === 'packages') return `<tr><td>${resource(item, item.badge || item.nominal, true)}</td><td>${e(item.game_name)}</td><td class="amount">${money(item.customer_cents)}</td><td>${money(item.ctv_cents)}</td><td>${badge(item.active ? 'Đang bán' : 'Đang ẩn', item.active ? 'green' : '')}</td><td>${editButton('package', item.id, item.name)}</td></tr>`;
+    if (type === 'games') return `<tr><td>${resource({ ...item, image: item.thumbnail || item.image }, '/' + item.slug, true)}</td><td class="banner-cell">${image(item.image, item.name)}</td><td>${item.mode === 'uid' ? 'Nạp UID' : 'Nạp login'}</td><td>${e({ mobile: 'Mobile', pc: 'PC', other: 'Khác' }[item.platform] || item.platform)}</td><td>${item.packages.length} gói</td><td class="amount">${Number(item.order_count || 0).toLocaleString('vi-VN')}</td><td>${badge(item.active ? 'Đang hiển thị' : 'Đang ẩn', item.active ? 'green' : '')}</td><td>${editButton('game', item.id, item.name)}</td></tr>`;
+    if (type === 'packages') return `<tr><td>${resource(item, item.badge || item.nominal, true)}</td><td>${e(item.game_name)}</td><td class="amount">${money(item.customer_cents)}</td><td>${money(item.ctv_cents)}</td><td class="amount">${Number(item.order_count || 0).toLocaleString('vi-VN')}</td><td>${badge(item.active ? 'Đang bán' : 'Đang ẩn', item.active ? 'green' : '')}</td><td>${editButton('package', item.id, item.name)}</td></tr>`;
     return `<tr><td><div class="row-resource"><span class="avatar">${e(item.email.slice(0, 1).toUpperCase())}</span><strong>${e(item.email)}</strong></div></td><td>${badge('Cộng tác viên', 'blue')}</td><td class="amount">${money(item.wallet_cents)}</td><td><a class="button subtle" href="/orders?status=pending_admin">Phân đơn ${symbol('arrow')}</a></td></tr>`;
   });
   document.querySelector('#table-content').innerHTML = table(headers[type], rows);
