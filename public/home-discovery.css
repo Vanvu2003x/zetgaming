@@ -1,7 +1,13 @@
 /* The Soul Land foreground stays anchored while its silhouette extends upward. */
 .storefront[data-page=home] .mobile-banner{
-  background-image:linear-gradient(90deg,#070c1670 0%,#09132338 48%,#10243b20 100%),url('/zetgaming-hero-scene-soul-land-v4.png');
+  background-image:url('/zetgaming-hero-scene-soul-land-v4.png');
   background-position:center;background-size:cover;
+}
+.storefront[data-page=home] .mobile-banner:before{
+  background:linear-gradient(90deg,#070c16b3 0%,#070c1666 24%,#070c161a 43%,transparent 58%);
+}
+.storefront[data-page=home] .mobile-banner:after{
+  background:linear-gradient(90deg,#070b1366 0%,#070b1320 32%,transparent 52%);
 }
 .storefront[data-page=home] .mobile-hero-characters{
   bottom:0;right:0;animation:none;transform:none;transform-origin:right bottom;
