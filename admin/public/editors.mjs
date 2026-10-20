@@ -5,8 +5,7 @@ let dialogGeneration = 0;
 const input = (name, label, value, { type = 'text', full = false, required = false, help = '', max = '120' } = {}) => `<label class="${full ? 'full' : ''}">${label}<input name="${name}" value="${e(value)}" type="${type}" ${required ? 'required' : ''} ${type === 'number' ? 'min="0" step="0.01"' : `maxlength="${max}"`}>${help ? `<small>${help}</small>` : ''}</label>`;
 const select = (name, label, current, options) => `<label>${label}<select name="${name}">${options.map(([value, text]) => `<option value="${e(value)}" ${value === current ? 'selected' : ''}>${e(text)}</option>`).join('')}</select></label>`;
 const safeImage = url => /^(https:\/\/|\/(?!\/))/.test(url || '');
-const preview = (url, name) => `<div class="editor-preview"><img ${safeImage(url) ? `src="${e(imageUrl(url))}"` : 'hidden'} alt="Xem trước ảnh"><span>${e(name)}</span></div>`;
-const imagePicker = (field, label, value, help) => `<div class="image-picker"><label>${label}<span class="image-picker-preview ${field === 'thumbnail' ? 'square' : ''}"><img ${safeImage(value) ? `src="${e(imageUrl(value))}"` : 'hidden'} alt="Xem trước ${label.toLowerCase()}"><span>${field === 'thumbnail' ? 'Ảnh vuông' : 'Ảnh ngang'}</span></span><input type="file" data-upload-field="${field}" accept="image/png,image/jpeg,image/webp" aria-label="Chọn ${label.toLowerCase()}"></label><input type="hidden" name="${field}" value="${e(value || '')}"><small>${help} · PNG, JPG, WebP ≤ 5 MB</small></div>`;
+const imagePicker = (field, label, value, help, square = field === 'thumbnail') => `<div class="image-picker"><label>${label}<span class="image-picker-preview ${square ? 'square' : ''}"><img ${safeImage(value) ? `src="${e(imageUrl(value))}"` : 'hidden'} alt="Xem trước ${label.toLowerCase()}"><span>${square ? 'Ảnh vuông' : 'Ảnh ngang'}</span></span><input type="file" data-upload-field="${field}" accept="image/png,image/jpeg,image/webp" aria-label="Chọn ${label.toLowerCase()}"></label><input type="hidden" name="${field}" value="${e(value || '')}"><small>${help} · PNG, JPG, WebP ≤ 5 MB</small></div>`;
 function mount(title, description, body, context, submit = '') {
   const target = dialog();
   target.dataset.generation = String(++dialogGeneration);
@@ -22,14 +21,10 @@ function showError(error) {
   target.scrollIntoView({ block: 'nearest' });
 }
 function editor(type, item, fields, context) {
-  const target = mount(type === 'games' ? 'Chỉnh sửa game' : 'Chỉnh sửa gói nạp', type === 'games' ? 'Ảnh nền và thumbnail được quản lý riêng.' : item.game_name + ' · Giá nhập theo đồng Việt Nam', (type === 'games' ? '' : preview(item.image, item.name)) + `<div class="field-grid">${fields}</div>`, context, 'Lưu thay đổi');
+  const target = mount(type === 'games' ? 'Chỉnh sửa game' : 'Chỉnh sửa gói nạp', type === 'games' ? 'Ảnh nền và thumbnail được quản lý riêng.' : item.game_name + ' · Giá nhập theo đồng Việt Nam', `<div class="field-grid">${fields}</div>`, context, 'Lưu thay đổi');
   const form = target.querySelector('form');
   const preventBusyClose = event => { if (form.dataset.saving === 'true') event.preventDefault(); };
   target.addEventListener('cancel', preventBusyClose);
-  form.querySelector('[name="image"]:not([type="hidden"])')?.addEventListener('input', event => {
-    const url = event.target.value.trim(); const image = target.querySelector('.editor-preview img');
-    if (safeImage(url)) { image.src = imageUrl(url); image.hidden = false; } else { image.removeAttribute('src'); image.hidden = true; }
-  });
   const objectUrls = new Map();
   const cleanup = () => { for (const url of objectUrls.values()) URL.revokeObjectURL(url); target.removeEventListener('cancel', preventBusyClose); };
   target.addEventListener('close', cleanup, { once: true });
@@ -115,7 +110,7 @@ export function openPackageEditor(pkg, context) {
     input('badge', 'Nhãn nổi bật', pkg.badge || '', { max: '40' }),
     input('customer_price', 'Giá khách (₫)', Number(pkg.customer_cents || 0) / 100, { type: 'number', required: true }),
     input('ctv_price', 'Giá CTV (₫)', Number(pkg.ctv_cents || 0) / 100, { type: 'number', required: true }),
-    input('image', 'Ảnh gói nạp', pkg.own_image, { full: true, max: '1000', help: 'Để trống để dùng ảnh game.' }),
+    `<div class="full">${imagePicker('image', 'Ảnh gói nạp', pkg.own_image, 'Ảnh sản phẩm hiển thị tại bước chọn gói', true)}</div>`,
     `<label class="check-field full"><input name="active" type="checkbox" ${pkg.active ? 'checked' : ''}> Đang bán trên cửa hàng</label>`,
   ].join(''), context);
 }
