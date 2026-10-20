@@ -1,10 +1,10 @@
 import { escapeHtml as e, statuses, statusColor, money, toCents, date, search, paginate, revenueSeries, imageUrl } from './data.mjs';
-import { openGameEditor, openPackageEditor, openOrder } from './editors.mjs';
+import { openGameEditor, openPackageEditor, openOrder, openCategoryEditor } from './editors.mjs?v=categories-1';
 
 const page = document.body.dataset.page;
 const content = document.querySelector('#page-content');
 const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
-const state = { games: [], packages: [], orders: [], ctvs: [], query: '', status: '', game: '', page: 1 };
+const state = { games: [], packages: [], categories: [], orders: [], ctvs: [], query: '', status: '', game: '', category: '', page: 1 };
 let toastTimer;
 export function toast(message, error = false) {
   const target = document.querySelector('#toast');
@@ -72,39 +72,45 @@ function dashboard() {
 
 function toolbar() {
   const type = page.slice(1);
-  const placeholders = { orders: 'Tìm mã đơn, khách hàng, gói nạp…', games: 'Tìm tên game hoặc đường dẫn…', packages: 'Tìm tên gói nạp hoặc game…', ctvs: 'Tìm email cộng tác viên…' };
+  const placeholders = { orders: 'Tìm mã đơn, khách hàng, gói nạp…', games: 'Tìm tên game hoặc phân loại…', categories: 'Tìm tên phân loại…', packages: 'Tìm tên gói nạp hoặc game…', ctvs: 'Tìm email cộng tác viên…' };
   let filters = '';
   if (type === 'orders') filters = `<select id="status-filter" aria-label="Lọc trạng thái đơn"><option value="">Tất cả trạng thái</option>${Object.entries(statuses).map(([key, label]) => `<option value="${key}">${label}</option>`).join('')}</select>`;
   if (type === 'games' || type === 'packages') filters = `<select id="status-filter" aria-label="Lọc trạng thái hiển thị"><option value="">Tất cả trạng thái</option><option value="active">${type === 'games' ? 'Đang hiển thị' : 'Đang bán'}</option><option value="hidden">Đang ẩn</option></select>`;
   if (type === 'packages') filters += `<select id="game-filter" aria-label="Lọc theo game"><option value="">Tất cả game</option>${state.games.map(g => `<option value="${e(g.id)}">${e(g.name)}</option>`).join('')}</select>`;
+  if (type === 'games') filters += `<select id="category-filter" aria-label="Lọc phân loại"><option value="">Tất cả phân loại</option>${state.categories.map(c => `<option value="${e(c.id)}">${e(c.name)}</option>`).join('')}<option value="uncategorized">Chưa phân loại</option></select>`;
+  if (type === 'categories') filters += '<button type="button" class="button primary" data-new-category>+ Thêm phân loại</button>';
   return `<div class="toolbar"><label class="search-field">${symbol('search')}<input id="search" type="search" placeholder="${placeholders[type]}" aria-label="${placeholders[type]}"></label>${filters}<span class="toolbar-count" id="result-count"></span></div>`;
 }
 
 function collection() {
   const type = page.slice(1);
-  const counts = { games: `${state.games.length} game trong kho`, packages: `${state.packages.length} gói nạp`, orders: `${state.orders.length} đơn hàng`, ctvs: `${state.ctvs.length} cộng tác viên` };
+  const counts = { games: `${state.games.length} game trong kho`, categories: `${state.categories.length} phân loại`, packages: `${state.packages.length} gói nạp`, orders: `${state.orders.length} đơn hàng`, ctvs: `${state.ctvs.length} cộng tác viên` };
   content.innerHTML = `<div class="collection-summary"><span><strong>${counts[type]}</strong></span><span>${['games', 'packages'].includes(type) ? 'Số đơn gồm tất cả trạng thái' : 'Thay đổi được đồng bộ với cửa hàng'}</span></div><section class="panel table-panel">${toolbar()}<div id="table-content"></div><div id="table-pagination"></div></section>`;
   document.querySelector('#search').value = state.query;
   const status = document.querySelector('#status-filter');
   if (status) status.value = state.status;
   const game = document.querySelector('#game-filter');
   if (game) game.value = state.game;
-  for (const [id, key] of [['search', 'query'], ['status-filter', 'status'], ['game-filter', 'game']]) document.getElementById(id)?.addEventListener(id === 'search' ? 'input' : 'change', event => { state[key] = event.target.value; state.page = 1; updateTable(); });
+  const category = document.querySelector('#category-filter');
+  if (category) category.value = state.category;
+  for (const [id, key] of [['search', 'query'], ['status-filter', 'status'], ['game-filter', 'game'], ['category-filter', 'category']]) document.getElementById(id)?.addEventListener(id === 'search' ? 'input' : 'change', event => { state[key] = event.target.value; state.page = 1; updateTable(); });
   updateTable();
 }
 
 function updateTable() {
   const type = page.slice(1);
-  let items = search(state[type], state.query, { games: ['name', 'slug'], packages: ['name', 'game_name', 'nominal'], orders: ['code', 'customer', 'package_name'], ctvs: ['email'] }[type]);
+  let items = search(state[type], state.query, { games: ['name', 'slug', 'category_name'], categories: ['name'], packages: ['name', 'game_name', 'nominal'], orders: ['code', 'customer', 'package_name'], ctvs: ['email'] }[type]);
   if (state.status) items = items.filter(item => type === 'orders' ? item.status === state.status : Boolean(item.active) === (state.status === 'active'));
   if (state.game) items = items.filter(item => item.game_id === state.game);
+  if (state.category) items = items.filter(item => state.category === 'uncategorized' ? !item.category_id : item.category_id === state.category);
   const result = paginate(items, state.page);
   state.page = result.page;
   document.querySelector('#result-count').textContent = `${items.length} kết quả`;
-  const headers = { orders: orderHeaders, games: ['Game / thumbnail', 'Ảnh nền', 'Kiểu nạp', 'Nền tảng', 'Gói nạp', 'Số đơn', 'Trạng thái', ''], packages: ['Gói nạp', 'Game', 'Giá khách', 'Giá CTV', 'Số đơn', 'Trạng thái', ''], ctvs: ['Cộng tác viên', 'Vai trò', 'Số dư ví', ''] };
+  const headers = { orders: orderHeaders, games: ['Game / thumbnail', 'Ảnh nền', 'Kiểu nạp', 'Phân loại', 'Gói nạp', 'Số đơn', 'Trạng thái', ''], categories: ['Tên phân loại', 'Số game', ''], packages: ['Gói nạp', 'Game', 'Giá khách', 'Giá CTV', 'Số đơn', 'Trạng thái', ''], ctvs: ['Cộng tác viên', 'Vai trò', 'Số dư ví', ''] };
   const rows = result.items.map(item => {
     if (type === 'orders') return orderRow(item);
-    if (type === 'games') return `<tr><td>${resource({ ...item, image: item.thumbnail || item.image }, '/' + item.slug, true)}</td><td class="banner-cell">${image(item.image, item.name)}</td><td>${item.mode === 'uid' ? 'Nạp UID' : 'Nạp login'}</td><td>${e({ mobile: 'Mobile', pc: 'PC', other: 'Khác' }[item.platform] || item.platform)}</td><td>${item.packages.length} gói</td><td class="amount">${Number(item.order_count || 0).toLocaleString('vi-VN')}</td><td>${badge(item.active ? 'Đang hiển thị' : 'Đang ẩn', item.active ? 'green' : '')}</td><td>${editButton('game', item.id, item.name)}</td></tr>`;
+    if (type === 'categories') return `<tr><td><strong>${e(item.name)}</strong></td><td>${Number(item.game_count || 0).toLocaleString('vi-VN')} game</td><td>${editButton('category', item.id, item.name)}</td></tr>`;
+    if (type === 'games') return `<tr><td>${resource({ ...item, image: item.thumbnail || item.image }, '/' + item.slug, true)}</td><td class="banner-cell">${image(item.image, item.name)}</td><td>${item.mode === 'uid' ? 'Nạp UID' : 'Nạp login'}</td><td>${e(item.category_name || 'Chưa phân loại')}</td><td>${item.packages.length} gói</td><td class="amount">${Number(item.order_count || 0).toLocaleString('vi-VN')}</td><td>${badge(item.active ? 'Đang hiển thị' : 'Đang ẩn', item.active ? 'green' : '')}</td><td>${editButton('game', item.id, item.name)}</td></tr>`;
     if (type === 'packages') return `<tr><td>${resource(item, item.badge || item.nominal, true)}</td><td>${e(item.game_name)}</td><td class="amount">${money(item.customer_cents)}</td><td>${money(item.ctv_cents)}</td><td class="amount">${Number(item.order_count || 0).toLocaleString('vi-VN')}</td><td>${badge(item.active ? 'Đang bán' : 'Đang ẩn', item.active ? 'green' : '')}</td><td>${editButton('package', item.id, item.name)}</td></tr>`;
     return `<tr><td><div class="row-resource"><span class="avatar">${e(item.email.slice(0, 1).toUpperCase())}</span><strong>${e(item.email)}</strong></div></td><td>${badge('Cộng tác viên', 'blue')}</td><td class="amount">${money(item.wallet_cents)}</td><td><a class="button subtle" href="/orders?status=pending_admin">Phân đơn ${symbol('arrow')}</a></td></tr>`;
   });
@@ -120,7 +126,7 @@ async function load() {
   const refresh = document.querySelector('#refresh'); refresh.disabled = true;
   content.setAttribute('aria-busy', 'true');
   try {
-    const paths = page === '/' ? ['games', 'orders'] : page === '/packages' ? ['games'] : [page.slice(1)];
+    const paths = page === '/' ? ['games', 'orders'] : page === '/packages' ? ['games'] : page === '/games' ? ['games', 'categories'] : [page.slice(1)];
     for (const [name, data] of await Promise.all(paths.map(async name => [name, await api(name === 'orders' ? '/api/orders' : '/api/admin/' + name)]))) state[name] = data;
     state.packages = state.games.flatMap(game => (game.packages || []).map(pkg => ({ ...pkg, image: pkg.image || game.image, own_image: pkg.image || '', game_id: game.id, game_name: game.name })));
     if (page === '/') dashboard(); else collection();
@@ -148,13 +154,15 @@ if (content) {
   const query = new URLSearchParams(location.search);
   state.status = query.get('status') || '';
   document.querySelector('#refresh').addEventListener('click', load);
-  const context = { api, toast, refresh: load, symbol, statusBadge, toCents };
+  const context = { api, toast, refresh: load, symbol, statusBadge, toCents, getCategories: () => state.categories };
   content.addEventListener('click', event => {
     const button = event.target.closest('button'); if (!button) return;
     if (button.hasAttribute('data-retry')) return load();
     if (button.dataset.pageNumber) { state.page = Number(button.dataset.pageNumber); updateTable(); }
     if (button.dataset.edit === 'game') openGameEditor(state.games.find(g => g.id === button.dataset.id), context);
     if (button.dataset.edit === 'package') openPackageEditor(state.packages.find(p => p.id === button.dataset.id), context);
+    if (button.dataset.edit === 'category') openCategoryEditor(state.categories.find(c => c.id === button.dataset.id), context);
+    if (button.hasAttribute('data-new-category')) openCategoryEditor(null, context);
     if (button.dataset.order) openOrder(button.dataset.order, context);
   });
   const menu = document.querySelector('.mobile-menu');

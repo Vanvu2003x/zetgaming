@@ -1,0 +1,55 @@
+import 'dotenv/config';
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { randomUUID } from 'node:crypto';
+import { once } from 'node:events';
+import express from 'express';
+import cookieParser from 'cookie-parser';
+import pg from 'pg';
+import { categoriesRouter } from '../backend/modules/catalog/categories.mjs';
+import { catalogRouter } from '../backend/modules/catalog/routes.mjs';
+import { csrfToken } from '../backend/middleware/csrf.mjs';
+
+test('admin can create, assign and rename categories; changes propagate without losing order counts', async t => {
+  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+  const db = await pool.connect();
+  t.after(async () => { await db.query('ROLLBACK'); db.release(); await pool.end(); });
+  await db.query('BEGIN');
+  const userId = randomUUID(); const gameId = randomUUID();
+  await db.query("INSERT INTO users(id,email,password_hash,role) VALUES($1,$2,'unused','admin')", [userId, userId + '@fixture.test']);
+  await db.query("INSERT INTO games(id,slug,name,mode,image) VALUES($1,$2,'Fixture game','uid','/fixture.png')", [gameId, gameId]);
+  const app = express();
+  app.use(express.json(), cookieParser(), csrfToken, (req, _res, next) => {
+    req.db = db;
+    if (req.get('x-test-role')) req.user = { id: userId, role: req.get('x-test-role') };
+    next();
+  });
+  app.get('/csrf', (req, res) => res.json({ token: req.csrfToken }));
+  app.use('/api', categoriesRouter, catalogRouter);
+  app.use((error, _req, res, _next) => res.status(error.statusCode || 500).json({ error: error.message }));
+  const server = app.listen(0, '127.0.0.1'); await once(server, 'listening');
+  t.after(() => { server.closeAllConnections(); server.close(); });
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const csrf = await fetch(base + '/csrf'); const { token } = await csrf.json();
+  const cookie = csrf.headers.getSetCookie()[0].split(';')[0];
+  const call = (path, method = 'GET', body, role = 'admin', csrf = token) => fetch(base + path, { method, headers: { cookie, 'x-csrf-token': csrf, 'content-type': 'application/json', ...(role ? { 'x-test-role': role } : {}) }, body: body ? JSON.stringify(body) : undefined });
+  assert.equal((await call('/api/admin/categories', 'GET', undefined, null)).status, 401);
+  assert.equal((await call('/api/admin/categories', 'GET', undefined, 'customer')).status, 403);
+  assert.equal((await call('/api/admin/categories', 'POST', { name: 'x' }, 'admin', 'invalid')).status, 403);
+  assert.equal((await call('/api/admin/categories', 'POST', { name: '  ' })).status, 400);
+  const name = 'Fixture ' + randomUUID();
+  const created = await call('/api/admin/categories', 'POST', { name }); assert.equal(created.status, 201);
+  const category = await created.json();
+  assert.equal((await call('/api/admin/games/' + gameId, 'PATCH', { category_id: 'missing' })).status, 400);
+  assert.equal((await call('/api/admin/games/' + gameId, 'PATCH', { category_id: category.id })).status, 200);
+  const renamed = await call('/api/admin/categories/' + category.id, 'PATCH', { name: name + ' renamed' }); assert.equal(renamed.status, 200);
+  const game = (await (await call('/api/admin/games')).json()).find(g => g.id === gameId);
+  assert.equal(game.category_id, category.id);
+  assert.equal(game.category_name, name + ' renamed');
+  assert.equal(game.order_count, 0);
+  assert.equal(game.mode, 'uid');
+  assert.equal((await (await call('/api/admin/categories')).json()).find(c => c.id === category.id).game_count, 1);
+  assert.equal((await call('/api/admin/categories/missing', 'PATCH', { name: 'Valid name' })).status, 404);
+  // A uniqueness violation aborts the transaction; exercise it last before the rollback.
+  assert.equal((await call('/api/admin/categories', 'POST', { name: (name + ' renamed').toUpperCase() })).status, 409);
+});

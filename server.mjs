@@ -56,7 +56,7 @@ export function createFrontend({backendUrl=process.env.BACKEND_URL || 'http://12
     }catch(error){next(error);}
   });
   if (adminOnly) {
-    app.use('/assets', express.static(join(ROOT, 'admin', 'public'), { index: false, dotfiles: 'deny', maxAge: 0 }));
+    app.use('/assets', express.static(join(ROOT, 'admin', 'public'), { index: false, dotfiles: 'deny', maxAge: 0, setHeaders: res => res.setHeader('Cache-Control', 'no-store') }));
     app.use(createAdminRouter(backend));
   }
   app.post(Object.keys(formRoutes),async(req,res,next)=>{

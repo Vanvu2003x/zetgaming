@@ -20,7 +20,7 @@ let token = (await login.text()).match(/name="_csrf" value="([^"]+)"/)[1];
 const signedIn = await request('/login', { method: 'POST', headers: { origin: base, 'content-type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ email: process.env.ADMIN_EMAIL || 'admin@example.com', password: process.env.ADMIN_PASSWORD || '', _csrf: token }) });
 assert.equal(signedIn.status, 303);
 assert.equal(signedIn.headers.get('location'), '/');
-for (const path of ['/', '/games', '/packages', '/orders', '/ctvs']) {
+for (const path of ['/', '/games', '/categories', '/packages', '/orders', '/ctvs']) {
   const response = await request(path); const html = await response.text();
   assert.equal(response.status, 200); assert.match(html, /admin-shell/);
   token = html.match(/name="csrf-token" content="([^"]+)"/)[1];
@@ -43,4 +43,4 @@ assert.equal((await request('/api/orders')).status, 200);
 assert.equal((await request('/api/admin/ctvs')).status, 200);
 assert.equal((await request('/logout', { method: 'POST', headers: { origin: base, 'content-type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ _csrf: token }) })).status, 303);
 assert.equal((await request('/')).headers.get('location'), '/login');
-console.log('Admin smoke passed: login, five pages, role-protected API, CSRF rejection, game/package save, orders, CTVs, logout.');
+console.log('Admin smoke passed: login, six pages, role-protected API, CSRF rejection, game/package save, orders, CTVs, logout.');

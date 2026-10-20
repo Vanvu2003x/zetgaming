@@ -3,7 +3,7 @@ import { escapeHtml as e, money, date, imageUrl } from './data.mjs';
 const dialog = () => document.querySelector('#editor');
 let dialogGeneration = 0;
 const input = (name, label, value, { type = 'text', full = false, required = false, help = '', max = '120' } = {}) => `<label class="${full ? 'full' : ''}">${label}<input name="${name}" value="${e(value)}" type="${type}" ${required ? 'required' : ''} ${type === 'number' ? 'min="0" step="0.01"' : `maxlength="${max}"`}>${help ? `<small>${help}</small>` : ''}</label>`;
-const select = (name, label, current, options) => `<label>${label}<select name="${name}">${options.map(([value, text]) => `<option value="${value}" ${value === current ? 'selected' : ''}>${text}</option>`).join('')}</select></label>`;
+const select = (name, label, current, options) => `<label>${label}<select name="${name}">${options.map(([value, text]) => `<option value="${e(value)}" ${value === current ? 'selected' : ''}>${e(text)}</option>`).join('')}</select></label>`;
 const safeImage = url => /^(https:\/\/|\/(?!\/))/.test(url || '');
 const preview = (url, name) => `<div class="editor-preview"><img ${safeImage(url) ? `src="${e(imageUrl(url))}"` : 'hidden'} alt="Xem trước ảnh"><span>${e(name)}</span></div>`;
 const imagePicker = (field, label, value, help) => `<div class="image-picker"><label>${label}<span class="image-picker-preview ${field === 'thumbnail' ? 'square' : ''}"><img ${safeImage(value) ? `src="${e(imageUrl(value))}"` : 'hidden'} alt="Xem trước ${label.toLowerCase()}"><span>${field === 'thumbnail' ? 'Ảnh vuông' : 'Ảnh ngang'}</span></span><input type="file" data-upload-field="${field}" accept="image/png,image/jpeg,image/webp" aria-label="Chọn ${label.toLowerCase()}"></label><input type="hidden" name="${field}" value="${e(value || '')}"><small>${help} · PNG, JPG, WebP ≤ 5 MB</small></div>`;
@@ -88,9 +88,24 @@ export function openGameEditor(game, context) {
     input('name', 'Tên game', game.name, { full: true, required: true }),
     `<div class="full game-image-pickers">${imagePicker('image', 'Ảnh nền / banner', game.image, 'Nền ngang của card và trang game')}${imagePicker('thumbnail', 'Thumbnail', game.thumbnail, 'Icon vuông cạnh tên game')}</div>`,
     select('mode', 'Kiểu nạp', game.mode, [['uid', 'Nạp UID'], ['login', 'Nạp login']]),
-    select('platform', 'Nền tảng', game.platform, [['mobile', 'Mobile'], ['pc', 'PC'], ['other', 'Khác']]),
+    select('category_id', 'Phân loại', game.category_id || '', [['', 'Chưa phân loại'], ...context.getCategories().map(category => [category.id, category.name])]),
+    '<small class="full muted">Thêm hoặc đổi tên loại trong menu Phân loại.</small>',
     `<label class="check-field full"><input name="active" type="checkbox" ${game.active ? 'checked' : ''}> Hiển thị game trên cửa hàng</label>`,
   ].join(''), context);
+}
+export function openCategoryEditor(category, context) {
+  const target = mount(category ? 'Sửa phân loại' : 'Thêm phân loại', 'Tên sẽ được cập nhật cho mọi game thuộc phân loại này.', `<div class="field-grid">${input('name', 'Tên phân loại', category?.name || '', { full: true, required: true, max: '80', help: 'Ví dụ: Nạp UID, Nạp login, Game quốc tế…' })}</div>`, context, category ? 'Lưu phân loại' : 'Tạo phân loại');
+  const form = target.querySelector('form');
+  form.querySelector('[name="name"]').focus();
+  form.addEventListener('submit', async event => {
+    event.preventDefault();
+    const button = form.querySelector('[type="submit"]'); button.disabled = true; form.dataset.saving = 'true';
+    try {
+      await context.api('/api/admin/categories' + (category ? '/' + encodeURIComponent(category.id) : ''), { name: form.elements.name.value }, category ? 'PATCH' : 'POST');
+      target.close(); context.toast(category ? 'Đã cập nhật phân loại.' : 'Đã tạo phân loại.'); await context.refresh();
+    } catch (error) { showError(error); }
+    finally { button.disabled = false; form.dataset.saving = 'false'; }
+  });
 }
 export function openPackageEditor(pkg, context) {
   if (!pkg) return;

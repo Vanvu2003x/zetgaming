@@ -21,11 +21,12 @@ catalogRouter.get('/admin/games', requireRole('admin'), async (req, res, next) =
       ), package_orders AS (
         SELECT package_id,COUNT(*)::int total FROM orders GROUP BY package_id
       )
-      SELECT g.id,g.slug,g.name,g.mode,g.image,g.thumbnail,g.platform,g.active,COALESCE(MAX(go.total),0) order_count,
+      SELECT g.id,g.slug,g.name,g.mode,g.image,g.thumbnail,g.platform,g.active,g.category_id,c.name category_name,COALESCE(MAX(go.total),0) order_count,
       COALESCE(json_agg(json_build_object('id',p.id,'name',p.name,'nominal',p.nominal,'image',p.image,'badge',p.badge,'active',p.active,'tier',pr.tier,'customer_cents',pr.customer_cents,'ctv_cents',pr.ctv_cents,'order_count',COALESCE(po.total,0)) ORDER BY pr.customer_cents) FILTER (WHERE p.id IS NOT NULL),'[]') packages
       FROM games g LEFT JOIN packages p ON p.game_id=g.id LEFT JOIN prices pr ON pr.package_id=p.id AND pr.tier='standard'
       LEFT JOIN game_orders go ON go.game_id=g.id LEFT JOIN package_orders po ON po.package_id=p.id
-      GROUP BY g.id ORDER BY g.name`);
+      LEFT JOIN game_categories c ON c.id=g.category_id
+      GROUP BY g.id,c.name ORDER BY g.name`);
     res.json(rows);
   }
   catch (error) { next(error); }
@@ -40,11 +41,13 @@ catalogRouter.patch('/admin/games/:id', requireCsrf, requireRole('admin'), async
     const platform = String(req.body.platform ?? current.platform).trim().toLowerCase().slice(0, 20);
     const image = String(req.body.image ?? current.image).trim().slice(0, 1000);
     const thumbnail = String(req.body.thumbnail ?? current.thumbnail).trim().slice(0, 1000);
+    const categoryId = req.body.category_id === undefined ? current.category_id : String(req.body.category_id || '').trim();
+    if (categoryId && !(await req.db.query('SELECT id FROM game_categories WHERE id=$1', [categoryId])).rowCount) return res.status(400).json({ error: 'Phân loại không tồn tại. Vui lòng chọn lại.' });
     const active = req.body.active === undefined ? current.active : Boolean(req.body.active);
     const validImage = value => /^(https:\/\/|\/(?!\/))/.test(value) && !/[<>]/.test(value);
     if (!name || !['uid', 'login'].includes(mode) || !platform || !validImage(image) || (thumbnail && !validImage(thumbnail))) return res.status(400).json({ error: 'Thông tin game không hợp lệ' });
-    const result = await req.db.query('UPDATE games SET name=$1,mode=$2,image=$3,platform=$4,active=$5,thumbnail=$7 WHERE id=$6 RETURNING id,slug,name,mode,image,thumbnail,platform,active', [name, mode, image, platform, active, req.params.id, thumbnail]);
-    await audit(req.db, req.user.id, 'game.updated', req.params.id, { fields: ['name', 'mode', 'image', 'thumbnail', 'platform', 'active'] });
+    const result = await req.db.query('UPDATE games SET name=$1,mode=$2,image=$3,platform=$4,active=$5,thumbnail=$7,category_id=$8 WHERE id=$6 RETURNING id,slug,name,mode,image,thumbnail,platform,active,category_id', [name, mode, image, platform, active, req.params.id, thumbnail, categoryId || null]);
+    await audit(req.db, req.user.id, 'game.updated', req.params.id, { fields: ['name', 'mode', 'image', 'thumbnail', 'category_id', 'active'] });
     res.json(result.rows[0]);
   } catch (error) { next(error); }
 });

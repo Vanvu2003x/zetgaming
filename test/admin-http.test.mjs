@@ -42,7 +42,7 @@ test('separate admin origin protects pages and uses an independent layout', asyn
   assert.match(signedIn.headers.get('set-cookie'), /HttpOnly/);
   assert.match((await signIn({ email: 'customer@example.com' })).headers.get('location'), /^\/login\?error=/);
   assert.match((await signIn({ email: 'admin@example.com', _csrf: 'invalid' })).headers.get('location'), /^\/login\?error=/);
-  for (const path of ['/', '/games', '/packages', '/orders', '/ctvs']) {
+  for (const path of ['/', '/games', '/categories', '/packages', '/orders', '/ctvs']) {
     const response = await get(path, 'session=admin');
     assert.equal(response.status, 200);
     assert.match(response.headers.get('cache-control'), /no-store/);
@@ -54,6 +54,7 @@ test('separate admin origin protects pages and uses an independent layout', asyn
   const asset = await get('/assets/admin.js');
   assert.equal(asset.status, 200);
   assert.match(asset.headers.get('content-type'), /javascript/);
+  assert.match(asset.headers.get('cache-control'), /no-store/);
   const upload = await fetch(base + '/api/admin/uploads', { method: 'POST', headers: { 'content-type': 'image/png' }, body: Buffer.from([137, 80, 78, 71]) });
   assert.deepEqual(await upload.json(), { bytes: 4, type: 'image/png' });
 });
