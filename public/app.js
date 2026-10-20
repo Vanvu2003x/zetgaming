@@ -69,17 +69,7 @@ function bindForms() {
   };
   const targetInput = $('#target');
   const targetValue = $('#orderTargetValue');
-  targetInput?.addEventListener('input', () => { if (targetValue) targetValue.textContent = targetInput.value.trim() || '—'; });
-  document.querySelectorAll('[data-verify-uid]').forEach(button => button.addEventListener('click', () => {
-    const hint = $('#uidHint');
-    if (!targetInput?.value.trim()) { hint.textContent = 'Nhập UID trước rồi bấm kiểm tra.'; hint.dataset.state = 'error'; targetInput?.focus(); return; }
-    hint.textContent = 'Đã nhận UID. Bạn có thể chọn gói nạp.';
-    hint.dataset.state = 'ok';
-  }));
-  document.querySelectorAll('.package-tab').forEach(tab => tab.addEventListener('click', () => {
-    document.querySelectorAll('.package-tab').forEach(item => item.classList.remove('is-active'));
-    tab.classList.add('is-active');
-  }));
+  targetInput?.addEventListener('input', () => { if (targetValue) targetValue.textContent = targetInput.value.trim() || 'Chưa nhập'; });
   orderForm?.addEventListener('change', updatePackage);
   orderForm?.querySelectorAll('[data-payment-choice]').forEach(choice => choice.addEventListener('change', () => {
     if (choice.checked) $('#payment').value = choice.dataset.paymentChoice;

@@ -1,0 +1,102 @@
+/* Clear, sequential checkout; scoped away from the shop and admin. */
+.topup-detail-page{--checkout-surface:#101722;--checkout-line:#2a3546;--checkout-muted:#b4c0d1;--checkout-accent:#ffac7f}
+.topup-detail-page .detail-shell{display:block;margin-top:24px}
+.topup-detail-page .detail-game-sidebar{display:none}
+.topup-detail-page .game-checkout{display:grid;grid-template-columns:minmax(0,1fr) 320px;grid-template-areas:'account summary' 'packages summary' 'payment summary';align-items:start;gap:20px;margin:0}
+.topup-detail-page :is(.account-panel,.package-panel,.payment-panel,.order-submit-panel){border:1px solid var(--checkout-line);border-radius:14px;background:var(--checkout-surface);padding:24px;min-width:0;box-shadow:none}
+.topup-detail-page .account-panel{grid-area:account}
+.topup-detail-page .package-panel{grid-area:packages}
+.topup-detail-page .payment-panel{grid-area:payment}
+.topup-detail-page .order-submit-panel{grid-area:summary;position:sticky;top:100px;padding:24px}
+.topup-detail-page .detail-section-heading{margin:0 0 22px;gap:12px;align-items:center}
+.checkout-step{display:flex;align-items:center;gap:12px;min-width:0}
+.checkout-step-number{display:grid;place-items:center;flex-shrink:0;width:30px;height:30px;border:1px solid #ac714b55;border-radius:8px;background:#ff9f6510;color:var(--checkout-accent);font-size:12px;font-weight:600;letter-spacing:.5px}
+.topup-detail-page .detail-section-heading h2{margin:0;font:600 20px/1.3 'Signika Negative',system-ui,sans-serif;letter-spacing:0;color:#f2f5fb}
+.checkout-required,.topup-detail-page .package-count{font-size:12px;color:var(--checkout-muted);white-space:nowrap}
+.checkout-target-label{display:block;margin-bottom:8px;font-size:13px;font-weight:500;color:#d6deeb}
+.topup-detail-page .target-field{height:52px;gap:12px;padding:0 14px;border:1px solid #3a485d;border-radius:9px;background:#0a111c;box-shadow:none;transition:border-color .15s}
+.topup-detail-page .target-field:focus-within{border-color:var(--checkout-accent);box-shadow:0 0 0 3px #ffac7f12}
+.topup-detail-page .target-field>svg{width:19px;height:19px;color:#a7b6cd;flex-shrink:0}
+.topup-detail-page .target-field input{font-size:15px;color:#f5f7fb;padding:0;border-radius:0}
+.topup-detail-page .target-field input::placeholder{color:#a3b0c4;opacity:1}
+.topup-detail-page .field-hint{margin:10px 0 0;color:var(--checkout-muted);font-size:12px;line-height:1.6}
+.checkout-guide{margin-top:14px;padding-top:12px;border-top:1px solid #ffffff0a;font-size:12px}
+.checkout-guide summary{cursor:pointer;color:var(--checkout-accent);width:fit-content;padding:3px 0}
+.checkout-guide p{margin:10px 0 0;padding:12px 14px;border-radius:8px;background:#0b121d;color:#c0cbdc;line-height:1.8}
+.topup-detail-page .package-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.topup-detail-page .package-choice{position:relative;display:flex;align-items:center;gap:14px;min-width:0;min-height:116px;padding:18px 14px;border:1px solid #334054;border-radius:10px;background:#0c131f;box-shadow:none;transition:border-color .15s,background .15s;cursor:pointer}
+.topup-detail-page .package-choice:hover{transform:none;border-color:#a27b60;box-shadow:none;background:#141c28}
+.topup-detail-page .package-choice:has(input:checked){border:1px solid var(--checkout-accent);background:#221c1b;box-shadow:0 0 0 1px #ffac7f30}
+.topup-detail-page .package-choice:has(input:focus-visible){outline:2px solid var(--checkout-accent);outline-offset:4px}
+.topup-detail-page .package-visual{display:grid;place-items:center;flex-shrink:0;width:48px;height:54px;border-radius:8px;overflow:hidden;background:transparent;box-shadow:none;grid-row:auto;margin:0}
+.topup-detail-page .package-visual:after{display:none}
+.topup-detail-page .package-visual img{width:100%;height:100%;object-fit:contain}
+.crystal-icon{width:42px;height:48px;filter:drop-shadow(0 4px 10px #3ac5ed20)}
+.topup-detail-page .package-copy{display:flex;flex-direction:column;align-items:flex-start;gap:9px;flex:1;min-width:0;align-self:center}
+.topup-detail-page .package-name{font-size:14px;font-weight:500;color:#e6edf8;line-height:1.4;margin:0;padding-right:8px}
+.topup-detail-page .package-copy>strong{font-size:20px;line-height:1.2;color:#f5f8ff;font-weight:650;white-space:nowrap}
+.topup-detail-page .package-choice:has(input:checked) .package-copy>strong{color:var(--checkout-accent)}
+.topup-detail-page .package-bonus{font-size:11px;color:#9cddc5;margin:0}
+.topup-detail-page .package-check{position:absolute;top:8px;right:8px;width:16px;height:16px;border-radius:50%;display:grid;place-items:center;background:var(--checkout-accent);color:#23170d;opacity:0;font-size:11px;line-height:1}
+.topup-detail-page .package-choice:has(input:checked) .package-check{opacity:1}
+.topup-detail-page .payment-choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.topup-detail-page .payment-choice{display:flex;align-items:center;gap:10px;min-height:82px;padding:14px 12px;border:1px solid #334054;border-radius:10px;background:#0c131f;box-shadow:none}
+.topup-detail-page .payment-choice:has(input:checked){border:1px solid var(--checkout-accent);background:#221c1b}
+.topup-detail-page .payment-choice:has(input:disabled){opacity:.6;cursor:default}
+.topup-detail-page .payment-choice:has(input:focus-visible){outline:2px solid var(--checkout-accent);outline-offset:4px}
+.topup-detail-page .payment-choice-icon{display:grid;place-items:center;flex-shrink:0;width:30px;height:34px;background:none;border-radius:0;color:#bbc9de}
+.topup-detail-page .payment-choice-icon svg{width:24px;height:24px}
+.topup-detail-page .payment-choice:has(input:checked) .payment-choice-icon{color:var(--checkout-accent);background:none}
+.topup-detail-page .payment-choice strong{font-size:13px;color:#eef2f8;font-weight:600}
+.topup-detail-page .payment-choice small{font-size:11px;line-height:1.4;color:var(--checkout-muted);margin-top:5px}
+.topup-detail-page .payment-choice>b{width:15px;height:15px;line-height:15px;right:7px;top:7px;font-size:10px;background:var(--checkout-accent);color:#23170d}
+.checkout-summary-heading{display:flex;align-items:center;gap:8px;padding-bottom:20px;border-bottom:1px solid var(--checkout-line)}
+.checkout-summary-heading>span{display:grid;place-items:center;color:var(--checkout-accent)}
+.checkout-summary-heading svg{width:17px;height:17px}
+.checkout-summary-heading h2{margin:0;color:#f1f5fb;font:600 18px/1.4 'Signika Negative',system-ui,sans-serif}
+.checkout-game{display:flex;align-items:center;gap:12px;margin:20px 0}
+.checkout-game img{width:44px;height:44px;border:1px solid #ffffff20;object-fit:cover;border-radius:9px;flex-shrink:0}
+.checkout-game>div{min-width:0}
+.checkout-game strong{display:block;color:#eff3fa;font-size:15px;font-weight:600;line-height:1.4}
+.checkout-game small{display:block;font-size:12px;color:var(--checkout-muted);margin-top:4px}
+.topup-detail-page .order-submit-panel .order-summary{display:flex;flex-direction:column;gap:6px;padding:14px;border:1px solid #2c3849;border-radius:9px;background:#0b131f}
+.topup-detail-page .order-summary>span{font-size:11px;color:var(--checkout-muted)}
+.topup-detail-page .order-summary>strong{font-size:14px;color:#f0f4fb;line-height:1.4;font-weight:600;overflow-wrap:anywhere}
+.topup-detail-page .order-detail-lines{margin:16px 0 0;padding:0 0 18px;border-top:0;border-bottom:1px dashed #3a4659;gap:12px}
+.topup-detail-page .order-detail-lines div{font-size:12px;gap:12px}
+.topup-detail-page .order-detail-lines span{color:var(--checkout-muted);white-space:nowrap}
+.topup-detail-page .order-detail-lines strong{font-weight:500;overflow-wrap:anywhere;min-width:0}
+.topup-detail-page .order-submit-panel .order-total{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:20px 0;border:0}
+.topup-detail-page .order-submit-panel .order-total span{font-size:12px;color:var(--checkout-muted)}
+.topup-detail-page .order-submit-panel .order-total output{font-size:25px;font-weight:650;line-height:1.3;color:var(--checkout-accent);white-space:nowrap}
+.topup-detail-page .order-submit-panel .action-button{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:50px;padding:12px 14px;border:1px solid #ffb48e;border-radius:9px;background:#ff9c68;color:#1c130e;font:600 14px/1.4 'Signika Negative',system-ui,sans-serif;box-shadow:none}
+.topup-detail-page .order-submit-panel .action-button:hover{background:#ffb58d}
+.topup-detail-page .order-submit-panel .action-button:disabled{opacity:.65;cursor:wait}
+.topup-detail-page .order-submit-panel .action-button svg{width:18px;height:18px;flex-shrink:0}
+.topup-detail-page .order-submit-panel .checkout-small{margin:14px 0 0;color:var(--checkout-muted);font-size:12px;line-height:1.7;text-align:left}
+.checkout-small a{color:var(--checkout-accent)}
+.checkout-security{display:flex;align-items:center;justify-content:center;gap:6px;margin:16px 0 0;color:#afbdd1;font-size:10px}
+.checkout-security svg{width:12px;height:12px;flex-shrink:0}
+.topup-detail-page .form-message:empty{display:none}
+@media(max-width:960px){.topup-detail-page .game-checkout{grid-template-columns:minmax(0,1fr) 288px;gap:16px}.topup-detail-page :is(.account-panel,.package-panel,.payment-panel,.order-submit-panel){padding:20px}.topup-detail-page .package-choice{gap:10px;padding:18px 10px}.topup-detail-page .package-visual{width:36px}.crystal-icon{width:34px;height:40px}.topup-detail-page .package-name{font-size:13px}.topup-detail-page .package-copy>strong{font-size:18px}}
+@media(max-width:760px){
+  .topup-detail-page .detail-shell{margin-top:16px}
+  .topup-detail-page .game-checkout{grid-template-columns:minmax(0,1fr);grid-template-areas:'account' 'packages' 'payment' 'summary';gap:16px}
+  .topup-detail-page .order-submit-panel{position:static;top:auto;order:initial}
+  .topup-detail-page :is(.account-panel,.package-panel,.payment-panel,.order-submit-panel){padding:20px 16px;border-radius:12px;width:100%}
+  .topup-detail-page .detail-section-heading{margin-bottom:18px}
+  .topup-detail-page .detail-section-heading h2{font-size:19px}
+  .topup-detail-page .package-choice{min-height:112px;flex-direction:column;align-items:flex-start;gap:12px;padding:16px 12px}
+  .topup-detail-page .package-visual{width:38px;height:42px}
+  .topup-detail-page .package-copy{gap:7px;align-self:stretch}
+  .topup-detail-page .package-name{font-size:14px}
+  .topup-detail-page .package-copy>strong{font-size:21px}
+  .topup-detail-page .payment-choice-grid{gap:10px}
+  .topup-detail-page .payment-choice{padding:16px 10px;gap:7px}
+  .topup-detail-page .payment-choice strong{font-size:12px}
+  .topup-detail-page .payment-choice small{font-size:10px}
+  .topup-detail-page .order-submit-panel .action-button{font-size:16px;min-height:52px}
+  .checkout-security{font-size:11px}
+}
+@media(max-width:360px){.checkout-required{display:none}.topup-detail-page .detail-section-heading h2{font-size:18px}.checkout-step{gap:8px}.topup-detail-page .payment-choice{flex-direction:column;align-items:flex-start}.topup-detail-page .package-choice{padding:14px 10px}.topup-detail-page .package-copy>strong{font-size:19px}}
+@media(prefers-reduced-motion:reduce){.topup-detail-page :is(.package-choice,.target-field){transition:none}}
