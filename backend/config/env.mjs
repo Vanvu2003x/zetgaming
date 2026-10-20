@@ -9,7 +9,10 @@ export const env = {
   databaseSsl: bool(process.env.DATABASE_SSL),
   sessionSecret: process.env.SESSION_SECRET || '',
   frontendOrigin: process.env.FRONTEND_ORIGIN || 'http://localhost:4173',
-  allowedOrigins: (process.env.FRONTEND_ORIGIN || 'http://localhost:4173').split(',').map(value => value.trim()).filter(Boolean),
+  allowedOrigins: [...new Set([
+    ...(process.env.FRONTEND_ORIGIN || 'http://localhost:4173').split(','),
+    process.env.ADMIN_ORIGIN || (process.env.NODE_ENV !== 'production' ? 'http://localhost:4174' : ''),
+  ].map(value => value.trim()).filter(Boolean))],
   seedDemo: bool(process.env.SEED_DEMO),
   resetDelivery: process.env.RESET_DELIVERY || 'disabled',
   oauth: {

@@ -1,5 +1,13 @@
 # GameFlow Topup
 
+## ZetGaming Admin riêng (mới)
+
+Admin chạy độc lập tại **http://localhost:4174**, cửa hàng ở port 4173 và API ở port 4180.
+Chạy `npm run admin:dev` sau khi PostgreSQL và backend đã chạy. Khi khởi động lại máy: mở các terminal riêng cho `npm run db:local`, `npm run backend`, `npm run dev`, `npm run admin:dev`.
+Admin gồm Tổng quan, Đơn hàng, Kho game, Gói nạp và Cộng tác viên; có tìm/lọc/phân trang, dialog chỉnh sửa và xử lý đơn qua API hiện có. Giá editor nhập theo VNĐ, chuyển sang cents khi gọi API.
+
+Các biến mới: `ADMIN_PORT`, `ADMIN_ORIGIN`, `STOREFRONT_ORIGIN` (xem `.env.example`). `/admin` của cửa hàng chuyển sang origin quản trị. Xem [kế hoạch, nghiên cứu, kiểm chứng và hướng dẫn subdomain](docs/admin-redesign.md). Các phần mô tả SQLite bên dưới là tài liệu lịch sử; runtime hiện dùng Express frontend và backend PostgreSQL.
+
 Nền tảng nạp game chạy bằng Node.js 24 và SQLite tích hợp trong Node. Bản hiện tại là vertical slice chạy được cho khách, admin và CTV; adapter thanh toán, Telegram và nhà cung cấp game thật chưa được nối.
 
 ## Chạy local

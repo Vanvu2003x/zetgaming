@@ -6,7 +6,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { renderStorefront } from './storefront/render.mjs';
 import { safeNext } from './storefront/shared.mjs';
-import { adminCatalogPage } from './storefront/admin-pages.mjs';
+import { createAdminRouter } from './admin/routes.mjs';
 
 const ROOT=dirname(fileURLToPath(import.meta.url));
 const production=process.env.NODE_ENV==='production';
@@ -15,7 +15,7 @@ const formRoutes={
   '/quen-mat-khau':'/api/auth/forgot-password','/dat-lai-mat-khau':'/api/auth/reset-password',
   '/dang-xuat':'/api/auth/logout','/dat-don':'/api/orders',
 };
-export function createFrontend({backendUrl=process.env.BACKEND_URL || 'http://127.0.0.1:4180'}={}) {
+export function createFrontend({backendUrl=process.env.BACKEND_URL || 'http://127.0.0.1:4180', adminOnly=false}={}) {
   const app=express();
   app.disable('x-powered-by');
   app.set('trust proxy',production ? 'loopback' : false);
@@ -54,6 +54,10 @@ export function createFrontend({backendUrl=process.env.BACKEND_URL || 'http://12
       res.status(response.status).set('Cache-Control','no-store').type('json').send(await response.text());
     }catch(error){next(error);}
   });
+  if (adminOnly) {
+    app.use('/assets', express.static(join(ROOT, 'admin', 'public'), { index: false, dotfiles: 'deny', maxAge: 0 }));
+    app.use(createAdminRouter(backend));
+  }
   app.post(Object.keys(formRoutes),async(req,res,next)=>{
     try{
       const body={...req.body};
@@ -76,20 +80,7 @@ export function createFrontend({backendUrl=process.env.BACKEND_URL || 'http://12
       return res.redirect(303,'/lich-su/'+encodeURIComponent(result.code));
     }catch(error){next(error);}
   });
-  app.get('/admin', async (req, res, next) => {
-    try {
-      const response = await backend(req, res, '/api/admin/games');
-      if (response.status === 401) return res.redirect(303, '/dang-nhap?next=%2Fadmin');
-      if (response.status === 403) return res.status(403).send('Bạn không có quyền truy cập khu vực quản trị.');
-      const games = await response.json();
-      const csrfResponse = await backend(req, res, '/api/storefront?path=%2F&status=all');
-      const csrfData = await csrfResponse.json();
-      const layout = await readFile(join(ROOT, 'views', 'layout.html'), 'utf8');
-      const values = { content: adminCatalogPage(games, csrfData.csrf_token), title: 'Quản trị kho game', description: 'Cấu hình game và gói nạp ZetGaming.', page: 'admin', year: new Date().getFullYear(), csrfToken: csrfData.csrf_token, authenticated: 'true', accountHref: '/admin', accountLabel: 'Quản trị', mobileName: 'Quản trị', accountAccessible: 'Khu vực quản trị', authBackHref: '/', authBackLabel: 'Về trang chủ' };
-      const html = layout.replace(/{{(\w+)}}/g, (_, key) => values[key] ?? '').replace('</body>', '<script type="module" src="/admin.js?v=admin-1"></script></body>');
-      res.type('html').send(html);
-    } catch (error) { next(error); }
-  });
+  app.get('/admin', (_req, res) => res.redirect(303, process.env.ADMIN_ORIGIN || 'http://localhost:4174'));
   app.get('/styles.css',(_req,res)=>res.sendFile(join(ROOT,'public','storefront.css')));
   app.use(express.static(join(ROOT,'public'),{index:false,dotfiles:'deny',maxAge:0}));
   app.use(async(req,res,next)=>{

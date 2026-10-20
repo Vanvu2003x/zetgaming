@@ -6,10 +6,11 @@ async function collectBackend(dir) {
   for (const entry of await readdir(dir, { withFileTypes: true })) {
     const path = `${dir}/${entry.name}`;
     if (entry.isDirectory()) await collectBackend(path);
-    else if (entry.name.endsWith('.mjs')) backendFiles.push(path);
+    else if (/\.(mjs|js)$/.test(entry.name)) backendFiles.push(path);
   }
 }
 await collectBackend('backend');
+await collectBackend('admin');
 files.push(...backendFiles);
 for (const file of files) {
   const result = spawnSync(process.execPath, ['--check', file], { stdio: 'inherit' });
