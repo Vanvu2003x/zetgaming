@@ -58,6 +58,7 @@ export function renderStorefront({ url, user, db, data, csrfToken = '', layout }
     attrs = /class="/.test(attrs) ? attrs.replace(/class="([^"]*)"/, (_, cls) => `class="${cls} ${className}"`) : attrs + ` class="${className}"`;
     return `<a${attrs} aria-current="page">`;
   });
+  shell = shell.replace('</head>', '<link rel="stylesheet" href="/home-discovery.css?v=1"></head>');
   const center = { '/nap-game': 49.5, '/lich-su': 106.5, '/': 177.5, '/tin-tuc': 248.5, '/tai-khoan': 305.5 }[active];
   shell = shell.replace(/(<path id="mobileBottomShapePath" d=")[^"]+/, (_, prefix) => prefix + navPath(center));
   const name = user ? user.email.split('@')[0] : '';

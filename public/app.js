@@ -2,6 +2,15 @@ import { navPath } from '/navigation.js';
 const $ = (selector) => document.querySelector(selector);
 const money = (value) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+const hideFailedHomeImage = image => {
+  if (image instanceof HTMLImageElement && image.hasAttribute('data-home-image')) image.hidden = true;
+};
+document.addEventListener('error', event => hideFailedHomeImage(event.target), true);
+function bindHomeImageFallbacks() {
+  document.querySelectorAll('img[data-home-image]').forEach(image => {
+    if (image.complete && image.naturalWidth === 0) hideFailedHomeImage(image);
+  });
+}
 async function api(path, body, headers = {}) {
   const response = await fetch(path, { method: 'POST', credentials: 'same-origin', headers: { 'content-type': 'application/json', 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content || '', ...headers }, body: JSON.stringify(body) });
   const data = await response.json();
@@ -273,6 +282,7 @@ async function visitPage(destination, { push = true, scrollY = 0 } = {}) {
     }
     bindForms();
     bindCatalogSearch();
+    bindHomeImageFallbacks();
     revealPage();
   } catch (error) {
     if (sequence !== routeSequence) return;
@@ -314,8 +324,9 @@ window.addEventListener('popstate', (event) => {
 });
 
 document.addEventListener('error', (event) => {
-  if (event.target instanceof HTMLImageElement && !event.target.dataset.fallback) {
+  if (event.target instanceof HTMLImageElement && !event.target.hasAttribute('data-home-image') && !event.target.dataset.fallback) {
     event.target.dataset.fallback = 'true';
     event.target.src = '/zetgaming-fire-bg.png';
   }
 }, true);
+bindHomeImageFallbacks();
