@@ -86,7 +86,7 @@ export function openGameEditor(game, context) {
   if (!game) return;
   editor('games', game, [
     input('name', 'Tên game', game.name, { full: true, required: true }),
-    `<div class="full game-image-pickers">${imagePicker('image', 'Ảnh nền / banner', game.image, 'Nền ngang của card và trang game')}${imagePicker('thumbnail', 'Thumbnail', game.thumbnail, 'Icon vuông cạnh tên game')}</div>`,
+    `<div class="full game-image-pickers">${imagePicker('image', 'Ảnh nền / banner', game.image, 'Nền ngang của card và trang game')}${imagePicker('thumbnail', 'Ảnh đại diện / thumbnail', game.thumbnail, 'Avatar vuông cạnh tên game')}</div>`,
     select('mode', 'Kiểu nạp', game.mode, [['uid', 'Nạp UID'], ['login', 'Nạp login']]),
     select('category_id', 'Phân loại', game.category_id || '', [['', 'Chưa phân loại'], ...context.getCategories().map(category => [category.id, category.name])]),
     '<small class="full muted">Thêm hoặc đổi tên loại trong menu Phân loại.</small>',

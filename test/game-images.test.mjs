@@ -8,7 +8,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createUploadsRouter } from '../backend/modules/catalog/uploads.mjs';
 import { csrfToken } from '../backend/middleware/csrf.mjs';
-import { catalogPage } from '../storefront/catalog-pages.mjs';
+import { catalogPage, gamePage } from '../storefront/catalog-pages.mjs';
 import { gameImage } from '../storefront/shared.mjs';
 
 const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/l9sAAAAASUVORK5CYII=', 'base64');
@@ -20,6 +20,9 @@ test('game cards use distinct banner and thumbnail and retain fallback for exist
   assert.equal(gameImage(game), game.image);
   assert.equal(gameImage({ image: '/old.png' }, 'thumbnail'), '/old.png');
   assert.equal(gameImage({ image: 'javascript:alert(1)' }), '/zetgaming-fire-bg.png');
+  const detail = gamePage(game, [{ package_id: 'p', package_name: 'Gói thử', customer_cents: 10000 }], null, 'key');
+  assert.match(detail, /class="game-hero-background" src="\/uploads\/games\/banner.png"/);
+  assert.match(detail, /class="game-hero-art" src="\/uploads\/games\/icon.png"/);
 });
 
 test('image uploads enforce admin/CSRF, inspect bytes and store generated files in the chosen directory', async t => {
