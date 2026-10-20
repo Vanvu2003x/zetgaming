@@ -9,6 +9,7 @@ import pg from 'pg';
 import { categoriesRouter } from '../backend/modules/catalog/categories.mjs';
 import { catalogRouter } from '../backend/modules/catalog/routes.mjs';
 import { csrfToken } from '../backend/middleware/csrf.mjs';
+import { storefrontRouter } from '../backend/modules/storefront/routes.mjs';
 
 test('admin can create, assign and rename categories; changes propagate without losing order counts', async t => {
   const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
@@ -18,6 +19,9 @@ test('admin can create, assign and rename categories; changes propagate without 
   const userId = randomUUID(); const gameId = randomUUID();
   await db.query("INSERT INTO users(id,email,password_hash,role) VALUES($1,$2,'unused','admin')", [userId, userId + '@fixture.test']);
   await db.query("INSERT INTO games(id,slug,name,mode,image) VALUES($1,$2,'Fixture game','uid','/fixture.png')", [gameId, gameId]);
+  const packageId = randomUUID();
+  await db.query("INSERT INTO packages(id,game_id,name,nominal) VALUES($1,$2,'Fixture package','60')", [packageId, gameId]);
+  await db.query("INSERT INTO prices(package_id,tier,customer_cents,ctv_cents) VALUES($1,'standard',10000,8000)", [packageId]);
   const app = express();
   app.use(express.json(), cookieParser(), csrfToken, (req, _res, next) => {
     req.db = db;
@@ -25,7 +29,7 @@ test('admin can create, assign and rename categories; changes propagate without 
     next();
   });
   app.get('/csrf', (req, res) => res.json({ token: req.csrfToken }));
-  app.use('/api', categoriesRouter, catalogRouter);
+  app.use('/api', categoriesRouter, catalogRouter, storefrontRouter);
   app.use((error, _req, res, _next) => res.status(error.statusCode || 500).json({ error: error.message }));
   const server = app.listen(0, '127.0.0.1'); await once(server, 'listening');
   t.after(() => { server.closeAllConnections(); server.close(); });
@@ -48,6 +52,8 @@ test('admin can create, assign and rename categories; changes propagate without 
   assert.equal(game.category_name, name + ' renamed');
   assert.equal(game.order_count, 0);
   assert.equal(game.mode, 'uid');
+  const publicCatalog = await (await call('/api/storefront?path=/nap-game')).json();
+  assert.equal(publicCatalog.rows.find(row => row.id === gameId).category_name, name + ' renamed');
   assert.equal((await (await call('/api/admin/categories')).json()).find(c => c.id === category.id).game_count, 1);
   assert.equal((await call('/api/admin/categories/missing', 'PATCH', { name: 'Valid name' })).status, 404);
   // A uniqueness violation aborts the transaction; exercise it last before the rollback.

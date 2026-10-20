@@ -8,7 +8,7 @@ storefrontRouter.get('/storefront', async (req, res, next) => {
     const user = req.user ? { id: req.user.id, email: req.user.email, role: req.user.role, tier: req.user.tier, wallet_cents: Number(req.user.wallet_cents), created_at: req.user.created_at } : null;
     let rows = [], orders = [], order = null, summary = null;
     if (path === '/' || path.startsWith('/nap-game')) {
-      rows = (await req.db.query(`SELECT g.id,g.slug,g.name,g.mode,g.image,g.thumbnail,g.platform,p.id package_id,p.name package_name,p.nominal,p.image package_image,p.badge,pr.customer_cents FROM games g JOIN packages p ON p.game_id=g.id JOIN prices pr ON pr.package_id=p.id WHERE g.active=true AND p.active=true AND pr.tier=$1 ORDER BY g.name,pr.customer_cents`, [user?.tier || 'standard'])).rows.map(row => ({ ...row, customer_cents: Number(row.customer_cents) }));
+      rows = (await req.db.query(`SELECT g.id,g.slug,g.name,g.mode,g.image,g.thumbnail,g.platform,g.category_id,c.name category_name,p.id package_id,p.name package_name,p.nominal,p.image package_image,p.badge,pr.customer_cents FROM games g LEFT JOIN game_categories c ON c.id=g.category_id JOIN packages p ON p.game_id=g.id JOIN prices pr ON pr.package_id=p.id WHERE g.active=true AND p.active=true AND pr.tier=$1 ORDER BY g.name,pr.customer_cents`, [user?.tier || 'standard'])).rows.map(row => ({ ...row, customer_cents: Number(row.customer_cents) }));
     }
     if (user && path === '/tai-khoan') {
       const row = (await req.db.query(`SELECT COUNT(*) total,COUNT(*) FILTER(WHERE status NOT IN ('completed','cancelled')) pending,COUNT(*) FILTER(WHERE status='completed') completed FROM orders WHERE customer_id=$1`, [user.id])).rows[0];

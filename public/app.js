@@ -1,4 +1,5 @@
 import { navPath } from '/navigation.js';
+import { matchesCatalog, compareGameNames } from '/catalog-model.mjs';
 const $ = (selector) => document.querySelector(selector);
 const money = (cents) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 2 }).format(Number(cents || 0) / 100);
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -110,27 +111,46 @@ window.addEventListener('pageshow', () => document.querySelectorAll('form button
 
 function bindCatalogSearch() {
   const catalogSearch = $('#catalogSearch');
-  const filters = [...document.querySelectorAll('[data-platform-filter]')];
-  if (!catalogSearch && !filters.length) return;
-  let activePlatform = 'all';
+  const filters = [...document.querySelectorAll('[data-category-filter]')];
+  const grid = $('.directory-grid');
+  if (!catalogSearch || !grid) return;
+  const sort = $('#catalogSort');
+  let activeCategory = new URL(location.href).searchParams.get('category') || '';
   const updateCatalog = () => {
-    const query = catalogSearch?.value.trim().toLocaleLowerCase('vi') || '';
+    const query = catalogSearch.value.trim();
     let count = 0;
-    document.querySelectorAll('[data-catalog-card]').forEach(card => {
-      card.hidden = !card.dataset.search.includes(query) || (activePlatform !== 'all' && card.dataset.platform !== activePlatform);
+    const cards = [...grid.querySelectorAll('[data-catalog-card]')];
+    cards.sort((a,b) => compareGameNames({name:a.dataset.name}, {name:b.dataset.name}, sort.value)).forEach(card => {
+      card.hidden = !matchesCatalog({name:card.dataset.name,category_id:card.dataset.category}, query, activeCategory);
       if (!card.hidden) count++;
+      grid.append(card);
     });
-    const catalogCount = $('#catalogCount');
-    if (catalogCount) catalogCount.textContent = count;
-    const catalogEmpty = $('#catalogEmpty');
-    if (catalogEmpty) catalogEmpty.hidden = count > 0;
+    $('#catalogCount').textContent = count;
+    $('#catalogEmpty').hidden = count > 0;
+    const url = new URL(location.href);
+    for (const [key,value] of [['q',query],['category',activeCategory],['sort',sort.value === 'a-z' ? '' : sort.value]]) {
+      if (value) url.searchParams.set(key,value); else url.searchParams.delete(key);
+    }
+    history.replaceState(history.state, '', url);
+    catalogSearch.form.elements.category.value = activeCategory;
+    filters.forEach(filter => {
+      const active = filter.dataset.categoryFilter === activeCategory;
+      filter.classList.toggle('is-active', active);
+      if (active) filter.setAttribute('aria-current','true'); else filter.removeAttribute('aria-current');
+      const destination = new URL(url);
+      if (filter.dataset.categoryFilter) destination.searchParams.set('category',filter.dataset.categoryFilter); else destination.searchParams.delete('category');
+      filter.href = destination.pathname + destination.search;
+    });
   };
-  catalogSearch?.addEventListener('input', updateCatalog);
-  filters.forEach(filter => filter.addEventListener('click', () => {
-    activePlatform = filter.dataset.platformFilter;
-    filters.forEach(item => item.classList.toggle('is-active', item === filter));
+  catalogSearch.addEventListener('input', updateCatalog);
+  sort.addEventListener('change', updateCatalog);
+  filters.forEach(filter => filter.addEventListener('click', event => {
+    if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    activeCategory = filter.dataset.categoryFilter;
     updateCatalog();
   }));
+  updateCatalog();
 }
 bindCatalogSearch();
 

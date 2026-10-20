@@ -22,7 +22,7 @@ export function renderStorefront({ url, user, db, data, csrfToken = '', layout }
   let title = 'Không tìm thấy trang', description = 'Nạp game tại ZetGaming.', page = 'not-found', active = '/', content = notFoundPage(), status = 404;
   const set = (name, tab, heading, html, desc = heading) => { page = name; active = tab; title = heading; content = html; description = desc; status = 200; };
   if (path === '/') set('home', '/', 'Nạp game dễ dàng', homePage(catalog), 'Chọn game yêu thích, xem giá gói nạp và theo dõi đơn tại ZetGaming.');
-  else if (path === '/nap-game') set('catalog', '/nap-game', 'Nạp game', catalogPage(catalog, (url.searchParams.get('q') || '').trim().slice(0, 100)));
+  else if (path === '/nap-game') set('catalog', '/nap-game', 'Nạp game', catalogPage(catalog, (url.searchParams.get('q') || '').trim().slice(0, 100), { category: (url.searchParams.get('category') || '').slice(0, 100), sort: url.searchParams.get('sort') }));
   else if (/^\/nap-game\/[a-z0-9-]+$/.test(path)) {
     const game = catalog.find(item => item.slug === path.split('/')[2]);
     if (game) set('game', '/nap-game', `Nạp ${game.name}`, gamePage(game, rows.filter(row => row.id === game.id), user, randomUUID(), url.searchParams.get('error') || '', catalog), `Chọn gói nạp ${game.name}, kiểm tra UID và xem giá trước khi tạo đơn.`);
@@ -58,7 +58,7 @@ export function renderStorefront({ url, user, db, data, csrfToken = '', layout }
     attrs = /class="/.test(attrs) ? attrs.replace(/class="([^"]*)"/, (_, cls) => `class="${cls} ${className}"`) : attrs + ` class="${className}"`;
     return `<a${attrs} aria-current="page">`;
   });
-  shell = shell.replace('</head>', '<link rel="stylesheet" href="/home-discovery.css?v=1"><link rel="stylesheet" href="/checkout.css?v=1"></head>');
+  shell = shell.replace('</head>', '<link rel="stylesheet" href="/home-discovery.css?v=1"><link rel="stylesheet" href="/checkout.css?v=1"><link rel="stylesheet" href="/directory.css?v=1"></head>');
   const center = { '/nap-game': 49.5, '/lich-su': 106.5, '/': 177.5, '/tin-tuc': 248.5, '/tai-khoan': 305.5 }[active];
   shell = shell.replace(/(<path id="mobileBottomShapePath" d=")[^"]+/, (_, prefix) => prefix + navPath(center));
   const name = user ? user.email.split('@')[0] : '';

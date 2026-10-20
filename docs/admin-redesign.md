@@ -71,7 +71,7 @@ Chạy admin bằng `npm run admin` dưới process manager, khởi động lạ
 
 ### Phân loại tùy chỉnh
 
-Menu `/categories` cho phép admin tạo và đổi tên phân loại, xem tổng số game thuộc loại. Kho game dùng cột và bộ lọc Phân loại thay cho Nền tảng; dialog game có lựa chọn `category_id`. Đổi tên loại cập nhật cho tất cả game tham chiếu đến loại đó; tên trùng không phân biệt hoa/thường bị từ chối. Kiểu nạp UID/login vẫn là cấu hình riêng, không tự thay đổi khi đổi phân loại. Migration `006_game_categories.sql` tạo hai loại ban đầu Nạp UID/Nạp login từ kiểu nạp hiện có. Trường platform cũ vẫn giữ để tương thích bộ lọc Mobile/PC trên trang khách. Các tài nguyên admin dùng no-store và version URL mới để tránh tải lại editor cũ.
+Menu `/categories` cho phép admin tạo và đổi tên phân loại, xem tổng số game thuộc loại. Kho game dùng cột và bộ lọc Phân loại thay cho Nền tảng; dialog game có lựa chọn `category_id`. Đổi tên loại cập nhật cho tất cả game tham chiếu đến loại đó; tên trùng không phân biệt hoa/thường bị từ chối. Kiểu nạp UID/login vẫn là cấu hình riêng, không tự thay đổi khi đổi phân loại. Migration `006_game_categories.sql` tạo hai loại ban đầu Nạp UID/Nạp login từ kiểu nạp hiện có. Trường platform cũ vẫn giữ để tương thích dữ liệu cũ; trang danh sách khách hiện lấy bộ lọc trực tiếp từ các phân loại có game đang bán. Các tài nguyên admin dùng no-store và version URL mới để tránh tải lại editor cũ.
 
 ### Tạo gói nạp
 
@@ -82,3 +82,7 @@ Nút Tạo gói nạp trên `/packages` mở form chọn game, tên, giá khách
 Kho game có hai trường riêng: `image` là ảnh nền/banner và `thumbnail` là icon vuông. Chọn ảnh từ máy trong dialog rồi bấm Lưu thay đổi; API admin tải từng file PNG/JPG/WebP (tối đa 5 MB) vào `public/uploads/games/`, đặt tên UUID và lưu đường dẫn `/uploads/games/...` trong PostgreSQL. Thư mục này được Git theo dõi; file mới có thể commit/push cùng source, HTTP không tự chạy Git. File chỉ được tải khi bấm Lưu. Nếu cập nhật metadata lỗi sau upload, đường dẫn đã tải được giữ lại trong form để thử lưu lại. Game cũ chưa có thumbnail dùng ảnh nền làm dự phòng. Chạy migration `005_game_thumbnail.sql` trước khi khởi động backend mới.
 
 Tạo/xóa game, khách hàng, nạp ví, phân quyền chi tiết và log hoạt động cần API/schema riêng. Không hiển thị menu giả cho những chức năng chưa có. Bản thiết kế này giữ nguyên dữ liệu và các quy tắc nghiệp vụ hiện tại.
+
+### Danh sách game phía khách
+
+`/nap-game` hiển thị card ảnh nền/avatar, tìm kiếm không dấu và sắp xếp tên A–Z/Z–A. Phân loại từ admin được truyền trong API storefront; URL q/category/sort hoạt động khi tải trực tiếp và khi dùng JavaScript. Không có banner phụ hay bộ lọc nền tảng cố định. CSS mới được nạp trên mọi trang nhưng chỉ tác động danh sách game, để điều hướng nội bộ vẫn giữ đúng thiết kế.
