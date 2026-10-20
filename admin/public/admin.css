@@ -10,3 +10,40 @@ dialog{width:min(560px,calc(100% - 32px));max-height:calc(100dvh - 40px);padding
 @media(max-width:800px){.sidebar{visibility:hidden;width:220px;transform:translateX(-100%);transition:transform .2s;box-shadow:10px 0 30px #18202c22}.sidebar.open{visibility:visible;transform:translateX(0)}.workspace{width:100%;margin-left:0}.mobile-menu{display:inline-grid!important}.topbar{height:60px;padding:0 20px}.breadcrumb{gap:12px}main{padding:25px 20px}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.dashboard-top{grid-template-columns:1fr 1fr}.page-title h1{font-size:25px}.page-title .eyebrow{font-size:8px}.login-story{padding:32px}.login-story h1{font-size:31px}.login-form-area{padding:32px}.quick-link{padding:14px;font-size:10px}}
 @media(max-width:580px){main{padding:24px 16px}.topbar{padding-inline:16px}.topbar-right{gap:10px}.connection{font-size:9px}.topbar-divider{display:none}.page-title{align-items:flex-start;margin-bottom:22px}.page-title>button{font-size:0;padding:9px;min-height:34px}.page-title p{font-size:11px;max-width:245px;line-height:1.7}.page-title h1{font-size:25px}.metric{padding:15px}.metric-head{font-size:10px}.metric-value{font-size:23px}.metric-foot{font-size:9px}.dashboard-top{grid-template-columns:1fr}.metrics{gap:10px;margin-bottom:16px}.panel-heading{padding:17px}.chart-wrap{padding:0 17px 18px}.toolbar{padding:14px;gap:8px}.toolbar .search-field{flex-basis:100%;max-width:none}.toolbar select{max-width:100%;flex:1;min-width:0;font-size:10px}.toolbar-count{margin-left:0;font-size:9px}.table-bottom{padding:12px 14px;font-size:9px;flex-wrap:wrap}td,th{padding-inline:15px}.quick-links{flex-direction:column;gap:8px}.quick-link{padding:14px 17px}.page-footnote{font-size:8px;gap:12px}.collection-summary{font-size:10px;gap:12px}.field-grid{gap:14px}.dialog-body{padding:18px}.dialog-head{padding:18px}.dialog-footer{padding:14px 18px}.login-shell{display:block;min-height:100dvh}.login-story{min-height:0;padding:24px}.login-story>div,.login-story>small{display:none}.login-story .brand-symbol{width:33px;height:33px;font-size:22px}.login-form-area{padding:42px 24px}.login-card h2{font-size:24px}.login-shield{margin-bottom:23px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+/* Keep secondary information readable on both workspace and navigation surfaces. */
+:root{--ink:#1c2431;--muted:#566173;--orange:#bd4b17;font-size:14px}
+.breadcrumb,.breadcrumb strong,.connection,.page-title p,.button,
+.toolbar select,.collection-summary{font-size:13px}
+.eyebrow,.page-title .eyebrow{color:#596477;font-size:11px;font-weight:600}
+.page-footnote,.panel-heading p,.period-tag,.chart-total small,
+.chart-labels,.chart-legend,.workflow small,.helper-line,.toolbar-count,
+.table-bottom,.loading-panel p,.order-action p,.detail-note,
+.login-card>p,.login-note,.back-store,label small{color:var(--muted);font-size:12px;font-weight:500}
+.metric-head{color:#414d5e;font-size:13px;font-weight:600}
+.metric-foot{color:var(--muted);font-size:12px;font-weight:500}
+.panel-heading h2{font-size:15px;font-weight:650}
+.workflow strong,.quick-link{font-size:13px;font-weight:600}
+th{color:#465268;font-size:12px;font-weight:650;background:#f4f6f9}
+td{color:#3e4a5c;font-size:13px;font-weight:500}
+td strong{color:var(--ink);font-size:13px;font-weight:650}
+td .secondary{color:var(--muted);font-size:12px}
+.mono{font-size:12px}
+.badge{font-size:12px;font-weight:600;color:#4d596b}
+.badge.green{color:#176747}.badge.orange{color:#8a5715}
+.badge.blue{color:#335b9f}.badge.red{color:#993f3f}.badge.purple{color:#71509e}
+.search-field input,label input:not([type=checkbox]),label select{font-size:13px}
+input::placeholder{color:#657084;opacity:1}
+label{color:#414d5e;font-size:13px}
+.detail-grid dt{color:var(--muted);font-size:12px;font-weight:500}
+.detail-grid dd{color:var(--ink);font-size:13px}
+.pagination button{font-size:12px;color:#4e5b70;font-weight:600}
+.icon-button{color:#566173}
+.sidebar{color:#cbd1dc}.sidebar nav a,.store-link{font-size:13px;font-weight:500}
+.workspace-label{color:#aeb8c8;font-size:10px}
+.brand small{color:#b2bdce;font-size:9px}
+.admin-identity strong{color:#f0f3f8;font-size:12px}
+.admin-identity small{color:#b6c1d2;font-size:11px}
+.login-story p,.login-story>small{color:#bac4d2}
+.login-story .eyebrow{color:#ffb787}
+@media(max-width:580px){.toolbar select,.toolbar-count,.table-bottom,.collection-summary,.page-footnote{font-size:12px}.page-title p{font-size:13px}.quick-link{font-size:13px}}

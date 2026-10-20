@@ -22,7 +22,7 @@ const paths = {
 export const icon = name => `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name] || paths.grid}</svg>`;
 const pages = [['/', 'Tổng quan', 'grid'], ['/orders', 'Đơn hàng', 'orders'], ['/games', 'Kho game', 'game'], ['/packages', 'Gói nạp', 'box'], ['/ctvs', 'Cộng tác viên', 'users']];
 const storefront = () => e(process.env.STOREFRONT_ORIGIN || 'http://localhost:4173');
-const head = (title, csrf) => `<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="csrf-token" content="${e(csrf)}"><meta name="storefront-origin" content="${storefront()}"><title>${e(title)} · ZetGaming Admin</title><link rel="stylesheet" href="/assets/admin.css?v=2"><script type="module" src="/assets/admin.js?v=2"></script></head>`;
+const head = (title, csrf) => `<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="csrf-token" content="${e(csrf)}"><meta name="storefront-origin" content="${storefront()}"><title>${e(title)} · ZetGaming Admin</title><link rel="stylesheet" href="/assets/admin.css?v=3"><script type="module" src="/assets/admin.js?v=2"></script></head>`;
 const brand = `<a class="brand" href="/" aria-label="ZetGaming Admin"><span class="brand-symbol">Z<span>·</span></span><span>ZETGAMING<small>ADMIN WORKSPACE</small></span></a>`;
 
 export function adminDocument(path, user, csrf) {
