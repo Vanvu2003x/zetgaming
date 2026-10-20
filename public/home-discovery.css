@@ -1,3 +1,12 @@
+/* The Soul Land foreground stays anchored while its silhouette extends upward. */
+.storefront[data-page=home] .mobile-banner{
+  background-image:linear-gradient(90deg,#070c16f5 0%,#091323d9 48%,#10243b91 100%),url('/zetgaming-hero-scene-v3.png');
+}
+.storefront[data-page=home] .mobile-hero-characters{
+  bottom:0;right:0;animation:none;transform:none;transform-origin:right bottom;
+  filter:drop-shadow(0 0 18px #459ee52b);
+}
+
 /* Homepage collections: independent of the directory and checkout layouts. */
 .storefront[data-page=home] :is(.home-featured,.home-directory){
   --home-panel:#0f151f;--home-card:#0a1019;--home-line:#263142;
