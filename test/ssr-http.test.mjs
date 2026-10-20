@@ -5,6 +5,7 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve, dirname, basename } from 'node:path';
 import { once } from 'node:events';
+import { money } from '../storefront/shared.mjs';
 
 test('SSR routes and native forms support a complete customer journey', { timeout: 30000 }, async (t) => {
   const tempDir = await mkdtemp(join(tmpdir(), 'zet-ssr-'));
@@ -65,7 +66,8 @@ test('SSR routes and native forms support a complete customer journey', { timeou
       assert.match(game, /name="idempotency_key"/);
       assert.match(game, /action="\/dat-don"/);
       assert.match(game, /60 Genesis Crystals/);
-      assert.match(game, /20\.000/);
+      const fixture = (await (await get('/api/games')).json()).find(row => row.slug === 'genshin-impact' && row.package_name === '60 Genesis Crystals');
+      assert.ok(game.includes(money(fixture.customer_cents)));
       const news = await (await get('/tin-tuc')).text();
       assert.match(news, /Tin tức sắp ra mắt/);
       assert.match(news, /notification-character/);
@@ -100,6 +102,7 @@ test('SSR routes and native forms support a complete customer journey', { timeou
       const html = await (await get('/nap-game/genshin-impact', cookie)).text();
       csrf = html.match(/<meta name="csrf-token" content="([^"]+)"/)?.[1] || csrf;
       const packageId = html.match(/name="package_id" value="([^"]+)"/)[1];
+      const expectedPrice = Number((await (await get('/api/games')).json()).find(row => row.package_id === packageId && row.tier === 'standard').customer_cents);
       const key = html.match(/name="idempotency_key" value="([^"]+)"/)[1];
       const fields = { package_id: packageId, idempotency_key: key, uid: 'test-fixture-uid', payment_method: 'direct', return_to: '/nap-game/genshin-impact', price_cents: '1' };
       const created = await form('/dat-don', fields, cookie);
@@ -109,13 +112,13 @@ test('SSR routes and native forms support a complete customer journey', { timeou
       const duplicate = await form('/dat-don', fields, cookie);
       assert.equal(duplicate.headers.get('location'), orderLocation);
       const detail = await (await get(orderLocation, cookie)).text();
-      assert.match(detail, /20\.000/);
+      assert.ok(detail.includes(money(expectedPrice)));
       assert.match(detail, /Chờ thanh toán/);
       const invalid = await form('/dat-don', { ...fields, idempotency_key: '' }, cookie);
       assert.equal(new URL(invalid.headers.get('location'), base).searchParams.get('error'), 'Dữ liệu đầu vào không hợp lệ');
       const rows = await (await get('/api/orders', cookie)).json();
       assert.ok(rows.length >= 1);
-      assert.equal(rows.find(row => row.price_cents === 20000)?.price_cents, 20000);
+      assert.equal(rows.find(row => orderLocation.endsWith('/' + row.code))?.price_cents, expectedPrice);
     });
     await t.test('another account cannot read the order and JSON API still works', async () => {
       const response = await form('/dang-nhap', { email: 'ctv@example.com', password: 'ctv12345', next: '/tai-khoan' }, '');
@@ -123,12 +126,16 @@ test('SSR routes and native forms support a complete customer journey', { timeou
       assert.equal((await get(orderLocation, otherCookie)).status, 200);
       const gameRows = await (await get('/api/games')).json();
       const packageId = gameRows.find(row => row.slug === 'genshin-impact').package_id;
+      const expectedPrice = Number(gameRows.find(row => row.package_id === packageId && row.tier === 'standard').customer_cents);
+      const before = await (await get('/api/me', cookie)).json();
+      const beforeOrders = await (await get('/api/orders', cookie)).json();
       const missingKey = await fetch(base + '/api/orders', { method: 'POST', headers: { cookie, 'x-csrf-token': csrf, 'content-type': 'application/json' }, body: JSON.stringify({ package_id: packageId, target: { uid: 'fixture' } }) });
       assert.equal(missingKey.status, 400);
       const walletOrder = await fetch(base + '/api/orders', { method: 'POST', headers: { cookie, 'x-csrf-token': csrf, 'content-type': 'application/json', 'idempotency-key': 'wallet-fixture' }, body: JSON.stringify({ package_id: packageId, target: { uid: 'fixture' }, payment_method: 'wallet' }) });
       assert.equal(walletOrder.status, 201);
+      const walletResult = await walletOrder.json();
       const me = await (await get('/api/me', cookie)).json();
-      assert.equal(me.wallet_cents, 480000);
+      assert.equal(me.wallet_cents, before.wallet_cents - (beforeOrders.some(order => order.code === walletResult.code) ? 0 : expectedPrice));
       const logout = await form('/dang-xuat', {}, cookie);
       assert.equal(logout.headers.get('location'), '/');
       assert.equal((await get('/api/me', cookie)).status, 401);

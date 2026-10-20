@@ -52,7 +52,7 @@ node scripts/smoke-admin.mjs
 npm run build
 ```
 
-Smoke chỉ gọi localhost và lưu lại thông tin game/gói nguyên trạng để xác minh ghi dữ liệu. Bộ `npm test` có test SSR cũ gọi database local thật, kỳ vọng ví demo còn 480000 cents; trong phiên này test đó thất bại vì số dư dữ liệu local đã thay đổi (380000). Không reset ví để ép test đạt.
+Smoke chỉ gọi localhost và lưu lại thông tin game/gói nguyên trạng để xác minh ghi dữ liệu. Test SSR dùng giá từ API và so sánh thay đổi số dư trước/sau, không giả định số dư ví demo cố định. Sau khi bổ sung tạo gói và kiểm thử giá, bộ `npm test` đạt 27/27.
 
 ## Chuẩn bị subdomain (chưa triển khai VPS)
 
@@ -72,6 +72,10 @@ Chạy admin bằng `npm run admin` dưới process manager, khởi động lạ
 ### Phân loại tùy chỉnh
 
 Menu `/categories` cho phép admin tạo và đổi tên phân loại, xem tổng số game thuộc loại. Kho game dùng cột và bộ lọc Phân loại thay cho Nền tảng; dialog game có lựa chọn `category_id`. Đổi tên loại cập nhật cho tất cả game tham chiếu đến loại đó; tên trùng không phân biệt hoa/thường bị từ chối. Kiểu nạp UID/login vẫn là cấu hình riêng, không tự thay đổi khi đổi phân loại. Migration `006_game_categories.sql` tạo hai loại ban đầu Nạp UID/Nạp login từ kiểu nạp hiện có. Trường platform cũ vẫn giữ để tương thích bộ lọc Mobile/PC trên trang khách. Các tài nguyên admin dùng no-store và version URL mới để tránh tải lại editor cũ.
+
+### Tạo gói nạp
+
+Nút Tạo gói nạp trên `/packages` mở form chọn game, tên, giá khách/CTV (VNĐ), ảnh từ máy và trạng thái bán. Số lượng và nhãn là trường bổ sung; số lượng để trống được lấy từ tên. Upload dùng cùng thư mục ảnh repo với game. `POST /api/admin/packages` kiểm tra quyền/CSRF, số nguyên cents không âm và game tồn tại; một câu SQL ghi package, giá standard và audit cùng nhau. Admin và storefront đều đổi cents sang VNĐ khi hiển thị; không đổi số liệu đang lưu trong database.
 
 ### Ảnh game trong repo
 

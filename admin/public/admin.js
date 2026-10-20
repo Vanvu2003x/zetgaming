@@ -77,6 +77,7 @@ function toolbar() {
   if (type === 'orders') filters = `<select id="status-filter" aria-label="Lọc trạng thái đơn"><option value="">Tất cả trạng thái</option>${Object.entries(statuses).map(([key, label]) => `<option value="${key}">${label}</option>`).join('')}</select>`;
   if (type === 'games' || type === 'packages') filters = `<select id="status-filter" aria-label="Lọc trạng thái hiển thị"><option value="">Tất cả trạng thái</option><option value="active">${type === 'games' ? 'Đang hiển thị' : 'Đang bán'}</option><option value="hidden">Đang ẩn</option></select>`;
   if (type === 'packages') filters += `<select id="game-filter" aria-label="Lọc theo game"><option value="">Tất cả game</option>${state.games.map(g => `<option value="${e(g.id)}">${e(g.name)}</option>`).join('')}</select>`;
+  if (type === 'packages') filters += `<button type="button" class="button primary" data-new-package ${state.games.length ? '' : 'disabled'}>+ Tạo gói nạp</button>`;
   if (type === 'games') filters += `<select id="category-filter" aria-label="Lọc phân loại"><option value="">Tất cả phân loại</option>${state.categories.map(c => `<option value="${e(c.id)}">${e(c.name)}</option>`).join('')}<option value="uncategorized">Chưa phân loại</option></select>`;
   if (type === 'categories') filters += '<button type="button" class="button primary" data-new-category>+ Thêm phân loại</button>';
   return `<div class="toolbar"><label class="search-field">${symbol('search')}<input id="search" type="search" placeholder="${placeholders[type]}" aria-label="${placeholders[type]}"></label>${filters}<span class="toolbar-count" id="result-count"></span></div>`;
@@ -154,13 +155,14 @@ if (content) {
   const query = new URLSearchParams(location.search);
   state.status = query.get('status') || '';
   document.querySelector('#refresh').addEventListener('click', load);
-  const context = { api, toast, refresh: load, symbol, statusBadge, toCents, getCategories: () => state.categories };
+  const context = { api, toast, refresh: load, symbol, statusBadge, toCents, getCategories: () => state.categories, getGames: () => state.games, getSelectedGame: () => state.game };
   content.addEventListener('click', event => {
     const button = event.target.closest('button'); if (!button) return;
     if (button.hasAttribute('data-retry')) return load();
     if (button.dataset.pageNumber) { state.page = Number(button.dataset.pageNumber); updateTable(); }
     if (button.dataset.edit === 'game') openGameEditor(state.games.find(g => g.id === button.dataset.id), context);
     if (button.dataset.edit === 'package') openPackageEditor(state.packages.find(p => p.id === button.dataset.id), context);
+    if (button.hasAttribute('data-new-package')) openPackageEditor(null, context);
     if (button.dataset.edit === 'category') openCategoryEditor(state.categories.find(c => c.id === button.dataset.id), context);
     if (button.hasAttribute('data-new-category')) openCategoryEditor(null, context);
     if (button.dataset.order) openOrder(button.dataset.order, context);

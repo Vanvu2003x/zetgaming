@@ -21,7 +21,8 @@ function showError(error) {
   target.scrollIntoView({ block: 'nearest' });
 }
 function editor(type, item, fields, context) {
-  const target = mount(type === 'games' ? 'Chỉnh sửa game' : 'Chỉnh sửa gói nạp', type === 'games' ? 'Ảnh nền và thumbnail được quản lý riêng.' : item.game_name + ' · Giá nhập theo đồng Việt Nam', `<div class="field-grid">${fields}</div>`, context, 'Lưu thay đổi');
+  const creating = type === 'packages' && !item.id;
+  const target = mount(type === 'games' ? 'Chỉnh sửa game' : creating ? 'Tạo gói nạp mới' : 'Chỉnh sửa gói nạp', type === 'games' ? 'Ảnh nền và thumbnail được quản lý riêng.' : creating ? 'Chọn game, nhập giá theo VNĐ và tải ảnh từ máy.' : item.game_name + ' · Giá nhập theo đồng Việt Nam', `<div class="field-grid">${fields}</div>`, context, creating ? 'Tạo gói nạp' : 'Lưu thay đổi');
   const form = target.querySelector('form');
   const preventBusyClose = event => { if (form.dataset.saving === 'true') event.preventDefault(); };
   target.addEventListener('cancel', preventBusyClose);
@@ -44,6 +45,7 @@ function editor(type, item, fields, context) {
   }));
   form.addEventListener('submit', async event => {
     event.preventDefault();
+    if (form.dataset.saving === 'true') return;
     const button = form.querySelector('[type="submit"]');
     form.dataset.saving = 'true'; form.setAttribute('aria-busy', 'true');
     form.querySelectorAll('[data-upload-field]').forEach(input => { input.disabled = true; });
@@ -67,13 +69,13 @@ function editor(type, item, fields, context) {
       }
       if (values.image && !safeImage(values.image.trim())) throw new Error('Ảnh cần là đường dẫn /… hoặc URL https://…');
       if (values.thumbnail && !safeImage(values.thumbnail.trim())) throw new Error('Đường dẫn thumbnail không hợp lệ.');
-      await context.api(`/api/admin/${type}/${encodeURIComponent(item.id)}`, values);
-      target.close(); context.toast('Đã lưu thay đổi.'); await context.refresh();
+      await context.api(`/api/admin/${type}${creating ? '' : '/' + encodeURIComponent(item.id)}`, values, creating ? 'POST' : 'PATCH');
+      target.close(); context.toast(creating ? 'Đã tạo gói nạp mới.' : 'Đã lưu thay đổi.'); await context.refresh();
     } catch (error) { showError(error); }
     finally {
       form.dataset.saving = 'false'; form.setAttribute('aria-busy', 'false');
       form.querySelectorAll('[data-upload-field]').forEach(input => { input.disabled = false; });
-      button.disabled = false; button.innerHTML = `${context.symbol('check')} Lưu thay đổi`;
+      button.disabled = false; button.innerHTML = `${context.symbol('check')} ${creating ? 'Tạo gói nạp' : 'Lưu thay đổi'}`;
     }
   });
 }
@@ -103,12 +105,15 @@ export function openCategoryEditor(category, context) {
   });
 }
 export function openPackageEditor(pkg, context) {
-  if (!pkg) return;
+  const games = context.getGames();
+  if (!pkg && !games.length) return context.toast('Cần có game trước khi tạo gói nạp.', true);
+  pkg ||= { name: '', nominal: '', badge: '', own_image: '', game_id: context.getSelectedGame() || games[0].id, active: true, ctv_cents: 0 };
   editor('packages', pkg, [
+    ...(!pkg.id ? [`<div class="full">${select('game_id', 'Game', pkg.game_id, games.map(game => [game.id, game.name]))}</div>`] : []),
     input('name', 'Tên gói nạp', pkg.name, { full: true, required: true }),
-    input('nominal', 'Mệnh giá / số lượng', pkg.nominal || '', { required: true, max: '80' }),
+    input('nominal', 'Số lượng (tùy chọn)', pkg.nominal || '', { required: Boolean(pkg.id), max: '80' }),
     input('badge', 'Nhãn nổi bật', pkg.badge || '', { max: '40' }),
-    input('customer_price', 'Giá khách (₫)', Number(pkg.customer_cents || 0) / 100, { type: 'number', required: true }),
+    input('customer_price', 'Giá khách (₫)', pkg.id ? Number(pkg.customer_cents || 0) / 100 : '', { type: 'number', required: true }),
     input('ctv_price', 'Giá CTV (₫)', Number(pkg.ctv_cents || 0) / 100, { type: 'number', required: true }),
     `<div class="full">${imagePicker('image', 'Ảnh gói nạp', pkg.own_image, 'Ảnh sản phẩm hiển thị tại bước chọn gói', true)}</div>`,
     `<label class="check-field full"><input name="active" type="checkbox" ${pkg.active ? 'checked' : ''}> Đang bán trên cửa hàng</label>`,

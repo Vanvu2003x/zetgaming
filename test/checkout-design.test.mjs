@@ -4,8 +4,8 @@ import { gameCheckout } from '../storefront/game-checkout.mjs';
 
 const game = { name: 'Genshin Impact', slug: 'genshin-impact', mode: 'uid', image: '/banner.png', thumbnail: '/avatar.png' };
 const packages = [
-  { package_id: 'p1', package_name: '60 Genesis Crystals', nominal: '60', customer_cents: 20000 },
-  { package_id: 'p2', package_name: '300 Genesis Crystals', nominal: '300', customer_cents: 85000, badge: 'Tặng thêm' },
+  { package_id: 'p1', package_name: '60 Genesis Crystals', nominal: '60', customer_cents: 2000000 },
+  { package_id: 'p2', package_name: '300 Genesis Crystals', nominal: '300', customer_cents: 8500000, badge: 'Tặng thêm' },
 ];
 test('checkout exposes real inputs, initial selection and honest UID help without dummy tabs', () => {
   const html = gameCheckout(game, packages, null, 'test-key');

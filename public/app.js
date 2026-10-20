@@ -1,6 +1,6 @@
 import { navPath } from '/navigation.js';
 const $ = (selector) => document.querySelector(selector);
-const money = (value) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
+const money = (cents) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 2 }).format(Number(cents || 0) / 100);
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const hideFailedHomeImage = image => {
   if (image instanceof HTMLImageElement && image.hasAttribute('data-home-image')) image.hidden = true;
