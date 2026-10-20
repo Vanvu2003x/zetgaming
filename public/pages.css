@@ -177,7 +177,7 @@ body.storefront{font-family:'Signika Negative',system-ui,sans-serif;font-size:16
 .auth-center{justify-content:center}
 .auth-single .auth-story{background-position:15% center}
 .storefront[data-page="login"] .auth-story{background-image:linear-gradient(90deg,#07101db0 0%,#07101d78 48%,#07101d2b 100%),url('/zetgaming-auth-login-desktop.png')}
-.storefront[data-page="register"] .auth-story{background-image:linear-gradient(90deg,#07101da8 0%,#07101d64 48%,#07101d22 100%),url('/zetgaming-auth-register-desktop.png')}
+.storefront[data-page="register"] .auth-story{background-image:linear-gradient(90deg,#07101da8 0%,#07101d64 48%,#07101d22 100%),url('/zetgaming-auth-soul-land-desktop-v2.png')}
 .storefront[data-page="forgot-password"] .auth-story,.storefront[data-page="reset-password"] .auth-story{background-image:linear-gradient(90deg,#07101db0 0%,#07101d78 48%,#07101d2b 100%),url('/zetgaming-auth-forgot-desktop.png')}
 @media(max-width:620px){
   .storefront[data-page="login"],.storefront[data-page="register"],.storefront[data-page="forgot-password"],.storefront[data-page="reset-password"]{padding-bottom:0}
@@ -193,7 +193,7 @@ body.storefront{font-family:'Signika Negative',system-ui,sans-serif;font-size:16
   .auth-inline{font-size:11px}
   .auth-single .auth-form{border-radius:16px}
   .storefront[data-page="login"] .auth-layout{background-image:url('/zetgaming-auth-login-mobile.png')}
-  .storefront[data-page="register"] .auth-layout{background-image:url('/zetgaming-auth-register-mobile.png')}
+  .storefront[data-page="register"] .auth-layout{background-image:url('/zetgaming-auth-soul-land-mobile-v2.png')}
   .storefront[data-page="forgot-password"] .auth-layout,.storefront[data-page="reset-password"] .auth-layout{background-image:url('/zetgaming-auth-forgot-mobile.png')}
 }
 .storefront .site-footer{padding:44px 0 22px;background:linear-gradient(180deg,#101824,#0c121c);border-top:1px solid #303b4b}.storefront .site-footer .footer-grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:48px;align-items:start}.site-footer .footer-logo{display:inline-flex;align-items:center;text-decoration:none}.site-footer .footer-logo img{display:block;width:188px;max-width:100%;height:auto}.site-footer .footer-about p{color:#9dacc0;font-size:14px;line-height:1.5;margin:12px 0 0}.site-footer .footer-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}.site-footer .footer-links strong{display:block;color:#eef3fb;font-size:14px;font-weight:700;margin-bottom:13px}.site-footer .footer-links a{display:block;width:max-content;max-width:100%;color:#aab9cc;font-size:14px;text-decoration:none;margin:8px 0;transition:color .2s}.site-footer .footer-links a:hover{color:var(--page-accent)}.storefront .site-footer .footer-note{display:flex;align-items:center;justify-content:space-between;gap:16px;border-top:1px solid #283343;margin-top:36px;padding-top:18px;font-size:12px;color:#8495ab}

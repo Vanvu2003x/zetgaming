@@ -9,7 +9,7 @@ body.storefront:is([data-page="login"],[data-page="register"],[data-page="forgot
   --auth-mobile:url('/zetgaming-auth-login-mobile.png');
   background:#060c18; padding-bottom:0;
 }
-body.storefront[data-page="register"]{--auth-desktop:url('/zetgaming-auth-register-desktop.png');--auth-mobile:url('/zetgaming-auth-register-mobile.png')}
+body.storefront[data-page="register"]{--auth-desktop:url('/zetgaming-auth-soul-land-desktop-v2.png');--auth-mobile:url('/zetgaming-auth-soul-land-mobile-v2.png')}
 body.storefront:is([data-page="forgot-password"],[data-page="reset-password"]){--auth-desktop:url('/zetgaming-auth-forgot-desktop.png');--auth-mobile:url('/zetgaming-auth-forgot-mobile.png')}
 .storefront:has(.auth-container) .site-footer,.storefront:has(.auth-container) .mobile-bottom-nav{display:none}
 .storefront:has(.auth-container) .site-header{background:#080f1db8;border-bottom:1px solid #ffffff12;backdrop-filter:blur(14px)}
