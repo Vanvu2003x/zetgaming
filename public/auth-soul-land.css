@@ -1,8 +1,16 @@
 /* Shared Soul Land artwork and form treatment, isolated from the catalog. */
 body.storefront:has(.auth-container){
-  --auth-desktop:url('/zetgaming-auth-soul-land-desktop-v2.png');
-  --auth-mobile:url('/zetgaming-auth-soul-land-mobile-v2.png');
+  --auth-desktop:url('/zetgaming-auth-xiao-wu-login-v3.png');
+  --auth-mobile:url('/zetgaming-auth-xiao-wu-login-v3.png');
   height:auto;min-height:100svh;overflow-x:clip;overflow-y:auto;background:#071121;
+}
+body.storefront[data-page=register]:has(.auth-container){
+  --auth-desktop:url('/zetgaming-auth-tang-san-register-v3.png');
+  --auth-mobile:url('/zetgaming-auth-tang-san-register-v3.png');
+}
+body.storefront:is([data-page=forgot-password],[data-page=reset-password]):has(.auth-container){
+  --auth-desktop:url('/zetgaming-auth-grandmaster-recovery-v3.png');
+  --auth-mobile:url('/zetgaming-auth-grandmaster-recovery-v3.png');
 }
 .storefront:has(.auth-container) main{min-height:100svh;height:auto;overflow:clip;background:#071121}
 .storefront:has(.auth-container) main::before{inset:0;background:var(--auth-desktop) center/cover no-repeat;filter:none}
@@ -45,7 +53,7 @@ body.storefront:has(.auth-container){
 @media(max-width:620px){
   .storefront:has(.auth-container) main{display:block;min-height:100svh;height:auto;overflow:visible}
   .storefront:has(.auth-container) main::before,.storefront:has(.auth-container) main::after{display:none}
-  body.storefront:has(.auth-container) .auth-container{display:block;width:100%;max-width:500px;min-height:100svh;height:auto;padding:clamp(265px,75vw,355px) 16px max(24px,env(safe-area-inset-bottom));background-image:linear-gradient(180deg,transparent 150px,#07112120 220px,#071121 490px),var(--auth-mobile);background-size:100% 580px,100% auto;background-position:center top;background-repeat:no-repeat}
+  body.storefront:has(.auth-container) .auth-container{display:block;width:100%;max-width:500px;min-height:100svh;height:auto;padding:clamp(265px,75vw,355px) 16px max(24px,env(safe-area-inset-bottom));background-image:linear-gradient(180deg,transparent 180px,#07112120 240px,#071121 445px),var(--auth-mobile);background-size:100% 460px,auto 460px;background-position:center top,calc(50% + 160px) top;background-repeat:no-repeat}
   .storefront:has(.auth-container) .auth-layout{display:block;min-height:0;height:auto;padding:0}
   .storefront:has(.auth-container) .auth-story{display:none}
   .storefront:has(.auth-container) .auth-form{padding:22px 20px;border-radius:16px;background:#091424f5;max-height:none;overflow:visible}

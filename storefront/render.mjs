@@ -62,7 +62,7 @@ export function renderStorefront({ url, user, db, data, csrfToken = '', layout }
     attrs = /class="/.test(attrs) ? attrs.replace(/class="([^"]*)"/, (_, cls) => `class="${cls} ${className}"`) : attrs + ` class="${className}"`;
     return `<a${attrs} aria-current="page">`;
   });
-  shell = shell.replace('</head>', '<link rel="stylesheet" href="/home-discovery.css?v=1"><link rel="stylesheet" href="/checkout.css?v=1"><link rel="stylesheet" href="/directory.css?v=1"><link rel="stylesheet" href="/auth-soul-land.css?v=2"></head>');
+  shell = shell.replace('</head>', '<link rel="stylesheet" href="/home-discovery.css?v=1"><link rel="stylesheet" href="/checkout.css?v=1"><link rel="stylesheet" href="/directory.css?v=1"><link rel="stylesheet" href="/auth-soul-land.css?v=3"></head>');
   if (page === 'login' || page === 'register') {
     const next = encodeURIComponent(safeNext(url.searchParams.get('next'), '/tai-khoan'));
     const tabs = `<nav class="auth-tabs" aria-label="Tài khoản"><a href="/dang-nhap?next=${next}" ${page === 'login' ? 'aria-current="page"' : ''}>Đăng nhập</a><a href="/dang-ky?next=${next}" ${page === 'register' ? 'aria-current="page"' : ''}>Đăng ký</a></nav>`;
