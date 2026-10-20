@@ -62,11 +62,10 @@ export function renderStorefront({ url, user, db, data, csrfToken = '', layout }
     attrs = /class="/.test(attrs) ? attrs.replace(/class="([^"]*)"/, (_, cls) => `class="${cls} ${className}"`) : attrs + ` class="${className}"`;
     return `<a${attrs} aria-current="page">`;
   });
-  shell = shell.replace('</head>', '<link rel="stylesheet" href="/home-discovery.css?v=1"><link rel="stylesheet" href="/checkout.css?v=1"><link rel="stylesheet" href="/directory.css?v=1"><link rel="stylesheet" href="/auth-soul-land.css?v=3"></head>');
+  shell = shell.replace('</head>', '<link rel="stylesheet" href="/home-discovery.css?v=1"><link rel="stylesheet" href="/checkout.css?v=1"><link rel="stylesheet" href="/directory.css?v=1"><link rel="stylesheet" href="/auth-soul-land.css?v=4"></head>');
   if (page === 'login' || page === 'register') {
     const next = encodeURIComponent(safeNext(url.searchParams.get('next'), '/tai-khoan'));
-    const tabs = `<nav class="auth-tabs" aria-label="Tài khoản"><a href="/dang-nhap?next=${next}" ${page === 'login' ? 'aria-current="page"' : ''}>Đăng nhập</a><a href="/dang-ky?next=${next}" ${page === 'register' ? 'aria-current="page"' : ''}>Đăng ký</a></nav>`;
-    content = content.replace('<span class="eyebrow-label">', tabs + '<span class="eyebrow-label">');
+    content = content.replace('href="/dang-nhap"', `href="/dang-nhap?next=${next}"`).replace('href="/dang-ky"', `href="/dang-ky?next=${next}"`);
   }
   const center = { '/nap-game': 49.5, '/lich-su': 106.5, '/': 177.5, '/tin-tuc': 248.5, '/tai-khoan': 305.5 }[active];
   shell = shell.replace(/(<path id="mobileBottomShapePath" d=")[^"]+/, (_, prefix) => prefix + navPath(center));

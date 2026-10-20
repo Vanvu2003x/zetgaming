@@ -11,9 +11,11 @@ test('auth navigation keeps the intended destination and forms retain CSRF prote
     assert.equal(result.status, 200);
     assert.match(result.html, /auth-soul-land\.css/);
     assert.match(result.html, /name="_csrf" value="fixture-csrf"/);
-    assert.match(result.html, /href="\/dang-nhap\?next=%2Fnap-game%2Fgenshin-impact"/);
-    assert.match(result.html, /href="\/dang-ky\?next=%2Fnap-game%2Fgenshin-impact"/);
-    assert.match(result.html, /aria-current="page"/);
+    const opposite = path === '/dang-nhap' ? '/dang-ky' : '/dang-nhap';
+    assert.ok(result.html.includes(`href="${opposite}?next=%2Fnap-game%2Fgenshin-impact"`));
+    assert.doesNotMatch(result.html, /class="auth-tabs"/);
+    assert.match(result.html, /class="google-signin"/);
+    assert.match(result.html, /Tiếp tục với Google/);
     const unsafe = render(path + '?next=https%3A%2F%2Fevil.example');
     assert.doesNotMatch(unsafe.html, /evil\.example/);
   }
