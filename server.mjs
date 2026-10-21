@@ -52,6 +52,7 @@ export function createFrontend({backendUrl=process.env.BACKEND_URL || 'http://12
     try{
       const path=req.originalUrl==='/api/me' ? '/api/auth/me' : req.originalUrl;
       const response=await backend(req,res,path,['GET','HEAD'].includes(req.method) ? undefined : req.body);
+      if (/^\/api\/auth\/oauth\/google(?:\/callback)?$/.test(req.originalUrl.split('?')[0]) && [302,303].includes(response.status)) return res.set('Cache-Control','no-store').redirect(response.status,response.headers.get('location'));
       res.status(response.status).set('Cache-Control','no-store').type('json').send(await response.text());
     }catch(error){next(error);}
   });

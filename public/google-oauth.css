@@ -1,0 +1,7 @@
+/* OAuth button for the legacy production storefront. */
+.auth-container .google-signin{display:flex;align-items:center;justify-content:center;gap:10px;min-height:44px;width:100%;padding:10px 14px;border:1px solid #d6dde6;border-radius:9px;background:#fff;color:#202630;font:500 14px/1.4 system-ui,sans-serif;text-decoration:none;box-sizing:border-box}
+.auth-container a.google-signin:hover{background:#eff4fa}
+.auth-container a.google-signin:focus-visible{outline:2px solid #ffbc85;outline-offset:4px}
+.auth-container .google-signin img{display:block;width:20px;height:20px}
+.auth-container .auth-divider{display:flex;align-items:center;justify-content:center;gap:12px;margin:20px 0 14px;font-size:12px;color:#aebbd0}
+.auth-container .auth-divider::before,.auth-container .auth-divider::after{content:'';flex:1;border-top:1px solid #ffffff24}

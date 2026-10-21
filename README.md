@@ -66,7 +66,7 @@ Backend chạy ở `http://localhost:4180`. Sau khi frontend chuyển sang API n
 - RBAC kiểm tra ở backend; audit event cho thay đổi nghiệp vụ.
 - Secret bắt buộc khi chạy backend; không dùng secret mặc định ở production.
 - Auth BE: `GET /api/csrf`, `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/auth/me`, `POST /api/auth/logout`. Đăng ký hiện chưa yêu cầu xác minh email.
-- OAuth đã có endpoint kiểm tra provider tại `GET /api/auth/providers`, nhưng chưa bật Google/Facebook khi chưa có credentials thật.
+- Google OAuth: `GET /api/auth/oauth/google` và callback `/api/auth/oauth/google/callback`, dùng state một lần, PKCE, nonce và ID token đã xác minh. Điền `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_CALLBACK_URL` trong `.env` rồi restart backend. Không commit các giá trị thật. Facebook chưa triển khai.
 
 HTTPS/Let's Encrypt không chạy trực tiếp trên localhost. Khi đưa lên staging/production, đặt reverse proxy (Nginx/Caddy) ở trước backend và bật TLS/HSTS.
 

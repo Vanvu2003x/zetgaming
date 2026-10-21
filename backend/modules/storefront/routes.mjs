@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { parse } from '../../utils/validation.mjs';
+import { availableProviders } from '../auth/oauth.mjs';
 export const storefrontRouter = Router();
 storefrontRouter.get('/storefront', async (req, res, next) => {
   try {
@@ -21,6 +22,6 @@ storefrontRouter.get('/storefront', async (req, res, next) => {
       order = (await req.db.query(`SELECT o.code,o.status,o.price_cents,o.payment_method,o.created_at,o.updated_at,p.name package_name,g.name game_name FROM orders o JOIN packages p ON p.id=o.package_id JOIN games g ON g.id=o.game_id WHERE o.code=$1 AND o.customer_id=$2`, [path.split('/')[2], user.id])).rows[0] || null;
       if (order) order.price_cents = Number(order.price_cents);
     }
-    res.set('Cache-Control', 'no-store').json({ user, rows, orders, order, summary, csrf_token: req.csrfToken });
+    res.set('Cache-Control', 'no-store').json({ user, rows, orders, order, summary, oauth: availableProviders(), csrf_token: req.csrfToken });
   } catch (error) { next(error); }
 });

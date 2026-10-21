@@ -29,3 +29,14 @@ test('signed-out view shows return actions and is only displayed to guests', () 
   assert.match(result.html, /href="\/"/);
   assert.equal(render('/da-dang-xuat', { email: 'member@example.com' }).redirect, '/tai-khoan');
 });
+
+test('configured Google login is a native authorization link on login and registration',()=>{
+  for(const path of ['/dang-nhap','/dang-ky']){
+    const page=renderStorefront({url:new URL(path+'?next=%2Fnap-game%2Fgenshin-impact','http://localhost'),user:null,data:{oauth:['google']},layout});
+    assert.match(page.html,/<a class="google-signin" href="\/api\/auth\/oauth\/google\?next=%2Fnap-game%2Fgenshin-impact"/);
+    assert.doesNotMatch(page.html,/<button class="google-signin"/);
+  }
+  const error=render('/dang-nhap?oauth_error=invalid_state');
+  assert.match(error.html,/Phiên đăng nhập Google đã hết hạn/);
+  assert.doesNotMatch(render('/dang-nhap?oauth_error=%3Cscript%3E').html,/<script>/);
+});

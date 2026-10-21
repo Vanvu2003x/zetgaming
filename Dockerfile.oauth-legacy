@@ -1,0 +1,10 @@
+FROM node:24-bookworm-slim
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
+COPY backend/modules/auth/google-oauth.mjs backend/modules/auth/google-sqlite-store.mjs ./backend/modules/auth/
+COPY storefront/shared.mjs ./storefront/
+COPY scripts/legacy-google-service.mjs ./scripts/
+ENV NODE_ENV=production OAUTH_PORT=4181 DB_PATH=/app/data/topup.sqlite
+HEALTHCHECK --interval=30s --timeout=5s CMD node -e "fetch('http://127.0.0.1:4181/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+CMD ["node", "scripts/legacy-google-service.mjs"]

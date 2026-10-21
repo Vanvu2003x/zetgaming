@@ -5,6 +5,7 @@ import { loginPage, registerPage, forgotPasswordPage, resetPasswordPage, gatePag
 import { newsPage, notFoundPage } from './news-pages.mjs';
 import { navPath } from '../public/navigation.js';
 import { signedOutPage } from './auth-feedback.mjs';
+import { googleErrors } from './google-signin.mjs';
 
 export function renderStorefront({ url, user, db, data, csrfToken = '', layout }) {
   const path = url.pathname;
@@ -29,10 +30,12 @@ export function renderStorefront({ url, user, db, data, csrfToken = '', layout }
     if (game) set('game', '/nap-game', `Nạp ${game.name}`, gamePage(game, rows.filter(row => row.id === game.id), user, randomUUID(), url.searchParams.get('error') || '', catalog), `Chọn gói nạp ${game.name}, kiểm tra UID và xem giá trước khi tạo đơn.`);
   } else if (path === '/dang-nhap') {
     if (user) return { redirect: safeNext(url.searchParams.get('next')), status: 303 };
-    set('login', '/tai-khoan', 'Đăng nhập', loginPage(url.searchParams.get('next'), url.searchParams.get('error')));
+    set('login', '/tai-khoan', 'Đăng nhập', loginPage(url.searchParams.get('next'), url.searchParams.get('error'), data?.oauth || []));
+    const oauthError = url.searchParams.get('oauth_error');
+    if (Object.hasOwn(googleErrors, oauthError)) content = content.replace(/(<p id="loginMsg"[^>]*>)[^<]*/, (_, prefix) => prefix + e(googleErrors[oauthError]));
   } else if (path === '/dang-ky') {
     if (user) return { redirect: safeNext(url.searchParams.get('next'), '/tai-khoan'), status: 303 };
-    set('register', '/tai-khoan', 'Đăng ký', registerPage(url.searchParams.get('next'), url.searchParams.get('error')));
+    set('register', '/tai-khoan', 'Đăng ký', registerPage(url.searchParams.get('next'), url.searchParams.get('error'), data?.oauth || []));
   } else if (path === '/da-dang-xuat') {
     if (user) return { redirect: '/tai-khoan', status: 303 };
     set('logout', '/tai-khoan', 'Đã đăng xuất', signedOutPage());
