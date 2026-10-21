@@ -45,3 +45,14 @@ For code rollback, restore the three storefront files and Nginx site from that s
 ## Verification
 
 Automated tests cover callback browser binding, one-time state/replay protection, nonce and verified-email checks, cancellation, proxy redirect/cookie handling, real PostgreSQL and SQLite account/session persistence, balances, stable-subject identity and protected-role linking. Both public origins reach Google's account selection with matching callbacks. Completing consent with a real Google account requires the user; no automated test signs into the user's Google account.
+
+## Consent-screen public URLs
+
+- Application home: `https://zetgaming.vanvucoder.id.vn/`
+- Privacy policy: `https://zetgaming.vanvucoder.id.vn/chinh-sach-bao-mat`
+- Terms: `https://zetgaming.vanvucoder.id.vn/dieu-khoan-dich-vu`
+- Published support and data-request contact, selected by the owner: `zetgaming.net@gmail.com`. It can be overridden with `SUPPORT_EMAIL` when configured.
+
+The policy pages are SSR documents available without authentication. They describe current `openid email` access, account/transaction data, cookie use, retention, request-based deletion and Google-access revocation separately. Footer, registration consent and Google sign-in notices link to the documents.
+
+Legacy deployment uses `scripts/patch-legacy-legal.mjs /opt/zetgaming`, with `storefront/legal-pages.mjs` copied into the old release and `/legal.css` served by Nginx. Snapshot before that change is `/opt/zetgaming/data/backups/legal-before-20261021-v1/` (renderer, layout, Google UI module/CSS and Nginx configuration). Restoring those files and restarting the storefront rolls back the policy UI without touching account or order data.

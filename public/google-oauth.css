@@ -5,3 +5,5 @@
 .auth-container .google-signin img{display:block;width:20px;height:20px}
 .auth-container .auth-divider{display:flex;align-items:center;justify-content:center;gap:12px;margin:20px 0 14px;font-size:12px;color:#aebbd0}
 .auth-container .auth-divider::before,.auth-container .auth-divider::after{content:'';flex:1;border-top:1px solid #ffffff24}
+.auth-container .auth-policy-note{font:400 11px/1.7 system-ui,sans-serif;color:#b6c4d6;text-align:center;margin:12px 0 0}
+.auth-container .auth-policy-note a{color:#ffb993;text-underline-offset:3px}

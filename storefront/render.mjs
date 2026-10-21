@@ -6,6 +6,7 @@ import { newsPage, notFoundPage } from './news-pages.mjs';
 import { navPath } from '../public/navigation.js';
 import { signedOutPage } from './auth-feedback.mjs';
 import { googleErrors } from './google-signin.mjs';
+import { legalPage, legalDocuments } from './legal-pages.mjs';
 
 export function renderStorefront({ url, user, db, data, csrfToken = '', layout }) {
   const path = url.pathname;
@@ -23,7 +24,8 @@ export function renderStorefront({ url, user, db, data, csrfToken = '', layout }
   const catalog = [...games.values()];
   let title = 'Không tìm thấy trang', description = 'Nạp game tại ZetGaming.', page = 'not-found', active = '/', content = notFoundPage(), status = 404;
   const set = (name, tab, heading, html, desc = heading) => { page = name; active = tab; title = heading; content = html; description = desc; status = 200; };
-  if (path === '/') set('home', '/', 'Nạp game dễ dàng', homePage(catalog), 'Chọn game yêu thích, xem giá gói nạp và theo dõi đơn tại ZetGaming.');
+  if (Object.hasOwn(legalDocuments, path)) set('legal', '/', legalDocuments[path].title, legalPage(path), legalDocuments[path].intro);
+  else if (path === '/') set('home', '/', 'Nạp game dễ dàng', homePage(catalog), 'Chọn game yêu thích, xem giá gói nạp và theo dõi đơn tại ZetGaming.');
   else if (path === '/nap-game') set('catalog', '/nap-game', 'Nạp game', catalogPage(catalog, (url.searchParams.get('q') || '').trim().slice(0, 100), { category: (url.searchParams.get('category') || '').slice(0, 100), sort: url.searchParams.get('sort') }));
   else if (/^\/nap-game\/[a-z0-9-]+$/.test(path)) {
     const game = catalog.find(item => item.slug === path.split('/')[2]);
@@ -65,7 +67,7 @@ export function renderStorefront({ url, user, db, data, csrfToken = '', layout }
     attrs = /class="/.test(attrs) ? attrs.replace(/class="([^"]*)"/, (_, cls) => `class="${cls} ${className}"`) : attrs + ` class="${className}"`;
     return `<a${attrs} aria-current="page">`;
   });
-  shell = shell.replace('</head>', '<link rel="stylesheet" href="/home-discovery.css?v=1"><link rel="stylesheet" href="/checkout.css?v=1"><link rel="stylesheet" href="/directory.css?v=1"><link rel="stylesheet" href="/auth-soul-land.css?v=4"></head>');
+  shell = shell.replace('</head>', '<link rel="stylesheet" href="/home-discovery.css?v=1"><link rel="stylesheet" href="/checkout.css?v=1"><link rel="stylesheet" href="/directory.css?v=1"><link rel="stylesheet" href="/auth-soul-land.css?v=4"><link rel="stylesheet" href="/legal.css?v=1"></head>');
   if (page === 'login' || page === 'register') {
     const next = encodeURIComponent(safeNext(url.searchParams.get('next'), '/tai-khoan'));
     content = content.replace('href="/dang-nhap"', `href="/dang-nhap?next=${next}"`).replace('href="/dang-ky"', `href="/dang-ky?next=${next}"`);
