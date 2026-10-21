@@ -1,0 +1,10 @@
+Created with the built-in imagegen tool, 2026-10-21.
+Reference: public/zetgaming-logo-transparent.png (brand identity).
+Final upload asset: public/zetgaming-oauth-logo-120.png.
+Generated square artwork exported at the user's required 120 x 120 pixels using high-quality bicubic scaling.
+
+Use case: logo-brand.
+Asset type: square OAuth application icon for the existing ZetGaming brand, to export at exactly 120x120 pixels.
+Input image: reference for existing brand identity ONLY, not an edit target to preserve the horizontal format.
+Create a polished square 1:1 app logo adapted from the supplied ZetGaming logo. Preserve the instantly recognizable angular slashing Z emblem and its red-orange fire identity. A single bold metallic Z with restrained orange fiery edges, high contrast, clean silhouette, visually simplified for a 120-pixel icon. No sprawling sparks or intricate noise that makes a tiny icon muddy. Center the Z, occupying about 70% of the square height, with comfortable safe margins. Below it one compact readable all-caps wordmark, exact text "ZETGAMING", clean bold condensed sans-serif, white/silver with subtle warm orange highlight, no extra tagline. The wordmark must be spelled correctly and remain readable at small size. Deep nearly-black navy square background, subtle warm halo behind emblem, sophisticated dark gaming brand identity, crisp anti-aliased edges, balanced visual hierarchy, no outer stroke or additional enclosing badge. Do not reproduce the wide banner shape. Opaque full square.
+No characters, no game artwork, no Google logo, no watermark, no UI mockup, no extra text.
