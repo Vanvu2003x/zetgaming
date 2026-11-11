@@ -29,13 +29,18 @@ function available(order){
   return items;
 }
 export function orderManagement(order){
-  if (order.status === 'awaiting_payment') return '<section class="order-management quick-order-actions"><h3>Thao tác</h3><button type="button" class="button danger" data-direct-operation="cancel">Hủy đơn</button></section>';
+  if (order.status === 'awaiting_payment') return '<section class="order-management quick-order-actions"><h3>Thao tác nhanh</h3><button type="button" class="button danger" data-direct-operation="cancel">Hủy đơn</button></section>';
   const items=available(order);
   const refund=order.refund ? `<div class="detail-note"><strong>${order.refund.state==='paid'?'Đã hoàn tiền':'Chờ hoàn chuyển khoản'} · ${money(order.refund.amount_cents)}</strong><p>${order.refund.method==='wallet'?'Hoàn vào ví ZetGaming':'Hoàn qua ngân hàng'}${order.refund.reference?' · Mã giao dịch: '+e(order.refund.reference):''}</p></div>`:'';
-  const controls=items.length ? `<details class="order-management"><summary>Xử lý đơn</summary><label>Thao tác<select data-order-operation>${items.map(key=>`<option value="${key}">${operations[key][0]}</option>`).join('')}</select></label><p class="detail-note" data-operation-help></p><label data-outcome-field>Kết quả kiểm tra<select data-operation-outcome></select></label><label data-reason-field>Lý do<textarea data-operation-reason rows="3" maxlength="1000" placeholder="Ghi rõ lý do và kết quả kiểm tra; không nhập mật khẩu hoặc OTP."></textarea></label><label data-reference-field>Mã giao dịch ngân hàng<input data-operation-reference maxlength="120" autocomplete="off" placeholder="Mã giao dịch thực tế từ ngân hàng"></label><button type="button" class="button primary" data-operation-submit>Thực hiện</button></details>`:'';
+  const quick=[];
+  if(order.status==='pending_admin')quick.push(['start','Nhận đơn']);
+  if(order.status==='processing' && order.can_complete)quick.push(['complete','Hoàn thành đơn']);
+  if(['pending_admin','failed'].includes(order.status))quick.push(['cancel','Hủy đơn']);
+  const quickHtml=quick.length?`<section class="order-management quick-order-actions"><h3>Thao tác nhanh</h3><div>${quick.map(([key,label])=>`<button type="button" class="button ${key==='cancel'?'danger':'primary'}" data-quick-operation="${key}">${label}</button>`).join('')}</div></section>`:'';
+  const controls=items.length ? `<details class="order-management"><summary>Thao tác khác</summary><label>Chọn thao tác<select data-order-operation>${items.map(key=>`<option value="${key}">${operations[key][0]}</option>`).join('')}</select></label><p class="detail-note" data-operation-help></p><label data-outcome-field>Kết quả kiểm tra<select data-operation-outcome></select></label><label data-reason-field>Lý do<textarea data-operation-reason rows="3" maxlength="1000" placeholder="Ghi rõ lý do và kết quả kiểm tra; không nhập mật khẩu hoặc OTP."></textarea></label><label data-reference-field>Mã giao dịch ngân hàng<input data-operation-reference maxlength="120" autocomplete="off" placeholder="Mã giao dịch thực tế từ ngân hàng"></label><button type="button" class="button primary" data-operation-submit>Thực hiện</button></details>`:'';
   const notes=`<details class="order-management"><summary>Ghi chú nội bộ <span class="muted">· ${order.notes.length} ghi chú</span></summary><p class="muted">Không ghi mật khẩu, OTP hoặc thông tin ngân hàng nhạy cảm.</p><label class="sr-only" for="orderNote">Nội dung ghi chú</label><textarea id="orderNote" data-order-note rows="3" maxlength="2000" placeholder="Nhập ghi chú…"></textarea><button type="button" class="button" data-note-submit>Thêm ghi chú</button><div class="order-notes">${order.notes.length?order.notes.map(note=>`<article><p>${e(note.body)}</p><small>${e(note.actor)} · ${date(note.created_at)}</small></article>`).join(''):'<p class="muted">Chưa có ghi chú.</p>'}</div></details>`;
   const history=`<details class="order-management"><summary>Lịch sử thao tác <span class="muted">· ${order.events.length} gần nhất</span></summary><ol class="order-timeline">${order.events.map(event=>`<li><strong>${e(actionNames[event.action]||event.action)}</strong><small>${e(event.actor)} · ${date(event.created_at)}</small>${event.metadata?.reason?`<p>${e(event.metadata.reason)}</p>`:''}${event.metadata?.from_status && event.metadata?.to_status?`<p>${e(statuses[event.metadata.from_status]||event.metadata.from_status)} → ${e(statuses[event.metadata.to_status]||event.metadata.to_status)}</p>`:''}${event.metadata?.amount_cents?`<p>${money(event.metadata.amount_cents)}</p>`:''}${event.metadata?.reference?`<p>Mã giao dịch: ${e(event.metadata.reference)}</p>`:''}</li>`).join('')}</ol></details>`;
-  return refund+controls+notes+history;
+  return refund+quickHtml+controls+notes+history;
 }
 
 export function bindOrderManagement(target,order,context,reopen,showError){
@@ -62,6 +67,11 @@ export function bindOrderManagement(target,order,context,reopen,showError){
     finally{target.dataset.saving='false';target.removeEventListener('cancel',prevent);buttons.forEach(b=>b.disabled=false);}
   }
   target.querySelector('[data-direct-operation="cancel"]')?.addEventListener('click',()=>save('cancel',{reason:'Admin hủy đơn khi chưa xác nhận thanh toán.',confirmed:true}));
+  target.querySelectorAll('[data-quick-operation]').forEach(button => button.addEventListener('click', () => {
+    const action = button.dataset.quickOperation;
+    const reason = action === 'cancel' ? 'Admin hủy đơn chưa nạp.' : '';
+    void save(action, { confirmed: true, ...(reason ? { reason } : {}) });
+  }));
   target.querySelector('[data-note-submit]')?.addEventListener('click',()=>save('notes',{body:target.querySelector('[data-order-note]').value.trim()}));
   target.querySelector('[data-operation-submit]')?.addEventListener('click',()=>{
     const action=operation.value;let body={confirmed:true};

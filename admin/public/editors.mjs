@@ -188,10 +188,10 @@ export async function openOrder(code, context) {
       submit = 'Xác nhận đã nhận tiền'; endpoint = 'confirm-payment';
     } else if (order.status === 'pending_admin') {
       action = '<div class="detail-note">Đơn đã thanh toán. Bấm nhận xử lý trước khi thực hiện nạp để tránh hai người cùng nạp.</div>';
-      submit = 'Nhận xử lý đơn'; endpoint = 'start';
+      submit = ''; endpoint = '';
     } else if (order.status === 'processing') {
       action = order.can_complete ? '<div class="detail-note">Kiểm tra đúng game, UID/tài khoản và gói nạp trước khi hoàn tất.</div>' : `<div class="detail-note">Đơn đang được ${e(order.processing_admin || 'admin khác')} xử lý.</div>`;
-      if (order.can_complete) { submit = 'Đánh dấu đã nạp thành công'; endpoint = 'complete'; }
+      if (order.can_complete) { submit = ''; endpoint = ''; }
     } else if (order.status === 'completed') {
       action = '<div class="detail-note">Đơn đã hoàn thành. Không thực hiện nạp lại.</div>';
     } else if (order.status === 'cancelled') {
