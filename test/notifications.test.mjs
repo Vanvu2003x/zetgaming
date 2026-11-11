@@ -12,7 +12,7 @@ test('order notifications queue configured channels without exposing target data
     await queueOrderNotification(client, 'order.payment_confirmed', 'order-1');
     assert.equal(queries.filter(query => query.sql.includes('INSERT INTO order_notifications')).length, 3);
     const text = notificationText({ code: 'GPTEST123', status: 'paid', event: 'order.payment_confirmed', game_name: 'Genshin Impact', package_name: '60 Genesis Crystals', price_cents: 2000000 });
-    assert.match(text, /GPTEST123/); assert.match(text, /Genshin Impact/); assert.match(text, /2\.000\.000/); assert.doesNotMatch(text, /password|target_encrypted/i);
+    assert.match(text, /GPTEST123/); assert.match(text, /Genshin Impact/); assert.match(text, /2\.000\.000/); assert.match(text, /\/orders\?query=GPTEST123/); assert.doesNotMatch(text, /password|target_encrypted/i);
   } finally { env.emailDelivery = original.emailDelivery; env.notificationEmailEvents = original.emailEvents; env.notificationAdminEvents = original.adminEvents; env.telegramBotToken = original.token; env.telegramChatId = original.chat; env.zalo = original.zalo; }
 });
 

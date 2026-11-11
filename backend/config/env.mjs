@@ -9,6 +9,7 @@ export const env = {
   databaseSsl: bool(process.env.DATABASE_SSL),
   sessionSecret: process.env.SESSION_SECRET || '',
   frontendOrigin: process.env.FRONTEND_ORIGIN || 'http://localhost:4173',
+  adminOrigin: (process.env.ADMIN_ORIGIN || 'http://localhost:4174').replace(/\/$/, ''),
   allowedOrigins: [...new Set([
     ...(process.env.FRONTEND_ORIGIN || 'http://localhost:4173').split(','),
     process.env.ADMIN_ORIGIN || (process.env.NODE_ENV !== 'production' ? 'http://localhost:4174' : ''),

@@ -21,5 +21,6 @@ export async function queueOrderNotification(client, event, orderId, metadata = 
 export const notificationText = (item) => {
   const label = { 'order.created':'Đơn mới tạo', 'order.payment_confirmed':'Đã xác nhận thanh toán', 'order.admin_started':'Admin bắt đầu xử lý', 'order.admin_completed':'Đã hoàn tất nạp', 'order.cancelled':'Đơn đã hủy', 'order.refund_requested':'Đang chờ hoàn tiền', 'order.refund_paid':'Đã hoàn tiền' }[item.event] || item.event;
   const amount = Number(item.price_cents || 0).toLocaleString('vi-VN') + ' đ';
-  return `ZetGaming · ${label}\nMã đơn: ${item.code}\nGame: ${item.game_name || '—'}\nGói: ${item.package_name || '—'}\nSố tiền: ${amount}\nThanh toán: ${item.payment_method || '—'}\nKhách: ${item.customer || 'Khách vãng lai'}\nTrạng thái: ${item.status}`;
+  const adminLink = `${env.adminOrigin}/orders?query=${encodeURIComponent(item.code || '')}`;
+  return `ZetGaming · ${label}\nMã đơn: ${item.code}\nGame: ${item.game_name || '—'}\nGói: ${item.package_name || '—'}\nSố tiền: ${amount}\nThanh toán: ${item.payment_method || '—'}\nKhách: ${item.customer || 'Khách vãng lai'}\nXem đơn: ${adminLink}`;
 };
