@@ -20,6 +20,13 @@ export const env = {
   emailFrom: process.env.EMAIL_FROM || 'no-reply@localhost',
   emailWebhookUrl: process.env.EMAIL_WEBHOOK_URL || '',
   emailWebhookToken: process.env.EMAIL_WEBHOOK_TOKEN || '',
+  smtp: {
+    host: process.env.SMTP_HOST || '',
+    port: Number(process.env.SMTP_PORT || 465),
+    secure: bool(process.env.SMTP_SECURE, true),
+    user: process.env.SMTP_USER || '',
+    pass: process.env.SMTP_PASS || '',
+  },
   emailVerificationRequired: bool(process.env.EMAIL_VERIFICATION_REQUIRED),
   notificationEmailEvents: new Set((process.env.NOTIFICATION_EMAIL_EVENTS || 'order.admin_completed,order.issue_reported,order.issue_resolved,order.cancelled,order.refund_paid').split(',').map(value => value.trim()).filter(Boolean)),
   notificationAdminEvents: new Set((process.env.NOTIFICATION_ADMIN_EVENTS || 'order.payment_confirmed').split(',').map(value => value.trim()).filter(Boolean)),

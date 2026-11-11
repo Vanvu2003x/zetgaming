@@ -17,6 +17,7 @@
     "db:import-legacy": "node scripts/import-legacy.mjs",
     "db:migrate": "node backend/db/migrate.mjs",
     "db:seed": "node backend/db/seed.mjs",
+    "gmail:watch": "node scripts/renew-gmail-watch.mjs",
     "test": "node --test",
     "build": "node scripts/check.mjs"
   },
@@ -29,8 +30,13 @@
     "express-rate-limit": "^7.5.0",
     "google-auth-library": "^11.3.1",
     "helmet": "^8.1.0",
+    "nodemailer": "^7.0.13",
     "pg": "^8.13.1",
-    "zod": "^3.24.2"
+    "zod": "^4.6.7"
+  },
+  "overrides": {
+    "body-parser": "2.4.0",
+    "qs": "6.17.0"
   },
   "devDependencies": {
     "embedded-postgres": "^16.14.0-beta.17"
