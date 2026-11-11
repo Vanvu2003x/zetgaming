@@ -29,6 +29,7 @@ function available(order){
   return items;
 }
 export function orderManagement(order){
+  if (order.status === 'awaiting_payment') return '<section class="order-management quick-order-actions"><h3>Thao tác</h3><button type="button" class="button danger" data-direct-operation="cancel">Hủy đơn</button></section>';
   const items=available(order);
   const refund=order.refund ? `<div class="detail-note"><strong>${order.refund.state==='paid'?'Đã hoàn tiền':'Chờ hoàn chuyển khoản'} · ${money(order.refund.amount_cents)}</strong><p>${order.refund.method==='wallet'?'Hoàn vào ví ZetGaming':'Hoàn qua ngân hàng'}${order.refund.reference?' · Mã giao dịch: '+e(order.refund.reference):''}</p></div>`:'';
   const controls=items.length ? `<section class="order-management"><h3>Xử lý đơn</h3><label>Thao tác<select data-order-operation>${items.map(key=>`<option value="${key}">${operations[key][0]}</option>`).join('')}</select></label><p class="detail-note" data-operation-help></p><label data-outcome-field>Kết quả kiểm tra<select data-operation-outcome></select></label><label data-reason-field>Lý do<textarea data-operation-reason rows="3" maxlength="1000" placeholder="Ghi rõ lý do và kết quả kiểm tra; không nhập mật khẩu hoặc OTP."></textarea></label><label data-reference-field>Mã giao dịch ngân hàng<input data-operation-reference maxlength="120" autocomplete="off" placeholder="Mã giao dịch thực tế từ ngân hàng"></label><label class="fulfillment-confirm"><input type="checkbox" data-operation-confirm><span data-operation-confirm-label></span></label><button type="button" class="button primary" data-operation-submit>Thực hiện</button></section>`:'';
@@ -62,6 +63,7 @@ export function bindOrderManagement(target,order,context,reopen,showError){
     }catch(error){showError(error);}
     finally{target.dataset.saving='false';target.removeEventListener('cancel',prevent);buttons.forEach(b=>b.disabled=false);}
   }
+  target.querySelector('[data-direct-operation="cancel"]')?.addEventListener('click',()=>save('cancel',{reason:'Admin hủy đơn khi chưa xác nhận thanh toán.',confirmed:true}));
   target.querySelector('[data-note-submit]')?.addEventListener('click',()=>save('notes',{body:target.querySelector('[data-order-note]').value.trim()}));
   target.querySelector('[data-operation-submit]')?.addEventListener('click',()=>{
     if(!target.querySelector('[data-operation-confirm]').checked)return showError(new Error('Vui lòng đánh dấu xác nhận thao tác.'));

@@ -7,10 +7,10 @@ const input = (name, label, value, { type = 'text', full = false, required = fal
 const select = (name, label, current, options) => `<label>${label}<select name="${name}">${options.map(([value, text]) => `<option value="${e(value)}" ${value === current ? 'selected' : ''}>${e(text)}</option>`).join('')}</select></label>`;
 const safeImage = url => /^(https:\/\/|\/(?!\/))/.test(url || '');
 const imagePicker = (field, label, value, help, square = field === 'thumbnail') => `<div class="image-picker"><label>${label}<span class="image-picker-preview ${square ? 'square' : ''}"><img ${safeImage(value) ? `src="${e(imageUrl(value))}"` : 'hidden'} alt="Xem trước ${label.toLowerCase()}"><span class="image-picker-placeholder" ${safeImage(value) ? 'hidden' : ''}>${square ? 'Ảnh vuông' : 'Ảnh ngang'}</span></span><input type="file" data-upload-field="${field}" accept="image/png,image/jpeg,image/webp" aria-label="Chọn ${label.toLowerCase()}"></label><input type="hidden" name="${field}" value="${e(value || '')}"><small>${help} · PNG, JPG, WebP ≤ 5 MB</small></div>`;
-function mount(title, description, body, context, submit = '') {
+function mount(title, description, body, context, submit = '', hideFooterClose = false) {
   const target = dialog();
   target.dataset.generation = String(++dialogGeneration);
-  target.innerHTML = `<div class="dialog-head"><div><h2 id="dialog-title">${e(title)}</h2><p>${e(description)}</p></div><button class="icon-button" data-close aria-label="Đóng">${context.symbol('close')}</button></div>${submit ? '<form id="resource-form">' : ''}<div class="dialog-body"><div class="inline-error" id="form-error" role="alert" hidden></div>${body}</div><div class="dialog-footer"><button class="button" type="button" data-close>${submit ? 'Hủy' : 'Đóng'}</button>${submit ? `<button class="button primary" type="submit">${context.symbol('check')} ${submit}</button>` : ''}</div>${submit ? '</form>' : ''}`;
+  target.innerHTML = `<div class="dialog-head"><div><h2 id="dialog-title">${e(title)}</h2><p>${e(description)}</p></div><button class="icon-button" data-close aria-label="Đóng">${context.symbol('close')}</button></div>${submit ? '<form id="resource-form">' : ''}<div class="dialog-body"><div class="inline-error" id="form-error" role="alert" hidden></div>${body}</div><div class="dialog-footer">${hideFooterClose ? '' : `<button class="button" type="button" data-close>${submit ? 'Hủy' : 'Đóng'}</button>`}${submit ? `<button class="button primary" type="submit">${context.symbol('check')} ${submit}</button>` : ''}</div>${submit ? '</form>' : ''}`;
   target.querySelectorAll('[data-close]').forEach(button => button.addEventListener('click', () => { if (target.dataset.saving !== 'true' && target.querySelector('form')?.dataset.saving !== 'true') target.close(); }));
   if (!target.open) target.showModal();
   target.querySelector('[data-close]').focus();
@@ -184,7 +184,7 @@ export async function openOrder(code, context) {
     const credentials = `<details class="fulfillment-target" ${['pending_admin','processing'].includes(order.status) ? 'open' : ''}><summary>Thông tin nạp game <span class="muted">· chỉ admin xem</span></summary><p class="muted">Lượt xem thông tin được ghi nhận trong nhật ký.</p>${fields ? `<dl>${fields}</dl>` : '<p>Đơn này chưa có thông tin nạp. Cần kiểm tra với khách trước khi xử lý.</p>'}</details>`;
     let action = '', submit = '', endpoint = '';
     if (order.status === 'awaiting_payment') {
-      action = '<div class="detail-note">Đối chiếu ngân hàng: đúng số tiền, đúng nội dung ZET + mã đơn. Chỉ xác nhận khi tiền thực sự vào tài khoản.</div><label class="fulfillment-confirm"><input type="checkbox" name="confirmed" required> Tôi đã kiểm tra và nhận đủ tiền cho đơn này.</label>';
+      action = '<div class="detail-note">Đối chiếu đúng số tiền và nội dung ZET + mã đơn trước khi xác nhận.</div>';
       submit = 'Xác nhận đã nhận tiền'; endpoint = 'confirm-payment';
     } else if (order.status === 'pending_admin') {
       action = '<div class="detail-note">Đơn đã thanh toán. Bấm nhận xử lý trước khi thực hiện nạp để tránh hai người cùng nạp.</div>';
@@ -207,7 +207,7 @@ export async function openOrder(code, context) {
     } else {
       action = '<div class="detail-note">Đơn thuộc luồng xử lý cũ. Giữ nguyên để kiểm tra, tránh nạp trùng.</div>';
     }
-    mount('Chi tiết đơn hàng', order.code, `<dl class="detail-grid">${info.map(([label,value]) => `<div><dt>${label}</dt><dd>${value}</dd></div>`).join('')}</dl>${credentials}${action}${orderManagement(order)}`, context, submit);
+    mount('Chi tiết đơn hàng', order.code, `<dl class="detail-grid">${info.map(([label,value]) => `<div><dt>${label}</dt><dd>${value}</dd></div>`).join('')}</dl>${credentials}${action}${orderManagement(order)}`, context, submit, true);
     bindOrderManagement(target,order,context,openOrder,showError);
     target.querySelectorAll('[data-copy-target]').forEach(button => button.addEventListener('click', async () => {
       try { await navigator.clipboard.writeText(order.target[button.dataset.copyTarget]); context.toast('Đã sao chép thông tin nạp.'); }
