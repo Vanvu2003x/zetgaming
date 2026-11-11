@@ -21,6 +21,7 @@ export const env = {
   emailWebhookToken: process.env.EMAIL_WEBHOOK_TOKEN || '',
   emailVerificationRequired: bool(process.env.EMAIL_VERIFICATION_REQUIRED),
   notificationEmailEvents: new Set((process.env.NOTIFICATION_EMAIL_EVENTS || 'order.created,order.payment_confirmed,order.admin_completed,order.cancelled,order.refund_paid').split(',').map(value => value.trim()).filter(Boolean)),
+  notificationAdminEvents: new Set((process.env.NOTIFICATION_ADMIN_EVENTS || 'order.payment_confirmed').split(',').map(value => value.trim()).filter(Boolean)),
   telegramBotToken: process.env.TELEGRAM_BOT_TOKEN || '',
   telegramChatId: process.env.TELEGRAM_CHAT_ID || '',
   zalo: {

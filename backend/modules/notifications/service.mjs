@@ -10,10 +10,10 @@ export async function queueOrderNotification(client, event, orderId, metadata = 
   if (env.notificationEmailEvents && row.email && env.emailDelivery !== 'disabled' && env.notificationEmailEvents.has(event)) {
     await client.query(`INSERT INTO order_notifications(id,order_id,user_id,channel,recipient,event,payload) VALUES($1,$2,$3,'email',$4,$5,$6::jsonb) ON CONFLICT DO NOTHING`, [id(), orderId, row.customer_id, row.email, event, payload]);
   }
-  if (env.telegramBotToken && env.telegramChatId) {
+  if (env.notificationAdminEvents?.has(event) && env.telegramBotToken && env.telegramChatId) {
     await client.query(`INSERT INTO order_notifications(id,order_id,user_id,channel,recipient,event,payload) VALUES($1,$2,NULL,'telegram',$3,$4,$5::jsonb) ON CONFLICT DO NOTHING`, [id(), orderId, env.telegramChatId, event, payload]);
   }
-  if (env.zalo.enabled && env.zalo.webhookUrl && env.zalo.groupId) {
+  if (env.notificationAdminEvents?.has(event) && env.zalo.enabled && env.zalo.webhookUrl && env.zalo.groupId) {
     await client.query(`INSERT INTO order_notifications(id,order_id,user_id,channel,recipient,event,payload) VALUES($1,$2,NULL,'zalo',$3,$4,$5::jsonb) ON CONFLICT DO NOTHING`, [id(), orderId, env.zalo.groupId, event, payload]);
   }
 }
