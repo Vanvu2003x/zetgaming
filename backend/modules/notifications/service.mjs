@@ -1,5 +1,6 @@
 import { env } from '../../config/env.mjs';
 import { id } from '../../utils/ids.mjs';
+import { orderEmailHtml } from './email-templates.mjs';
 
 const events = new Set(['order.created','order.payment_confirmed','order.admin_started','order.admin_completed','order.cancelled','order.refund_requested','order.refund_paid']);
 export async function queueOrderNotification(client, event, orderId, metadata = {}) {
@@ -7,7 +8,8 @@ export async function queueOrderNotification(client, event, orderId, metadata = 
   const row = (await client.query(`SELECT o.code,o.price_cents,o.status,o.customer_id,o.payment_method,u.email,p.name package_name,g.name game_name FROM orders o JOIN packages p ON p.id=o.package_id JOIN games g ON g.id=o.game_id LEFT JOIN users u ON u.id=o.customer_id WHERE o.id=$1`, [orderId])).rows[0];
   if (!row) return;
   const payload = JSON.stringify({ code: row.code, price_cents: Number(row.price_cents), status: row.status, game_name: row.game_name, package_name: row.package_name, payment_method: row.payment_method, customer: row.email || 'Khách vãng lai', event, ...metadata });
-  if (env.notificationEmailEvents && row.email && env.emailDelivery !== 'disabled' && env.notificationEmailEvents.has(event)) {
+  const customerEmailAllowed = event !== 'order.issue_reported' || metadata.outcome === 'not_delivered';
+  if (env.notificationEmailEvents && row.email && env.emailDelivery !== 'disabled' && customerEmailAllowed && env.notificationEmailEvents.has(event)) {
     await client.query(`INSERT INTO order_notifications(id,order_id,user_id,channel,recipient,event,payload) VALUES($1,$2,$3,'email',$4,$5,$6::jsonb) ON CONFLICT DO NOTHING`, [id(), orderId, row.customer_id, row.email, event, payload]);
   }
   if (env.notificationAdminEvents?.has(event) && env.telegramBotToken && env.telegramChatId) {
@@ -24,3 +26,9 @@ export const notificationText = (item) => {
   const adminLink = `${env.adminOrigin}/orders?query=${encodeURIComponent(item.code || '')}`;
   return `ZetGaming · ${label}\nMã đơn: ${item.code}\nGame: ${item.game_name || '—'}\nGói: ${item.package_name || '—'}\nSố tiền: ${amount}\nThanh toán: ${item.payment_method || '—'}\nKhách: ${item.customer || 'Khách vãng lai'}\nXem đơn: ${adminLink}`;
 };
+
+export const notificationEmail = item => ({
+  subject: `ZetGaming · ${item.status === 'completed' ? 'Đơn nạp hoàn tất' : item.status === 'failed' || item.event === 'order.cancelled' ? 'Đơn nạp chưa hoàn tất' : 'Cập nhật đơn nạp'} · ${item.code}`,
+  text: notificationText(item),
+  html: orderEmailHtml({ ...item, frontendOrigin: env.frontendOrigin }),
+});

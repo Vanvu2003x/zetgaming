@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { env } from '../backend/config/env.mjs';
-import { notificationText, queueOrderNotification } from '../backend/modules/notifications/service.mjs';
+import { notificationText, notificationEmail, queueOrderNotification } from '../backend/modules/notifications/service.mjs';
 
 test('order notifications queue configured channels without exposing target data', async () => {
   const original = { emailDelivery: env.emailDelivery, emailEvents: env.notificationEmailEvents, adminEvents: env.notificationAdminEvents, token: env.telegramBotToken, chat: env.telegramChatId, zalo: env.zalo };
@@ -13,6 +13,8 @@ test('order notifications queue configured channels without exposing target data
     assert.equal(queries.filter(query => query.sql.includes('INSERT INTO order_notifications')).length, 3);
     const text = notificationText({ code: 'GPTEST123', status: 'paid', event: 'order.payment_confirmed', game_name: 'Genshin Impact', package_name: '60 Genesis Crystals', price_cents: 2000000 });
     assert.match(text, /GPTEST123/); assert.match(text, /Genshin Impact/); assert.match(text, /2\.000\.000/); assert.match(text, /\/orders\?query=GPTEST123/); assert.doesNotMatch(text, /password|target_encrypted/i);
+    const email = notificationEmail({ code: 'GPTEST123', status: 'completed', event: 'order.admin_completed', game_name: 'Genshin Impact', package_name: '60 Genesis Crystals', price_cents: 2000000 });
+    assert.match(email.html, /Đơn nạp đã hoàn tất/); assert.match(email.html, /Genshin Impact/); assert.match(email.html, /GPTEST123/);
   } finally { env.emailDelivery = original.emailDelivery; env.notificationEmailEvents = original.emailEvents; env.notificationAdminEvents = original.adminEvents; env.telegramBotToken = original.token; env.telegramChatId = original.chat; env.zalo = original.zalo; }
 });
 
