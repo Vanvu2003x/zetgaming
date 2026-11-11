@@ -24,8 +24,9 @@ export const resetPasswordSchema = z.object({
 export const orderSchema = z.object({
   package_id: z.string().min(1).max(100),
   idempotency_key: z.string().trim().min(8).max(120).optional(),
+  coupon_code: z.string().trim().max(80).optional(),
   payment_method: z.enum(['wallet', 'direct']).default('direct'),
-  target: z.object({ uid: z.string().trim().max(120).optional(), login: z.string().trim().max(120).optional() }).default({}),
+  target: z.object({ uid: z.string().trim().max(120).optional(), login: z.string().trim().max(120).optional(), password:z.string().max(200).optional(),additional_info:z.string().trim().max(1000).optional(),zalo:z.string().trim().max(120).optional(),note:z.string().trim().max(1000).optional(),server:z.string().trim().max(80).optional(),region:z.string().trim().max(80).optional(),character:z.string().trim().max(80).optional(),custom:z.record(z.string().trim().max(200)).optional() }).default({}),
 }).superRefine((value, ctx) => {
   if (!value.target.uid && !value.target.login) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['target'], message: 'Vui lòng nhập UID hoặc tài khoản game' });
 });

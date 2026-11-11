@@ -71,11 +71,15 @@ function editor(type, item, fields, context) {
       }
       if (type === 'games') {
         const list = name => form.elements[name]?.value.split('\n').map(value => value.trim()).filter(Boolean) || [];
-        values.input_config = { guide: values.input_guide || '', custom_fields: list('custom_fields'), server_options: [], region_options: [], server_required: false, region_required: false, password_required: Boolean(form.elements.password_required?.checked) };
+        const mode = values.mode;
+        const blocked = new Set(mode === 'login' ? ['tài khoản game', 'tên tài khoản', 'mật khẩu', 'mật khẩu game'] : ['uid', 'uid người chơi']);
+        values.input_config = { guide: values.input_guide || '', custom_fields: list('custom_fields').filter(value => !blocked.has(value.toLowerCase())), server_options: [], region_options: [], server_required: false, region_required: false, password_required: mode === 'login' ? true : Boolean(form.elements.password_required?.checked) };
         delete values.input_guide; delete values.custom_fields;
       }
       if (values.image && !safeImage(values.image.trim())) throw new Error('Ảnh cần là đường dẫn /… hoặc URL https://…');
+      if (type === 'games' && !values.image?.trim()) throw new Error('Chưa chọn ảnh nền / banner cho game.');
       if (values.thumbnail && !safeImage(values.thumbnail.trim())) throw new Error('Đường dẫn thumbnail không hợp lệ.');
+      if (type === 'games' && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(values.slug || '')) throw new Error('Đường dẫn chỉ dùng chữ thường, số và dấu gạch ngang.');
       await context.api(`/api/admin/${type}${creating ? '' : '/' + encodeURIComponent(item.id)}`, values, creating ? 'POST' : 'PATCH');
       target.close(); context.toast(creating ? (type === 'games' ? 'Đã tạo game mới.' : 'Đã tạo gói nạp mới.') : 'Đã lưu thay đổi.'); await context.refresh();
     } catch (error) { showError(error); }
@@ -90,6 +94,8 @@ export function openGameEditor(game, context) {
   game ||= { name: '', slug: '', mode: 'uid', image: '', thumbnail: '', platform: 'mobile', category_id: '', active: true, input_config: {} };
   const creating = !game.id;
   const config = game.input_config || {};
+  const blockedFields = new Set(game.mode === 'login' ? ['tài khoản game', 'tên tài khoản', 'mật khẩu', 'mật khẩu game'] : ['uid', 'uid người chơi']);
+  const customFields = (config.custom_fields || [config.server_required && 'Máy chủ', config.region_required && 'Khu vực', config.character_required && 'Tên nhân vật']).filter(Boolean).filter(value => !blockedFields.has(String(value).trim().toLowerCase()));
   editor('games', game, [
     input('name', 'Tên game', game.name, { full: true, required: true }),
     input('slug', 'Đường dẫn', game.slug, { required: true, readonly: !creating, max: '100', help: creating ? 'Chỉ dùng chữ thường, số và dấu gạch ngang. Ví dụ: genshin-impact' : 'Đường dẫn cố định, không chỉnh sửa sau khi tạo.' }),
@@ -98,8 +104,8 @@ export function openGameEditor(game, context) {
     select('category_id', 'Phân loại', game.category_id || '', [['', 'Chưa phân loại'], ...context.getCategories().map(category => [category.id, category.name])]),
     '<small class="full muted">Thêm hoặc đổi tên loại trong menu Phân loại.</small>',
     `<label class="full">Hướng dẫn nhập thông tin<textarea name="input_guide" rows="3" maxlength="3000" placeholder="Ví dụ: Mở game → Hồ sơ → sao chép UID">${e(config.guide || '')}</textarea></label>`,
-    `<label class="full">Các thông tin cần nhập<textarea name="custom_fields" rows="5" placeholder="Tên nhân vật\nMáy chủ\nKhu vực">${e((config.custom_fields || [config.server_required && 'Máy chủ', config.region_required && 'Khu vực', config.character_required && 'Tên nhân vật']).filter(Boolean).join('\n'))}</textarea><small>Mỗi dòng tạo một ô thông tin trên trang nạp. Có thể để trống nếu game chỉ cần UID.</small></label>`,
-    `<label class="check-field full"><input name="password_required" type="checkbox" ${config.password_required ? 'checked' : ''}> Yêu cầu mật khẩu game</label>`,
+    `<label class="full">Thông tin bổ sung cần nhập<textarea name="custom_fields" rows="5" placeholder="Tên nhân vật\nMáy chủ\nKhu vực">${e(customFields.join('\n'))}</textarea><small>${game.mode === 'login' ? 'Tài khoản game tự có sẵn. Mật khẩu game tự có sẵn. Chỉ nhập thông tin phụ như máy chủ hoặc nhân vật.' : 'UID tự có sẵn. Chỉ nhập thêm máy chủ, khu vực hoặc nhân vật nếu cần.'}</small></label>`,
+    ...(game.mode === 'login' ? ['<div class="full detail-note">Game nạp login luôn yêu cầu tài khoản và mật khẩu. Khách sẽ nhập thêm thông tin thêm, Zalo liên hệ và ghi chú ở trang nạp.</div>'] : [`<label class="check-field full"><input name="password_required" type="checkbox" ${config.password_required ? 'checked' : ''}> Yêu cầu mật khẩu game</label>`]),
     `<label class="check-field full"><input name="active" type="checkbox" ${game.active ? 'checked' : ''}> Hiển thị game trên cửa hàng</label>`,
   ].join(''), context);
 }

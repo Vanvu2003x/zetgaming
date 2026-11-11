@@ -24,7 +24,7 @@ adminFulfillmentRouter.get('/admin/orders/:code', async (req,res,next) => {
       try { decoded = decryptJson(row.target_encrypted); }
       catch { throw fail(500,'Không đọc được thông tin nạp đã mã hóa'); }
       const target = {};
-      for (const field of ['uid','login','password','server','region','character','note']) {
+      for (const field of ['uid','login','password','additional_info','zalo','server','region','character','note']) {
         if (typeof decoded?.[field] === 'string' && decoded[field]) target[field] = decoded[field];
       }
       await audit(client,req.user.id,'order.credentials_viewed',row.id);

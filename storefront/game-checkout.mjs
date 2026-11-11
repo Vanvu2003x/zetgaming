@@ -1,4 +1,5 @@
 import { escapeHtml as e, money, gameImage, loginHref } from './shared.mjs';
+import { normalizeGameInputs } from '../shared/game-inputs.mjs';
 
 const icons = {
   player: '<circle cx="12" cy="8" r="4"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/>',
@@ -16,15 +17,23 @@ function packageCard(row, index) {
   return `<label class="package-choice">
     <input type="radio" name="package_id" value="${e(row.package_id)}" data-price="${row.customer_cents}" data-name="${e(row.package_name)}" ${index === 0 ? 'checked' : ''} required>
     <span class="package-visual">${visual}</span>
-    <span class="package-copy"><span class="package-name">${e(row.package_name)}</span><strong>${money(row.customer_cents)}</strong>${row.badge ? `<small class="package-bonus">${e(row.badge)}</small>` : ''}</span>
+    <span class="package-copy">${row.nominal ? `<small class="package-nominal">${e(row.nominal)}${gameUnit(row.nominal, row.package_name)}</small>` : ''}<span class="package-name">${e(row.package_name)}</span><strong>${money(row.customer_cents)}</strong>${row.badge ? `<small class="package-bonus">${e(row.badge)}</small>` : ''}</span>
     <span class="package-check" aria-hidden="true">✓</span>
   </label>`;
 }
 
+function gameUnit(nominal, name) {
+  const text = String(name || '').toLocaleLowerCase('vi');
+  if (/genesis|crystal|nguyên thạch|kim cương|coin|xu|point|điểm/.test(text)) return ' đơn vị';
+  return '';
+}
+
 export function gameCheckout(game, rows, user, key) {
   const login = game.mode === 'login';
+  const config = normalizeGameInputs(game.input_config || {}, game.mode);
   const targetLabel = login ? 'Tài khoản game' : 'UID người chơi';
   const first = rows[0];
+  if (!first) return `<section id="uidGuide" class="checkout-empty" role="status"><span>${icon('wallet')}</span><h2>Gói nạp đang được cập nhật</h2><p>Bạn có thể chọn game khác hoặc quay lại sau.</p><a href="/nap-game">Quay lại danh sách game ${icon('arrow')}</a></section>`;
   return `<form id="orderForm" action="/dat-don" method="post" class="game-checkout">
     <input type="hidden" name="idempotency_key" value="${e(key)}">
     <input type="hidden" name="return_to" value="/nap-game/${e(game.slug)}">
@@ -33,7 +42,13 @@ export function gameCheckout(game, rows, user, key) {
       <label class="checkout-target-label" for="target">${targetLabel}</label>
       <div class="target-field">${icon('player')}<input id="target" name="${login ? 'login' : 'uid'}" placeholder="${login ? 'Nhập tài khoản game của bạn' : 'Nhập UID của bạn'}" inputmode="${login ? 'text' : 'numeric'}" autocomplete="off" aria-describedby="uidHint" maxlength="120" required></div>
       <p class="field-hint" id="uidHint">${login ? 'Nhập đúng tên tài khoản cần nạp.' : 'Kiểm tra UID trong game trước khi đặt đơn.'}</p>
-      <details class="checkout-guide"><summary>${login ? 'Cần nhập thông tin gì?' : 'Hướng dẫn tìm UID'}</summary><p>${login ? 'Nhập tên tài khoản đúng như trong game. Không nhập mật khẩu vào ô này.' : 'Mở game → Hồ sơ người chơi → Sao chép UID, sau đó dán vào ô phía trên. Đối chiếu lại để tránh nạp nhầm tài khoản.'}</p></details>
+      ${config.password_required ? `<label class="checkout-target-label" for="password">Mật khẩu game</label><div class="target-field">${icon('lock')}<input id="password" name="password" type="password" placeholder="Nhập mật khẩu game" autocomplete="off" maxlength="200" required></div><p class="field-hint">Mật khẩu chỉ được dùng để xử lý đơn và được bảo vệ riêng.</p>` : ''}
+      ${login ? `<label class="checkout-target-label" for="additional_info">Thông tin thêm</label><div class="target-field"><textarea id="additional_info" name="additional_info" placeholder="Ví dụ: máy chủ, nhân vật, yêu cầu nạp…" maxlength="1000" required></textarea></div><p class="field-hint">Ghi các thông tin cần thiết để admin xử lý đơn.</p><label class="checkout-target-label" for="zalo">Zalo liên hệ</label><div class="target-field">${icon('player')}<input id="zalo" name="zalo" placeholder="Nhập số điện thoại hoặc tên Zalo" maxlength="120" required></div><label class="checkout-target-label" for="note">Ghi chú</label><div class="target-field"><textarea id="note" name="note" placeholder="Ghi chú thêm (không bắt buộc)" maxlength="1000"></textarea></div>` : ''}
+      ${config.server_required || config.server_options.length ? `<label class="checkout-target-label" for="server">Máy chủ${config.server_required ? ' *' : ''}</label>${config.server_options.length ? `<div class="target-field">${icon('bank')}<select id="server" name="server" ${config.server_required ? 'required' : ''}><option value="">Chọn máy chủ</option>${config.server_options.map(value => `<option value="${e(value)}">${e(value)}</option>`).join('')}</select></div>` : `<div class="target-field">${icon('bank')}<input id="server" name="server" placeholder="Nhập máy chủ" maxlength="80" ${config.server_required ? 'required' : ''}></div>`}` : ''}
+      ${config.region_required || config.region_options.length ? `<label class="checkout-target-label" for="region">Khu vực${config.region_required ? ' *' : ''}</label>${config.region_options.length ? `<div class="target-field">${icon('bank')}<select id="region" name="region" ${config.region_required ? 'required' : ''}><option value="">Chọn khu vực</option>${config.region_options.map(value => `<option value="${e(value)}">${e(value)}</option>`).join('')}</select></div>` : `<div class="target-field">${icon('bank')}<input id="region" name="region" placeholder="Nhập khu vực" maxlength="80" ${config.region_required ? 'required' : ''}></div>`}` : ''}
+      ${config.character_required ? `<label class="checkout-target-label" for="character">Tên nhân vật</label><div class="target-field">${icon('player')}<input id="character" name="character" placeholder="Nhập tên nhân vật" maxlength="80" required></div>` : ''}
+      ${config.custom_fields.map((label,index) => `<label class="checkout-target-label" for="custom-${index}">${e(label)}</label><div class="target-field">${icon('player')}<input id="custom-${index}" name="custom_${index}" placeholder="Nhập ${e(label.toLowerCase())}" maxlength="200" required></div>`).join('')}
+      <details id="uidGuide" class="checkout-guide"><summary>${login ? 'Cần nhập thông tin gì?' : 'Hướng dẫn tìm UID'}</summary><p>${e(config.guide || (login ? 'Nhập tên tài khoản đúng như trong game. Không nhập mật khẩu vào ô này.' : 'Mở game → Hồ sơ người chơi → Sao chép UID, sau đó dán vào ô phía trên. Đối chiếu lại để tránh nạp nhầm tài khoản.'))}</p></details>
     </section>
     <section class="package-panel">
       ${heading('02', 'Chọn gói nạp', `<span class="package-count">${rows.length} gói</span>`)}
