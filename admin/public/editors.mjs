@@ -181,7 +181,7 @@ export async function openOrder(code, context) {
     if (order.completed_at) info.push(['Hoàn thành lúc', date(order.completed_at)]);
     const labels = {uid:'UID người chơi',login:'Tài khoản game',password:'Mật khẩu game',server:'Máy chủ',region:'Khu vực',character:'Nhân vật',note:'Ghi chú của khách'};
     const fields = Object.entries(order.target || {}).filter(([key]) => labels[key]).map(([key,value]) => `<div class="fulfillment-field"><dt>${labels[key]}</dt><dd>${key === 'password' ? `<details><summary>Hiện mật khẩu game</summary><span class="fulfillment-value">${e(value)}</span></details>` : `<span class="fulfillment-value">${e(value)}</span>`}<button class="button subtle" type="button" data-copy-target="${e(key)}">Sao chép</button></dd></div>`).join('');
-    const credentials = `<details class="fulfillment-target" ${['pending_admin','processing'].includes(order.status) ? 'open' : ''}><summary>Thông tin nạp game <span class="muted">· chỉ admin xem</span></summary><p class="muted">Lượt xem thông tin được ghi nhận trong nhật ký.</p>${fields ? `<dl>${fields}</dl>` : '<p>Đơn này chưa có thông tin nạp. Cần kiểm tra với khách trước khi xử lý.</p>'}</details>`;
+    const credentials = ['cancelled','refunded'].includes(order.status) ? '' : `<details class="fulfillment-target" ${['pending_admin','processing'].includes(order.status) ? 'open' : ''}><summary>Thông tin nạp game <span class="muted">· chỉ admin xem</span></summary><p class="muted">Lượt xem thông tin được ghi nhận trong nhật ký.</p>${fields ? `<dl>${fields}</dl>` : '<p>Đơn này chưa có thông tin nạp. Cần kiểm tra với khách trước khi xử lý.</p>'}</details>`;
     let action = '', submit = '', endpoint = '';
     if (order.status === 'awaiting_payment') {
       action = '<div class="detail-note">Đối chiếu đúng số tiền và nội dung ZET + mã đơn trước khi xác nhận.</div>';
@@ -190,12 +190,12 @@ export async function openOrder(code, context) {
       action = '<div class="detail-note">Đơn đã thanh toán. Bấm nhận xử lý trước khi thực hiện nạp để tránh hai người cùng nạp.</div>';
       submit = 'Nhận xử lý đơn'; endpoint = 'start';
     } else if (order.status === 'processing') {
-      action = order.can_complete ? '<div class="detail-note">Bạn đang xử lý đơn này. Kiểm tra đúng game, UID/tài khoản và gói nạp trước khi hoàn tất.</div><label class="fulfillment-confirm"><input type="checkbox" name="confirmed" required> Tôi xác nhận đã nạp thành công đúng gói cho khách.</label>' : `<div class="detail-note">Đơn đang được ${e(order.processing_admin || 'admin khác')} xử lý. Chỉ admin đã nhận đơn được xác nhận hoàn thành.</div>`;
+      action = order.can_complete ? '<div class="detail-note">Kiểm tra đúng game, UID/tài khoản và gói nạp trước khi hoàn tất.</div>' : `<div class="detail-note">Đơn đang được ${e(order.processing_admin || 'admin khác')} xử lý.</div>`;
       if (order.can_complete) { submit = 'Đánh dấu đã nạp thành công'; endpoint = 'complete'; }
     } else if (order.status === 'completed') {
       action = '<div class="detail-note">Đơn đã hoàn thành. Không thực hiện nạp lại.</div>';
     } else if (order.status === 'cancelled') {
-      action = '<div class="detail-note">Đơn đã hủy. Không nhận tiền hoặc thực hiện nạp.</div>';
+      action = '<div class="detail-note">Đơn đã hủy.</div>';
     } else if (order.status === 'needs_review') {
       action = '<div class="detail-note">Chưa rõ kết quả nạp. Đối soát trước khi thử lại, hủy hoặc hoàn tiền.</div>';
     } else if (order.status === 'failed') {
@@ -224,7 +224,7 @@ export async function openOrder(code, context) {
       const preventClose = event => event.preventDefault();
       target.addEventListener('cancel', preventClose);
       try {
-        const confirmed = form.elements.confirmed?.checked === true;
+        const confirmed = endpoint === 'complete' ? true : form.elements.confirmed?.checked === true;
         await context.api(`/api/admin/orders/${encodeURIComponent(code)}/${endpoint}`, {confirmed}, 'POST');
         await context.refresh();
         context.toast(endpoint === 'complete' ? 'Đã hoàn thành đơn nạp.' : endpoint === 'start' ? 'Bạn đã nhận xử lý đơn.' : 'Đã xác nhận nhận tiền.');
