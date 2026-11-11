@@ -259,7 +259,7 @@ if (content) {
   state.query = query.get('query') || '';
   state.status = query.get('status') || '';
   document.querySelector('#refresh').addEventListener('click', load);
-    const context = { api, toast, refresh: load, symbol, statusBadge, toCents, getCategories: () => state.categories, getGames: () => state.games, getTiers: () => state.tiers, getSelectedGame: () => state.game };
+    const context = { api, toast, refresh: load, symbol, statusBadge, toCents, escapeHtml: e, money, date, getCategories: () => state.categories, getGames: () => state.games, getTiers: () => state.tiers, getSelectedGame: () => state.game };
   content.addEventListener('click', event => {
     const button = event.target.closest('button'); if (!button) return;
     if (button.hasAttribute('data-retry')) return load();

@@ -1,18 +1,20 @@
 import { escapeHtml as e, money, date, imageUrl } from './data.mjs';
+import { orderManagement, bindOrderManagement } from './order-management.mjs?v=order-management-1';
 
 const dialog = () => document.querySelector('#editor');
 let dialogGeneration = 0;
-const input = (name, label, value, { type = 'text', full = false, required = false, help = '', max = '120' } = {}) => `<label class="${full ? 'full' : ''}">${label}<input name="${name}" value="${e(value)}" type="${type}" ${required ? 'required' : ''} ${type === 'number' ? 'min="0" step="0.01"' : `maxlength="${max}"`}>${help ? `<small>${help}</small>` : ''}</label>`;
+const input = (name, label, value, { type = 'text', full = false, required = false, readonly = false, help = '', max = '120' } = {}) => `<label class="${full ? 'full' : ''}">${label}<input name="${name}" value="${e(value)}" type="${type}" ${required ? 'required' : ''} ${readonly ? 'readonly' : ''} ${type === 'number' ? 'min="0" step="0.01"' : `maxlength="${max}"`}>${help ? `<small>${help}</small>` : ''}</label>`;
 const select = (name, label, current, options) => `<label>${label}<select name="${name}">${options.map(([value, text]) => `<option value="${e(value)}" ${value === current ? 'selected' : ''}>${e(text)}</option>`).join('')}</select></label>`;
 const safeImage = url => /^(https:\/\/|\/(?!\/))/.test(url || '');
-const imagePicker = (field, label, value, help, square = field === 'thumbnail') => `<div class="image-picker"><label>${label}<span class="image-picker-preview ${square ? 'square' : ''}"><img ${safeImage(value) ? `src="${e(imageUrl(value))}"` : 'hidden'} alt="Xem trước ${label.toLowerCase()}"><span>${square ? 'Ảnh vuông' : 'Ảnh ngang'}</span></span><input type="file" data-upload-field="${field}" accept="image/png,image/jpeg,image/webp" aria-label="Chọn ${label.toLowerCase()}"></label><input type="hidden" name="${field}" value="${e(value || '')}"><small>${help} · PNG, JPG, WebP ≤ 5 MB</small></div>`;
+const imagePicker = (field, label, value, help, square = field === 'thumbnail') => `<div class="image-picker"><label>${label}<span class="image-picker-preview ${square ? 'square' : ''}"><img ${safeImage(value) ? `src="${e(imageUrl(value))}"` : 'hidden'} alt="Xem trước ${label.toLowerCase()}"><span class="image-picker-placeholder" ${safeImage(value) ? 'hidden' : ''}>${square ? 'Ảnh vuông' : 'Ảnh ngang'}</span></span><input type="file" data-upload-field="${field}" accept="image/png,image/jpeg,image/webp" aria-label="Chọn ${label.toLowerCase()}"></label><input type="hidden" name="${field}" value="${e(value || '')}"><small>${help} · PNG, JPG, WebP ≤ 5 MB</small></div>`;
 function mount(title, description, body, context, submit = '') {
   const target = dialog();
   target.dataset.generation = String(++dialogGeneration);
   target.innerHTML = `<div class="dialog-head"><div><h2 id="dialog-title">${e(title)}</h2><p>${e(description)}</p></div><button class="icon-button" data-close aria-label="Đóng">${context.symbol('close')}</button></div>${submit ? '<form id="resource-form">' : ''}<div class="dialog-body"><div class="inline-error" id="form-error" role="alert" hidden></div>${body}</div><div class="dialog-footer"><button class="button" type="button" data-close>${submit ? 'Hủy' : 'Đóng'}</button>${submit ? `<button class="button primary" type="submit">${context.symbol('check')} ${submit}</button>` : ''}</div>${submit ? '</form>' : ''}`;
-  target.querySelectorAll('[data-close]').forEach(button => button.addEventListener('click', () => { if (target.querySelector('form')?.dataset.saving !== 'true') target.close(); }));
+  target.querySelectorAll('[data-close]').forEach(button => button.addEventListener('click', () => { if (target.dataset.saving !== 'true' && target.querySelector('form')?.dataset.saving !== 'true') target.close(); }));
   if (!target.open) target.showModal();
   target.querySelector('[data-close]').focus();
+  target.querySelectorAll('.image-picker-preview img').forEach(image => image.addEventListener('error', () => { image.hidden = true; image.removeAttribute('src'); image.closest('.image-picker-preview').querySelector('.image-picker-placeholder').hidden = false; }, { once: true }));
   return target;
 }
 function showError(error) {
@@ -21,8 +23,8 @@ function showError(error) {
   target.scrollIntoView({ block: 'nearest' });
 }
 function editor(type, item, fields, context) {
-  const creating = type === 'packages' && !item.id;
-  const target = mount(type === 'games' ? 'Chỉnh sửa game' : creating ? 'Tạo gói nạp mới' : 'Chỉnh sửa gói nạp', type === 'games' ? 'Ảnh nền và thumbnail được quản lý riêng.' : creating ? 'Chọn game, nhập giá theo VNĐ và tải ảnh từ máy.' : item.game_name + ' · Giá nhập theo đồng Việt Nam', `<div class="field-grid">${fields}</div>`, context, creating ? 'Tạo gói nạp' : 'Lưu thay đổi');
+  const creating = !item.id;
+  const target = mount(type === 'games' ? (creating ? 'Tạo game mới' : 'Chỉnh sửa game') : creating ? 'Tạo gói nạp mới' : 'Chỉnh sửa gói nạp', type === 'games' ? 'Ảnh nền, thumbnail và thông tin nhập được quản lý riêng.' : creating ? 'Chọn game, nhập giá theo VNĐ và tải ảnh từ máy.' : item.game_name + ' · Giá nhập theo đồng Việt Nam', `<div class="field-grid">${fields}</div>`, context, creating ? (type === 'games' ? 'Tạo game' : 'Tạo gói nạp') : 'Lưu thay đổi');
   const form = target.querySelector('form');
   const preventBusyClose = event => { if (form.dataset.saving === 'true') event.preventDefault(); };
   target.addEventListener('cancel', preventBusyClose);
@@ -34,13 +36,13 @@ function editor(type, item, fields, context) {
     const field = input.dataset.uploadField;
     const image = input.closest('.image-picker').querySelector('img');
     if (objectUrls.has(field)) { URL.revokeObjectURL(objectUrls.get(field)); objectUrls.delete(field); }
-    const restorePreview = () => { const original = imageUrl(form.elements[field].value); image.hidden = !original; if (original) image.src = original; else image.removeAttribute('src'); };
+    const restorePreview = () => { const original = imageUrl(form.elements[field].value); image.hidden = !original; image.closest('.image-picker-preview').querySelector('.image-picker-placeholder').hidden = Boolean(original); if (original) image.src = original; else image.removeAttribute('src'); };
     if (!file) { restorePreview(); return; }
     if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) {
       input.value = ''; restorePreview(); showError(new Error('Chọn ảnh PNG, JPG hoặc WebP không quá 5 MB.')); return;
     }
     const url = URL.createObjectURL(file); objectUrls.set(field, url);
-    image.src = url; image.hidden = false;
+    image.src = url; image.hidden = false; image.closest('.image-picker-preview').querySelector('.image-picker-placeholder').hidden = true;
     target.querySelector('#form-error').hidden = true;
   }));
   form.addEventListener('submit', async event => {
@@ -67,26 +69,37 @@ function editor(type, item, fields, context) {
         values.ctv_cents = context.toCents(values.ctv_price);
         delete values.customer_price; delete values.ctv_price;
       }
+      if (type === 'games') {
+        const list = name => form.elements[name]?.value.split('\n').map(value => value.trim()).filter(Boolean) || [];
+        values.input_config = { guide: values.input_guide || '', custom_fields: list('custom_fields'), server_options: [], region_options: [], server_required: false, region_required: false, password_required: Boolean(form.elements.password_required?.checked) };
+        delete values.input_guide; delete values.custom_fields;
+      }
       if (values.image && !safeImage(values.image.trim())) throw new Error('Ảnh cần là đường dẫn /… hoặc URL https://…');
       if (values.thumbnail && !safeImage(values.thumbnail.trim())) throw new Error('Đường dẫn thumbnail không hợp lệ.');
       await context.api(`/api/admin/${type}${creating ? '' : '/' + encodeURIComponent(item.id)}`, values, creating ? 'POST' : 'PATCH');
-      target.close(); context.toast(creating ? 'Đã tạo gói nạp mới.' : 'Đã lưu thay đổi.'); await context.refresh();
+      target.close(); context.toast(creating ? (type === 'games' ? 'Đã tạo game mới.' : 'Đã tạo gói nạp mới.') : 'Đã lưu thay đổi.'); await context.refresh();
     } catch (error) { showError(error); }
     finally {
       form.dataset.saving = 'false'; form.setAttribute('aria-busy', 'false');
       form.querySelectorAll('[data-upload-field]').forEach(input => { input.disabled = false; });
-      button.disabled = false; button.innerHTML = `${context.symbol('check')} ${creating ? 'Tạo gói nạp' : 'Lưu thay đổi'}`;
+      button.disabled = false; button.innerHTML = `${context.symbol('check')} ${creating ? (type === 'games' ? 'Tạo game' : 'Tạo gói nạp') : 'Lưu thay đổi'}`;
     }
   });
 }
 export function openGameEditor(game, context) {
-  if (!game) return;
+  game ||= { name: '', slug: '', mode: 'uid', image: '', thumbnail: '', platform: 'mobile', category_id: '', active: true, input_config: {} };
+  const creating = !game.id;
+  const config = game.input_config || {};
   editor('games', game, [
     input('name', 'Tên game', game.name, { full: true, required: true }),
+    input('slug', 'Đường dẫn', game.slug, { required: true, readonly: !creating, max: '100', help: creating ? 'Chỉ dùng chữ thường, số và dấu gạch ngang. Ví dụ: genshin-impact' : 'Đường dẫn cố định, không chỉnh sửa sau khi tạo.' }),
     `<div class="full game-image-pickers">${imagePicker('image', 'Ảnh nền / banner', game.image, 'Nền ngang của card và trang game')}${imagePicker('thumbnail', 'Ảnh đại diện / thumbnail', game.thumbnail, 'Avatar vuông cạnh tên game')}</div>`,
     select('mode', 'Kiểu nạp', game.mode, [['uid', 'Nạp UID'], ['login', 'Nạp login']]),
     select('category_id', 'Phân loại', game.category_id || '', [['', 'Chưa phân loại'], ...context.getCategories().map(category => [category.id, category.name])]),
     '<small class="full muted">Thêm hoặc đổi tên loại trong menu Phân loại.</small>',
+    `<label class="full">Hướng dẫn nhập thông tin<textarea name="input_guide" rows="3" maxlength="3000" placeholder="Ví dụ: Mở game → Hồ sơ → sao chép UID">${e(config.guide || '')}</textarea></label>`,
+    `<label class="full">Các thông tin cần nhập<textarea name="custom_fields" rows="5" placeholder="Tên nhân vật\nMáy chủ\nKhu vực">${e((config.custom_fields || [config.server_required && 'Máy chủ', config.region_required && 'Khu vực', config.character_required && 'Tên nhân vật']).filter(Boolean).join('\n'))}</textarea><small>Mỗi dòng tạo một ô thông tin trên trang nạp. Có thể để trống nếu game chỉ cần UID.</small></label>`,
+    `<label class="check-field full"><input name="password_required" type="checkbox" ${config.password_required ? 'checked' : ''}> Yêu cầu mật khẩu game</label>`,
     `<label class="check-field full"><input name="active" type="checkbox" ${game.active ? 'checked' : ''}> Hiển thị game trên cửa hàng</label>`,
   ].join(''), context);
 }
@@ -104,18 +117,54 @@ export function openCategoryEditor(category, context) {
     finally { button.disabled = false; form.dataset.saving = 'false'; }
   });
 }
+
+export function openTierEditor(tier, context) {
+  const target = mount('Chỉnh hạng khách', `${tier.name || tier.tier} · giá tự động theo phần trăm giảm`, `<div class="field-grid">${input('name', 'Tên hạng', tier.name || tier.tier, { full: true, required: true, max: '80' })}${input('discount_percent', 'Giảm giá (%)', Number(tier.discount_percent || 0), { type: 'number', required: true, help: 'Áp dụng cho đơn mới của user thuộc hạng này.' })}<label class="check-field full"><input name="active" type="checkbox" ${tier.active !== false ? 'checked' : ''}> Cho phép gán hạng này</label><div class="full detail-note">Giá sau giảm được làm tròn đến đồng. Các đơn đã tạo không thay đổi.</div></div>`, context, 'Lưu hạng');
+  const form = target.querySelector('form');
+  form.addEventListener('submit', async event => {
+    event.preventDefault();
+    const button = form.querySelector('[type="submit"]'); button.disabled = true;
+    try {
+      await context.api('/api/admin/tiers/' + encodeURIComponent(tier.tier), { name: form.elements.name.value, discount_percent: Number(form.elements.discount_percent.value), active: form.elements.active.checked }, 'PATCH');
+      target.close(); context.toast('Đã cập nhật hạng khách.'); await context.refresh();
+    } catch (error) { showError(error); } finally { button.disabled = false; }
+  });
+}
+
+export function openCustomerEditor(customer, context) {
+  const tiers = context.getTiers?.() || [{ tier: 'standard', name: 'Standard', discount_percent: 0 }];
+  const tierOptions = tiers.map(tier => [tier.tier, `${tier.name || tier.tier} · giảm ${Number(tier.discount_percent || 0)}%`]);
+  const target = mount('Quản lý khách hàng', customer.email, `<div class="field-grid">${select('role', 'Vai trò', customer.role, [['customer', 'Khách hàng'], ['ctv', 'CTV'], ['admin', 'Admin']])}${select('tier', 'Hạng khách', customer.tier || 'standard', tierOptions)}<label class="check-field full"><input name="active" type="checkbox" ${customer.active ? 'checked' : ''}> Tài khoản đang hoạt động</label><div class="full detail-note">Giá gói sẽ tự giảm theo hạng khi khách tạo đơn mới. Đơn cũ không thay đổi.</div><section class="full customer-history" data-customer-history><strong>Lịch sử tài khoản</strong><p>Đang tải đơn nạp và biến động ví…</p></section></div>`, context, 'Lưu tài khoản');
+  const history = target.querySelector('[data-customer-history]');
+  context.api('/api/admin/customers/' + encodeURIComponent(customer.id) + '/history').then(data => {
+    const orders = data.orders.length ? data.orders.map(order => `<li><div><strong class="mono">${context.escapeHtml(order.code)}</strong><span>${context.escapeHtml(order.game_name)} · ${context.escapeHtml(order.package_name)}</span></div><div>${context.statusBadge(order.status)}<strong>${context.money(order.price_cents)}</strong><small>${context.date(order.created_at)}</small></div></li>`).join('') : '<li>Chưa có đơn nạp.</li>';
+    const ledger = data.ledger.length ? data.ledger.map(item => `<li><div><strong>${context.escapeHtml(item.kind)}</strong><span>${context.escapeHtml(item.note || item.order_code || item.reference)}</span></div><strong class="${item.amount_cents >= 0 ? 'ledger-positive' : 'ledger-negative'}">${item.amount_cents >= 0 ? '+' : ''}${context.money(item.amount_cents)}</strong></li>`).join('') : '<li>Chưa có biến động ví.</li>';
+    history.innerHTML = `<div class="history-summary"><span>Số dư ví <strong>${context.money(data.customer.wallet_cents)}</strong></span><span>${data.orders.length} đơn gần nhất</span></div><div class="history-columns"><div><h3>Lịch sử nạp</h3><ul>${orders}</ul></div><div><h3>Biến động ví</h3><ul>${ledger}</ul></div></div>`;
+  }).catch(error => { history.innerHTML = `<strong>Không tải được lịch sử</strong><p>${context.escapeHtml(error.message)}</p>`; });
+  const form = target.querySelector('form');
+  form.addEventListener('submit', async event => {
+    event.preventDefault();
+    const button = form.querySelector('[type="submit"]'); if (form.dataset.saving === 'true') return;
+    form.dataset.saving = 'true'; button.disabled = true;
+    try {
+      await context.api('/api/admin/customers/' + encodeURIComponent(customer.id), { role: form.elements.role.value, tier: form.elements.tier.value, active: form.elements.active.checked }, 'PATCH');
+      target.close(); context.toast('Đã cập nhật tài khoản.'); await context.refresh();
+    } catch (error) { showError(error); } finally { form.dataset.saving = 'false'; button.disabled = false; }
+  });
+}
 export function openPackageEditor(pkg, context) {
   const games = context.getGames();
   if (!pkg && !games.length) return context.toast('Cần có game trước khi tạo gói nạp.', true);
-  pkg ||= { name: '', nominal: '', badge: '', own_image: '', game_id: context.getSelectedGame() || games[0].id, active: true, ctv_cents: 0 };
+  pkg ||= { name: '', nominal: '', badge: '', image: '', game_id: context.getSelectedGame() || games[0].id, active: true, ctv_cents: 0, tier: 'standard' };
   editor('packages', pkg, [
     ...(!pkg.id ? [`<div class="full">${select('game_id', 'Game', pkg.game_id, games.map(game => [game.id, game.name]))}</div>`] : []),
     input('name', 'Tên gói nạp', pkg.name, { full: true, required: true }),
     input('nominal', 'Số lượng (tùy chọn)', pkg.nominal || '', { required: Boolean(pkg.id), max: '80' }),
     input('badge', 'Nhãn nổi bật', pkg.badge || '', { max: '40' }),
+    select('tier', 'Hạng khách', pkg.tier || 'standard', (context.getTiers?.() || [{ tier: 'standard' }]).map(tier => [tier.tier, tier.tier === 'standard' ? 'Standard' : tier.tier])),
     input('customer_price', 'Giá khách (₫)', pkg.id ? Number(pkg.customer_cents || 0) / 100 : '', { type: 'number', required: true }),
     input('ctv_price', 'Giá CTV (₫)', Number(pkg.ctv_cents || 0) / 100, { type: 'number', required: true }),
-    `<div class="full">${imagePicker('image', 'Ảnh gói nạp', pkg.own_image, 'Ảnh sản phẩm hiển thị tại bước chọn gói', true)}</div>`,
+    `<div class="full">${imagePicker('image', 'Ảnh gói nạp', pkg.image, 'Ảnh sản phẩm hiển thị tại bước chọn gói', true)}</div>`,
     `<label class="check-field full"><input name="active" type="checkbox" ${pkg.active ? 'checked' : ''}> Đang bán trên cửa hàng</label>`,
   ].join(''), context);
 }
@@ -124,28 +173,66 @@ export async function openOrder(code, context) {
   const target = mount('Chi tiết đơn hàng', code, '<div class="skeleton"></div><p class="muted">Đang tải thông tin đơn…</p>', context);
   const generation = target.dataset.generation;
   try {
-    const order = await context.api('/api/orders/' + encodeURIComponent(code));
+    const order = await context.api('/api/admin/orders/' + encodeURIComponent(code));
     if (!target.open || target.dataset.generation !== generation) return;
-    let ctvs = [];
-    if (order.status === 'pending_admin') ctvs = await context.api('/api/admin/ctvs');
-    if (!target.open || target.dataset.generation !== generation) return;
-    const info = [['Mã đơn', `<span class="mono">${e(order.code)}</span>`], ['Trạng thái', context.statusBadge(order.status)], ['Khách hàng', e(order.customer)], ['Game', e(order.game_name)], ['Gói nạp', e(order.package_name)], ['Tổng tiền', money(order.price_cents)], ['Thanh toán', order.payment_method === 'wallet' ? 'Ví tài khoản' : 'Thanh toán trực tiếp'], ['Ngày tạo', date(order.created_at)]];
-    let action = '';
-    if (order.status === 'pending_admin') action = `<div class="order-action"><h3>Phân đơn cho cộng tác viên</h3><p>Chọn ít nhất một CTV. Người nhận trước sẽ xử lý đơn này.</p><div class="ctv-options">${ctvs.length ? ctvs.map(ctv => `<label class="check-field"><input type="checkbox" name="ctv" value="${e(ctv.id)}"> ${e(ctv.email)}</label>`).join('') : '<p>Chưa có cộng tác viên để phân đơn.</p>'}</div></div>`;
-    if (order.status === 'review') action = '<div class="detail-note">Quyết toán sẽ hoàn tất đơn và ghi thu nhập vào ví CTV. Chỉ thực hiện sau khi đã kiểm tra kết quả nạp.</div>';
-    if (order.status === 'awaiting_payment') action = '<div class="detail-note">Đơn đang chờ thanh toán. Chỉ phân CTV sau khi hệ thống đã xác nhận thanh toán.</div>';
-    mount('Chi tiết đơn hàng', order.code, `<dl class="detail-grid">${info.map(([label, value]) => `<div><dt>${label}</dt><dd>${value}</dd></div>`).join('')}</dl>${action}`, context, order.status === 'pending_admin' && ctvs.length ? 'Duyệt & phân đơn' : order.status === 'review' ? 'Xác nhận quyết toán' : '');
+    const info = [['Mã đơn', `<span class="mono">${e(order.code)}</span>`], ['Trạng thái', context.statusBadge(order.status)], ['Khách hàng', e(order.customer)], ['Game', e(order.game_name)], ['Gói nạp', e(order.package_name)], ['Tổng tiền', money(order.price_cents)], ['Thanh toán', order.payment_method === 'wallet' ? 'Ví tài khoản' : 'Chuyển khoản ngân hàng'], ['Ngày tạo', date(order.created_at)]];
+    if (order.processing_admin) info.push(['Admin xử lý', e(order.processing_admin)]);
+    if (order.processing_started_at) info.push(['Bắt đầu nạp', date(order.processing_started_at)]);
+    if (order.completed_at) info.push(['Hoàn thành lúc', date(order.completed_at)]);
+    const labels = {uid:'UID người chơi',login:'Tài khoản game',password:'Mật khẩu game',server:'Máy chủ',region:'Khu vực',character:'Nhân vật',note:'Ghi chú của khách'};
+    const fields = Object.entries(order.target || {}).filter(([key]) => labels[key]).map(([key,value]) => `<div class="fulfillment-field"><dt>${labels[key]}</dt><dd>${key === 'password' ? `<details><summary>Hiện mật khẩu game</summary><span class="fulfillment-value">${e(value)}</span></details>` : `<span class="fulfillment-value">${e(value)}</span>`}<button class="button subtle" type="button" data-copy-target="${e(key)}">Sao chép</button></dd></div>`).join('');
+    const credentials = `<section class="fulfillment-target"><h3>Thông tin nạp game</h3><p class="muted">Chỉ quản trị viên được xem. Lượt xem được ghi nhận trong nhật ký.</p>${fields ? `<dl>${fields}</dl>` : '<p>Đơn này chưa có thông tin nạp. Cần kiểm tra với khách trước khi xử lý.</p>'}</section>`;
+    let action = '', submit = '', endpoint = '';
+    if (order.status === 'awaiting_payment') {
+      action = '<div class="detail-note">Đối chiếu ngân hàng: đúng số tiền, đúng nội dung ZET + mã đơn. Chỉ xác nhận khi tiền thực sự vào tài khoản.</div><label class="fulfillment-confirm"><input type="checkbox" name="confirmed" required> Tôi đã kiểm tra và nhận đủ tiền cho đơn này.</label>';
+      submit = 'Xác nhận đã nhận tiền'; endpoint = 'confirm-payment';
+    } else if (order.status === 'pending_admin') {
+      action = '<div class="detail-note">Đơn đã thanh toán. Bấm nhận xử lý trước khi thực hiện nạp để tránh hai người cùng nạp.</div>';
+      submit = 'Nhận xử lý đơn'; endpoint = 'start';
+    } else if (order.status === 'processing') {
+      action = order.can_complete ? '<div class="detail-note">Bạn đang xử lý đơn này. Kiểm tra đúng game, UID/tài khoản và gói nạp trước khi hoàn tất.</div><label class="fulfillment-confirm"><input type="checkbox" name="confirmed" required> Tôi xác nhận đã nạp thành công đúng gói cho khách.</label>' : `<div class="detail-note">Đơn đang được ${e(order.processing_admin || 'admin khác')} xử lý. Chỉ admin đã nhận đơn được xác nhận hoàn thành.</div>`;
+      if (order.can_complete) { submit = 'Đánh dấu đã nạp thành công'; endpoint = 'complete'; }
+    } else if (order.status === 'completed') {
+      action = '<div class="detail-note">Đơn đã hoàn thành. Không thực hiện nạp lại.</div>';
+    } else if (order.status === 'cancelled') {
+      action = '<div class="detail-note">Đơn đã hủy. Không nhận tiền hoặc thực hiện nạp.</div>';
+    } else if (order.status === 'needs_review') {
+      action = '<div class="detail-note">Chưa rõ kết quả nạp. Đối soát trước khi thử lại, hủy hoặc hoàn tiền.</div>';
+    } else if (order.status === 'failed') {
+      action = '<div class="detail-note">Đã xác nhận chưa giao vật phẩm. Có thể đưa về chờ xử lý hoặc hủy đơn.</div>';
+    } else if (order.status === 'refund_pending') {
+      action = '<div class="detail-note">Đang chờ hoàn chuyển khoản. Chuyển tiền ngoài web rồi ghi nhận mã giao dịch thực tế.</div>';
+    } else if (order.status === 'refunded') {
+      action = '<div class="detail-note">Đơn đã hoàn tiền. Không thực hiện nạp hoặc hoàn thêm lần nữa.</div>';
+    } else {
+      action = '<div class="detail-note">Đơn thuộc luồng xử lý cũ. Giữ nguyên để kiểm tra, tránh nạp trùng.</div>';
+    }
+    mount('Chi tiết đơn hàng', order.code, `<dl class="detail-grid">${info.map(([label,value]) => `<div><dt>${label}</dt><dd>${value}</dd></div>`).join('')}</dl>${credentials}${action}${orderManagement(order)}`, context, submit);
+    bindOrderManagement(target,order,context,openOrder,showError);
+    target.querySelectorAll('[data-copy-target]').forEach(button => button.addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(order.target[button.dataset.copyTarget]); context.toast('Đã sao chép thông tin nạp.'); }
+      catch { context.toast('Không thể sao chép. Hãy chọn thông tin và sao chép thủ công.', true); }
+    }));
+    const clearPrivate = () => { if (!target.open) target.innerHTML = ''; };
+    target.addEventListener('close', clearPrivate, {once:true});
     const form = target.querySelector('form');
     form?.addEventListener('submit', async event => {
       event.preventDefault();
-      const button = form.querySelector('[type="submit"]'); button.disabled = true;
+      const button = form.querySelector('[type="submit"]');
+      if (form.dataset.saving === 'true' || target.dataset.saving === 'true') return;
+      form.dataset.saving = 'true'; target.dataset.saving = 'true'; button.disabled = true;
+      const preventClose = event => event.preventDefault();
+      target.addEventListener('cancel', preventClose);
       try {
-        const ctv_ids = [...form.querySelectorAll('[name="ctv"]:checked')].map(input => input.value);
-        if (order.status === 'pending_admin' && !ctv_ids.length) throw new Error('Chọn ít nhất một cộng tác viên.');
-        await context.api(`/api/admin/orders/${encodeURIComponent(code)}/${order.status === 'review' ? 'settle' : 'approve'}`, order.status === 'review' ? {} : { ctv_ids }, 'POST');
-        target.close(); context.toast(order.status === 'review' ? 'Đã quyết toán đơn hàng.' : 'Đã phân đơn cho cộng tác viên.'); await context.refresh();
+        const confirmed = form.elements.confirmed?.checked === true;
+        await context.api(`/api/admin/orders/${encodeURIComponent(code)}/${endpoint}`, {confirmed}, 'POST');
+        await context.refresh();
+        context.toast(endpoint === 'complete' ? 'Đã hoàn thành đơn nạp.' : endpoint === 'start' ? 'Bạn đã nhận xử lý đơn.' : 'Đã xác nhận nhận tiền.');
+        form.dataset.saving = 'false'; target.dataset.saving = 'false';
+        target.close();
+        if (endpoint !== 'complete') await openOrder(code, context);
       } catch (error) { showError(error); }
-      finally { button.disabled = false; }
+      finally { form.dataset.saving = 'false'; target.dataset.saving = 'false'; button.disabled = false; target.removeEventListener('cancel', preventClose); }
     });
   } catch (error) {
     if (target.open && target.dataset.generation === generation) mount('Không tải được đơn hàng', code, `<div class="inline-error" role="alert">${e(error.message)}</div>`, context);
