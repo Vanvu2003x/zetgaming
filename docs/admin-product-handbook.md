@@ -243,3 +243,21 @@ Kiểm tra theo thứ tự PostgreSQL -> backend -> storefront -> admin. Smoke t
 ## 19. Phụ lục hỗ trợ khách
 
 Luôn xin mã đơn, email hoặc loại khách, game/package, thời gian thanh toán, phương thức thanh toán và mô tả lỗi. Không xin hoặc gửi mật khẩu game qua kênh không an toàn; không đưa secret 2FA, token, số tài khoản đầy đủ hoặc dữ liệu ledger vào phản hồi khách.
+
+## 20. Atlas ảnh thao tác theo từng nút và từng ô
+
+Mỗi màn hình trong PDF có một ảnh toàn cảnh. Các ảnh dưới đây zoom vào những điểm khách thường cần bấm: tạo mới, chỉnh sửa, xem chi tiết, bộ lọc, lịch sử và nút lưu.
+
+![Chi tiết đơn hàng và nút thao tác](admin-guide/screens/admin-orders-detail.png)
+
+![Dialog tạo game: field, ảnh, kiểu nạp và nút Tạo game](admin-guide/screens/admin-games-editor.png)
+
+![Dialog tạo gói nạp: game, giá khách, giá CTV và trạng thái bán](admin-guide/screens/admin-packages-editor.png)
+
+![Dialog thêm phân loại và nút Tạo phân loại](admin-guide/screens/admin-categories-editor.png)
+
+![Dialog quản lý khách hàng: role, hạng và hoạt động](admin-guide/screens/admin-customers-editor.png)
+
+![Dialog lịch sử hoạt động: filter Đơn nạp/Ví và các tổng số](admin-guide/screens/admin-customers-history.png)
+
+![Dialog chỉnh hạng: tên, phần trăm giảm và nút Lưu hạng](admin-guide/screens/admin-tiers-editor.png)
