@@ -1,13 +1,4 @@
-import {escapeHtml as e,money,date,statuses} from './data.mjs';
-
-const actionNames={
-  'order.created':'Tạo đơn','order.payment_confirmed':'Xác nhận nhận tiền','order.credentials_viewed':'Xem thông tin nạp',
-  'order.admin_started':'Admin nhận xử lý','order.admin_completed':'Admin hoàn thành đơn','order.note_added':'Thêm ghi chú nội bộ',
-  'order.issue_reported':'Báo lỗi đơn','order.issue_resolved':'Xác nhận kết quả đối soát','order.retry_requested':'Cho phép xử lý lại',
-  'order.cancelled':'Hủy đơn','order.refund_requested':'Lập yêu cầu hoàn tiền','order.refund_paid':'Xác nhận hoàn tiền',
-  'order.late_payment_recorded':'Ghi nhận tiền vào sau hủy','order.approved':'Phân đơn (luồng cũ)','order.claimed':'Nhận đơn (luồng cũ)',
-  'order.completed':'Báo hoàn thành (luồng cũ)','order.settled':'Quyết toán (luồng cũ)',
-};
+import {escapeHtml as e,money} from './data.mjs';
 const operations={
   'report-issue':['Báo lỗi / cần kiểm tra','Nếu chưa rõ kết quả, chọn “Chưa rõ” để giữ đơn, tránh nạp hoặc hoàn tiền trùng.'],
   'resolve-issue':['Xác nhận kết quả đối soát','Chỉ kết luận sau khi kiểm tra thực tế với game hoặc bên cung cấp.'],
@@ -37,10 +28,7 @@ export function orderManagement(order){
   if(order.status==='processing' && order.can_complete)quick.push(['complete','Hoàn thành đơn']);
   if(['pending_admin','failed'].includes(order.status))quick.push(['cancel','Hủy đơn']);
   const quickHtml=quick.length?`<section class="order-management quick-order-actions"><h3>Thao tác nhanh</h3><div>${quick.map(([key,label])=>`<button type="button" class="button ${key==='cancel'?'danger':'primary'}" data-quick-operation="${key}">${label}</button>`).join('')}</div></section>`:'';
-  const controls=items.length ? `<details class="order-management"><summary>Thao tác khác</summary><label>Chọn thao tác<select data-order-operation>${items.map(key=>`<option value="${key}">${operations[key][0]}</option>`).join('')}</select></label><p class="detail-note" data-operation-help></p><label data-outcome-field>Kết quả kiểm tra<select data-operation-outcome></select></label><label data-reason-field>Lý do<textarea data-operation-reason rows="3" maxlength="1000" placeholder="Ghi rõ lý do và kết quả kiểm tra; không nhập mật khẩu hoặc OTP."></textarea></label><label data-reference-field>Mã giao dịch ngân hàng<input data-operation-reference maxlength="120" autocomplete="off" placeholder="Mã giao dịch thực tế từ ngân hàng"></label><button type="button" class="button primary" data-operation-submit>Thực hiện</button></details>`:'';
-  const notes=`<details class="order-management"><summary>Ghi chú nội bộ <span class="muted">· ${order.notes.length} ghi chú</span></summary><p class="muted">Không ghi mật khẩu, OTP hoặc thông tin ngân hàng nhạy cảm.</p><label class="sr-only" for="orderNote">Nội dung ghi chú</label><textarea id="orderNote" data-order-note rows="3" maxlength="2000" placeholder="Nhập ghi chú…"></textarea><button type="button" class="button" data-note-submit>Thêm ghi chú</button><div class="order-notes">${order.notes.length?order.notes.map(note=>`<article><p>${e(note.body)}</p><small>${e(note.actor)} · ${date(note.created_at)}</small></article>`).join(''):'<p class="muted">Chưa có ghi chú.</p>'}</div></details>`;
-  const history=`<details class="order-management"><summary>Lịch sử thao tác <span class="muted">· ${order.events.length} gần nhất</span></summary><ol class="order-timeline">${order.events.map(event=>`<li><strong>${e(actionNames[event.action]||event.action)}</strong><small>${e(event.actor)} · ${date(event.created_at)}</small>${event.metadata?.reason?`<p>${e(event.metadata.reason)}</p>`:''}${event.metadata?.from_status && event.metadata?.to_status?`<p>${e(statuses[event.metadata.from_status]||event.metadata.from_status)} → ${e(statuses[event.metadata.to_status]||event.metadata.to_status)}</p>`:''}${event.metadata?.amount_cents?`<p>${money(event.metadata.amount_cents)}</p>`:''}${event.metadata?.reference?`<p>Mã giao dịch: ${e(event.metadata.reference)}</p>`:''}</li>`).join('')}</ol></details>`;
-  return refund+quickHtml+controls+notes+history;
+  return refund+quickHtml;
 }
 
 export function bindOrderManagement(target,order,context,reopen,showError){
