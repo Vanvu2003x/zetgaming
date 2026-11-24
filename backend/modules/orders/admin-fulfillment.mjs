@@ -18,7 +18,7 @@ adminFulfillmentRouter.use('/admin/orders/:code', requireRole('admin'), (_req,re
 adminFulfillmentRouter.get('/admin/orders/:code', async (req,res,next) => {
   try {
     const result = await withTransaction(async client => {
-      const row = (await client.query(`SELECT o.id,o.code,o.status,o.price_cents,o.payment_method,o.created_at,o.updated_at,o.paid_at,o.cancelled_at,o.target_encrypted,o.processing_admin_id,o.processing_started_at,o.completed_at,p.name package_name,g.name game_name,COALESCE(u.email,'Khách vãng lai') customer,a.email processing_admin FROM orders o JOIN packages p ON p.id=o.package_id JOIN games g ON g.id=o.game_id LEFT JOIN users u ON u.id=o.customer_id LEFT JOIN users a ON a.id=o.processing_admin_id WHERE o.code=$1`, [req.params.code])).rows[0];
+      const row = (await client.query(`SELECT o.id,o.code,o.status,o.price_cents,o.payment_method,o.created_at,o.updated_at,o.paid_at,o.cancelled_at,o.target_encrypted,o.processing_admin_id,o.processing_started_at,o.completed_at,(o.provider_order_id IS NOT NULL OR (g.provider_game_code IS NOT NULL AND p.provider_package_id IS NOT NULL)) provider_managed,p.name package_name,g.name game_name,COALESCE(u.email,'Khách vãng lai') customer,a.email processing_admin FROM orders o JOIN packages p ON p.id=o.package_id JOIN games g ON g.id=o.game_id LEFT JOIN users u ON u.id=o.customer_id LEFT JOIN users a ON a.id=o.processing_admin_id WHERE o.code=$1`, [req.params.code])).rows[0];
       if (!row) throw fail(404,'Không tìm thấy đơn');
       let decoded;
       try { decoded = decryptJson(row.target_encrypted); }
@@ -33,7 +33,7 @@ adminFulfillmentRouter.get('/admin/orders/:code', async (req,res,next) => {
       let refund=(await client.query('SELECT amount_cents,method,state,reason,reference,created_at,paid_at FROM order_refunds WHERE order_id=$1',[row.id])).rows[0] || null;
       if(refund)refund.amount_cents=Number(refund.amount_cents);
       const { id, target_encrypted, ...order } = row;
-      return { ...order, price_cents: Number(order.price_cents), target, notes, events, refund, can_complete: order.status === 'processing' && order.processing_admin_id === req.user.id, can_resolve: order.status === 'needs_review' && order.processing_admin_id === req.user.id };
+      return { ...order, price_cents: Number(order.price_cents), target, notes, events, refund, can_complete: order.status === 'processing' && order.processing_admin_id === req.user.id, can_cancel_processing: order.status === 'processing' && order.processing_admin_id === req.user.id && !order.provider_managed, can_resolve: order.status === 'needs_review' && order.processing_admin_id === req.user.id };
     });
     res.json(result);
   } catch(error) { next(error); }
@@ -66,6 +66,10 @@ for (const action of ['start','complete']) {
           const upstream = await khoablack.createOrder({ packageId: result.provider.packageId, accountInfo });
           await req.db.query(`UPDATE orders SET provider_order_id=$1,provider_status=$2,provider_payload=$3::jsonb,provider_created_at=now(),provider_updated_at=now(),updated_at=now() WHERE code=$4`, [String(upstream.id), String(upstream.status || 'pending'), JSON.stringify(upstream), result.code]);
         } catch (providerError) {
+          if (![400,401,403,404,422].includes(providerError.statusCode)) {
+            await req.db.query("UPDATE orders SET status='needs_review',provider_status='create_unconfirmed',updated_at=now() WHERE code=$1 AND status='processing'", [result.code]);
+            return res.json({code:result.code,status:'needs_review'});
+          }
           await withTransaction(async client => {
             const failed = (await client.query('SELECT id,code,customer_id,price_cents,gross_price_cents,payment_method,paid_at FROM orders WHERE code=$1 FOR UPDATE', [result.code])).rows[0];
             if (!failed) return;

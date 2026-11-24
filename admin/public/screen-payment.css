@@ -1,0 +1,238 @@
+body[data-page="/payment"] #main {
+  --payment-inset: clamp(12px, 2vw, 20px);
+  --payment-gap: 12px;
+  color: var(--ux-ink);
+}
+
+body[data-page="/payment"] .page-title {
+  align-items: center;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--ux-line);
+}
+
+body[data-page="/payment"] .page-title :is(.eyebrow, p) {
+  color: var(--ux-ink-soft);
+}
+
+body[data-page="/payment"] #refresh {
+  flex-shrink: 0;
+  min-height: 36px;
+  padding-inline: 12px;
+  border: 1px solid var(--ux-orange);
+  border-radius: var(--ux-radius-sm);
+  background: var(--ux-orange);
+  color: var(--ux-bg);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+body[data-page="/payment"] #refresh:hover:not(:disabled) {
+  border-color: var(--ux-orange-strong);
+  background: var(--ux-orange-strong);
+}
+
+body[data-page="/payment"] :is(.payment-settings-panel, .wallet-topup-admin-panel) {
+  max-width: none;
+  margin: 0 0 16px;
+  border: 1px solid var(--ux-line);
+  border-radius: var(--ux-radius-sm);
+  background: var(--ux-surface);
+  box-shadow: none;
+}
+
+body[data-page="/payment"] :is(.payment-settings-panel, .wallet-topup-admin-panel) .panel-heading {
+  padding: 14px var(--payment-inset);
+}
+
+body[data-page="/payment"] :is(.payment-settings-panel, .wallet-topup-admin-panel) .panel-heading p {
+  color: var(--ux-ink-soft);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+body[data-page="/payment"] :is(#payment-settings, #wallet-topups):not(:has(> *)) {
+  padding: 0 var(--payment-inset) 16px;
+  color: var(--ux-ink-soft);
+}
+
+body[data-page="/payment"] .payment-settings-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--payment-gap);
+  padding: 0 var(--payment-inset) 12px;
+}
+
+body[data-page="/payment"] .payment-settings-grid > div {
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+  align-items: start;
+  gap: 4px 10px;
+  padding: 12px;
+  border: 1px solid var(--ux-line);
+  border-radius: var(--ux-radius-sm);
+  background: var(--ux-surface-2);
+  overflow-wrap: anywhere;
+}
+
+body[data-page="/payment"] .payment-settings-grid > div > strong {
+  color: var(--ux-ink-soft);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+body[data-page="/payment"] .payment-settings-grid > div > span:not(.payment-card-icon) {
+  grid-column: 2;
+  color: var(--ux-ink);
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+body[data-page="/payment"] .payment-settings-grid .payment-card-icon {
+  grid-row: 1 / span 2;
+  width: 22px;
+  height: 22px;
+  background: transparent;
+  color: var(--ux-orange);
+}
+
+body[data-page="/payment"] .payment-card-icon.account {
+  color: var(--ux-green);
+}
+
+body[data-page="/payment"] .payment-card-icon.sync {
+  color: var(--ux-amber);
+}
+
+body[data-page="/payment"] .payment-card-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+body[data-page="/payment"] #payment-settings > .detail-note {
+  margin: 0 var(--payment-inset) 16px;
+  border: 1px solid var(--ux-line);
+  background: var(--ux-surface);
+  color: var(--ux-ink-soft);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+body[data-page="/payment"] #wallet-topups .table-scroll {
+  border-top: 1px solid var(--ux-line);
+  scrollbar-color: var(--ux-line-strong) var(--ux-surface);
+}
+
+body[data-page="/payment"] #wallet-topups :is(th, td) {
+  padding: 10px var(--payment-inset);
+  border-bottom-color: var(--ux-line);
+  font-size: 13px;
+}
+
+body[data-page="/payment"] #wallet-topups th {
+  background: var(--ux-surface-2);
+  color: var(--ux-ink);
+  font-weight: 650;
+  letter-spacing: normal;
+}
+
+body[data-page="/payment"] #wallet-topups td {
+  height: 52px;
+  color: var(--ux-ink-soft);
+}
+
+body[data-page="/payment"] #wallet-topups :is(td strong, td.amount) {
+  color: var(--ux-ink);
+  font-size: 13px;
+}
+
+body[data-page="/payment"] #wallet-topups td .secondary {
+  color: var(--ux-ink-soft);
+  font-size: 11px;
+}
+
+body[data-page="/payment"] #wallet-topups :is(th:nth-child(3), td.amount) {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+body[data-page="/payment"] #wallet-topups tbody tr:is(:hover, :focus-within) {
+  background: var(--ux-surface-2);
+}
+
+body[data-page="/payment"] #wallet-topups .badge {
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--ux-surface-3);
+  color: var(--ux-ink-soft);
+}
+
+body[data-page="/payment"] #wallet-topups .badge.green {
+  background: color-mix(in srgb, var(--ux-green) 16%, var(--ux-surface));
+  color: var(--ux-green);
+}
+
+body[data-page="/payment"] #wallet-topups .badge.orange {
+  background: color-mix(in srgb, var(--ux-amber) 16%, var(--ux-surface));
+  color: var(--ux-amber);
+}
+
+body[data-page="/payment"] #wallet-topups :is([data-wallet-complete], [data-wallet-cancel]) {
+  min-height: 32px;
+  padding: 4px 8px;
+  border: 1px solid var(--ux-line-strong);
+  border-radius: var(--ux-radius-sm);
+  background: var(--ux-surface);
+  color: var(--ux-ink-soft);
+}
+
+body[data-page="/payment"] #wallet-topups [data-wallet-complete] {
+  color: var(--ux-orange);
+}
+
+body[data-page="/payment"] #wallet-topups :is([data-wallet-complete], [data-wallet-cancel]):hover:not(:disabled) {
+  border-color: currentColor;
+  background: var(--ux-surface-3);
+}
+
+body[data-page="/payment"] :is(#refresh, #wallet-topups .button, #wallet-topups .table-scroll):focus-visible {
+  outline: 2px solid var(--ux-orange);
+  outline-offset: 2px;
+}
+
+body[data-page="/payment"] #wallet-topups .table-scroll:focus-visible {
+  outline-offset: -2px;
+}
+
+body[data-page="/payment"] #wallet-topups .empty {
+  padding: 32px var(--payment-inset);
+  border-top: 1px solid var(--ux-line);
+  color: var(--ux-ink-soft);
+}
+
+body[data-page="/payment"] #wallet-topups .empty svg {
+  color: var(--ux-orange);
+}
+
+@media (max-width: 1199px) {
+  body[data-page="/payment"] .payment-settings-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  body[data-page="/payment"] .payment-settings-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 420px) {
+  body[data-page="/payment"] .payment-settings-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  body[data-page="/payment"] .page-title {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+}

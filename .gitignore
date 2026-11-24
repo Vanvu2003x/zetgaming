@@ -9,3 +9,7 @@ coverage/
 data/postgres/
 data/mail-outbox/
 *.log
+data/production-access*.txt
+tmp/
+*.tar.gz
+*.tgz

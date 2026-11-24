@@ -42,12 +42,21 @@ test('separate admin origin protects pages and uses an independent layout', asyn
   assert.match(signedIn.headers.get('set-cookie'), /HttpOnly/);
   assert.match((await signIn({ email: 'customer@example.com' })).headers.get('location'), /^\/login\?error=/);
   assert.match((await signIn({ email: 'admin@example.com', _csrf: 'invalid' })).headers.get('location'), /^\/login\?error=/);
-  for (const path of ['/', '/games', '/categories', '/packages', '/orders', '/ctvs']) {
+  const screens = ['overview', 'orders', 'coupons', 'payment', 'games', 'packages', 'categories', 'content', 'customers', 'ctvs', 'tiers', 'reports', 'security'];
+  for (const screen of screens) {
+    const path = screen === 'overview' ? '/' : '/' + screen;
     const response = await get(path, 'session=admin');
     assert.equal(response.status, 200);
     assert.match(response.headers.get('cache-control'), /no-store/);
     const html = await response.text();
     assert.match(html, /admin-shell/);
+    assert.ok(html.includes(`href="/assets/screen-${screen}.css"`));
+    assert.doesNotMatch(html, /href="\/tiers"/);
+    if (screen !== 'tiers') assert.ok(html.includes(`href="${path}" class="active" aria-current="page"`));
+    const stylesheet = await get(`/assets/screen-${screen}.css`);
+    assert.equal(stylesheet.status, 200, screen);
+    assert.match(stylesheet.headers.get('content-type'), /text\/css/);
+    await stylesheet.text();
     assert.doesNotMatch(html, /storefront.css|site-header|Barlow|<footer/);
   }
   assert.equal((await get('/missing', 'session=admin')).status, 404);
@@ -55,6 +64,9 @@ test('separate admin origin protects pages and uses an independent layout', asyn
   assert.equal(asset.status, 200);
   assert.match(asset.headers.get('content-type'), /javascript/);
   assert.match(asset.headers.get('cache-control'), /no-store/);
+  const publicImage=await get('/zetgaming-oauth-logo-120.png');
+  assert.equal(publicImage.status,200);
+  assert.match(publicImage.headers.get('content-type'),/image\/png/);
   const upload = await fetch(base + '/api/admin/uploads', { method: 'POST', headers: { 'content-type': 'image/png' }, body: Buffer.from([137, 80, 78, 71]) });
   assert.deepEqual(await upload.json(), { bytes: 4, type: 'image/png' });
 });

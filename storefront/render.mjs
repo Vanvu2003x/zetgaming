@@ -1,12 +1,19 @@
 import { randomUUID } from 'node:crypto';
 import { escapeHtml as e, safeNext, statusText } from './shared.mjs';
 import { homePage, catalogPage, gamePage } from './catalog-pages.mjs';
-import { loginPage, registerPage, forgotPasswordPage, resetPasswordPage, gatePage, accountPage, historyPage, orderPage } from './account-pages.mjs';
+import { loginPage, registerPage, forgotPasswordPage, resetPasswordPage, gatePage, accountPage, historyPage, orderPage, walletTopupPage } from './account-pages.mjs';
 import { newsPage, notFoundPage } from './news-pages.mjs';
 import { navPath } from '../public/navigation.js';
 import { signedOutPage } from './auth-feedback.mjs';
 import { googleErrors } from './google-signin.mjs';
 import { legalPage, legalDocuments } from './legal-pages.mjs';
+
+function homeContent(catalog, settings) {
+  const html = homePage(catalog);
+  if (!settings) return html;
+  if (settings.active === false) return html.replace(/<section class="hero wrap"[\s\S]*?<\/section>/, '');
+  return html.replace('/zetgaming-hero-soul-land-v4.png', e(settings.image || '/zetgaming-hero-soul-land-v4.png')).replace('NẠP GAME NHANH', e(settings.eyebrow || 'NẠP GAME NHANH')).replace('ZETGAMING</strong>', `${e(settings.title || 'ZETGAMING')}</strong>`).replace('Chọn game yêu thích, xem giá trước khi đặt và theo dõi đơn dễ dàng.', e(settings.description || 'Chọn game yêu thích, xem giá trước khi đặt và theo dõi đơn dễ dàng.'));
+}
 
 export function renderStorefront({ url, user, db, data, csrfToken = '', layout }) {
   const path = url.pathname;
@@ -25,7 +32,7 @@ export function renderStorefront({ url, user, db, data, csrfToken = '', layout }
   let title = 'Không tìm thấy trang', description = 'Nạp game tại ZetGaming.', page = 'not-found', active = '/', content = notFoundPage(), status = 404;
   const set = (name, tab, heading, html, desc = heading) => { page = name; active = tab; title = heading; content = html; description = desc; status = 200; };
   if (Object.hasOwn(legalDocuments, path)) set('legal', '/', legalDocuments[path].title, legalPage(path), legalDocuments[path].intro);
-  else if (path === '/') set('home', '/', 'Nạp game dễ dàng', homePage(catalog), 'Chọn game yêu thích, xem giá gói nạp và theo dõi đơn tại ZetGaming.');
+  else if (path === '/') set('home', '/', 'Nạp game dễ dàng', homeContent(catalog, data?.settings), 'Chọn game yêu thích, xem giá gói nạp và theo dõi đơn tại ZetGaming.');
   else if (path === '/nap-game') set('catalog', '/nap-game', 'Nạp game', catalogPage(catalog, (url.searchParams.get('q') || '').trim().slice(0, 100), { category: (url.searchParams.get('category') || '').slice(0, 100), sort: url.searchParams.get('sort') }));
   else if (/^\/nap-game\/[a-z0-9-]+$/.test(path)) {
     const game = catalog.find(item => item.slug === path.split('/')[2]);
@@ -48,17 +55,20 @@ export function renderStorefront({ url, user, db, data, csrfToken = '', layout }
   } else if (path === '/tai-khoan') {
     const summary = user ? data?.summary ?? db.prepare(`SELECT COUNT(*) total, COALESCE(SUM(status NOT IN ('completed','cancelled')),0) pending, COALESCE(SUM(status='completed'),0) completed FROM orders WHERE customer_id=?`).get(user.id) : null;
     set('account', '/tai-khoan', 'Tài khoản', user ? accountPage(user, summary) : gatePage('Tài khoản', path));
+  } else if (path === '/nap-so-du' || /^\/nap-so-du\/[a-zA-Z0-9-]+$/.test(path)) {
+    if (!user) return { redirect: '/dang-nhap?next=%2Fnap-so-du', status: 303 };
+    else set('account', '/tai-khoan', 'Nạp số dư', walletTopupPage(data?.walletTopup, url.searchParams.get('error') || ''));
   } else if (path === '/lich-su') {
     let orders = [];
     const requestedStatus = url.searchParams.get('status');
     const filter = Object.hasOwn(statusText, requestedStatus) ? requestedStatus : 'all';
     if (user) orders = data?.orders ?? db.prepare(`SELECT o.code,o.status,o.price_cents,o.created_at,p.name package_name,g.name game_name FROM orders o JOIN packages p ON p.id=o.package_id JOIN games g ON g.id=o.game_id WHERE o.customer_id=? AND (?='all' OR o.status=?) ORDER BY o.created_at DESC`).all(user.id, filter, filter);
-    set('history', '/lich-su', 'Lịch sử đơn hàng', user ? historyPage(orders, filter) : gatePage('Lịch sử đơn hàng', path));
+    set('history', '/lich-su', 'Lịch sử đơn hàng', historyPage(orders, filter, { user, code: (url.searchParams.get('code') || '').trim().toUpperCase().slice(0,40), result: data?.lookup, walletLedger: data?.walletLedger || [], tab: url.searchParams.get('tab') === 'wallet' ? 'wallet' : 'orders' }));
   } else if (/^\/lich-su\/[a-zA-Z0-9-]+$/.test(path)) {
-    if (!user) set('history', '/lich-su', 'Lịch sử đơn hàng', gatePage('Lịch sử đơn hàng', path));
+    if (!user && !data?.order) set('history', '/lich-su', 'Lịch sử đơn hàng', gatePage('Lịch sử đơn hàng', path));
     else {
       const order = data ? data.order : db.prepare(`SELECT o.code,o.status,o.price_cents,o.payment_method,o.created_at,o.updated_at,p.name package_name,g.name game_name FROM orders o JOIN packages p ON p.id=o.package_id JOIN games g ON g.id=o.game_id WHERE o.code=? AND o.customer_id=?`).get(path.split('/')[2], user.id);
-      if (order) set('order', '/lich-su', `Đơn ${order.code}`, orderPage(order));
+      if (order) set('order', '/lich-su', `Đơn ${order.code}`, orderPage(order, user));
     }
   } else if (path === '/tin-tuc' || /^\/tin-tuc\/[a-z0-9-]+$/.test(path)) set('news', '/tin-tuc', 'Tin tức sắp ra mắt', newsPage(), 'Tin tức và hướng dẫn của ZetGaming sắp ra mắt.');
   let shell = layout.replace(/<a\b([^>]*href="([^"]+)"[^>]*)>/g, (tag, attrs, href) => {
@@ -67,7 +77,7 @@ export function renderStorefront({ url, user, db, data, csrfToken = '', layout }
     attrs = /class="/.test(attrs) ? attrs.replace(/class="([^"]*)"/, (_, cls) => `class="${cls} ${className}"`) : attrs + ` class="${className}"`;
     return `<a${attrs} aria-current="page">`;
   });
-  shell = shell.replace('</head>', '<link rel="stylesheet" href="/home-discovery.css?v=1"><link rel="stylesheet" href="/checkout.css?v=1"><link rel="stylesheet" href="/directory.css?v=1"><link rel="stylesheet" href="/auth-soul-land.css?v=4"><link rel="stylesheet" href="/legal.css?v=1"></head>');
+  shell = shell.replace('</head>', '<link rel="stylesheet" href="/home-discovery.css?v=4"><link rel="stylesheet" href="/checkout.css?v=6"><link rel="stylesheet" href="/directory.css?v=2"><link rel="stylesheet" href="/auth-soul-land.css?v=6"><link rel="stylesheet" href="/legal.css?v=1"></head>');
   if (page === 'login' || page === 'register') {
     const next = encodeURIComponent(safeNext(url.searchParams.get('next'), '/tai-khoan'));
     content = content.replace('href="/dang-nhap"', `href="/dang-nhap?next=${next}"`).replace('href="/dang-ky"', `href="/dang-ky?next=${next}"`);

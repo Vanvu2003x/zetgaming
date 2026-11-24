@@ -1,0 +1,299 @@
+body[data-page="/customers"] {
+  color-scheme: dark;
+}
+
+body[data-page="/customers"] #main {
+  min-width: 0;
+  padding-top: clamp(20px, 3vw, 32px);
+}
+
+body[data-page="/customers"] .page-title {
+  margin-bottom: 18px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--ux-line);
+}
+
+body[data-page="/customers"] .page-title .eyebrow {
+  display: none;
+}
+
+body[data-page="/customers"] .page-title h1 {
+  font-size: clamp(25px, 2.6vw, 34px);
+  line-height: 1.15;
+}
+
+body[data-page="/customers"] .page-title p,
+body[data-page="/customers"] .collection-summary,
+body[data-page="/customers"] .panel-heading p {
+  color: var(--ux-ink-soft);
+}
+
+body[data-page="/customers"] #refresh {
+  flex-shrink: 0;
+  min-height: 40px;
+  border-color: var(--ux-orange);
+  border-radius: var(--ux-radius-sm);
+  background: var(--ux-orange);
+  color: var(--ux-bg);
+}
+
+body[data-page="/customers"] #refresh:hover {
+  border-color: var(--ux-orange-strong);
+  background: var(--ux-orange-strong);
+}
+
+body[data-page="/customers"] .collection-summary {
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin-bottom: 12px;
+  font-size: 12px;
+}
+
+body[data-page="/customers"] .collection-summary strong {
+  color: var(--ux-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+body[data-page="/customers"] .table-panel {
+  min-width: 0;
+  margin-bottom: 18px;
+  border-color: var(--ux-line);
+  border-radius: var(--ux-radius-sm);
+  background: var(--ux-surface);
+  box-shadow: none;
+}
+
+body[data-page="/customers"] .table-panel:has(> #table-content) {
+  border: 0;
+  background: transparent;
+  overflow: visible;
+}
+
+body[data-page="/customers"] .toolbar {
+  gap: 8px 10px;
+  padding: 0 0 10px;
+  border: 0;
+}
+
+body[data-page="/customers"] .toolbar .search-field {
+  min-width: 0;
+  max-width: 420px;
+  margin: 0;
+}
+
+body[data-page="/customers"] .toolbar .search-field svg {
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ux-ink-soft);
+  pointer-events: none;
+}
+
+body[data-page="/customers"] .toolbar :is(input[type="search"], select) {
+  min-height: 40px;
+  border: 1px solid var(--ux-line-strong);
+  border-radius: var(--ux-radius-sm);
+  background: var(--ux-surface-2);
+  color: var(--ux-ink);
+  font-size: 13px;
+}
+
+body[data-page="/customers"] .toolbar input::placeholder {
+  color: var(--ux-muted);
+}
+
+body[data-page="/customers"] .toolbar-count {
+  color: var(--ux-ink-soft);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+body[data-page="/customers"] #table-content {
+  border: 1px solid var(--ux-line);
+  border-radius: var(--ux-radius-sm);
+  background: var(--ux-surface);
+  overflow: hidden;
+}
+
+body[data-page="/customers"] .table-scroll {
+  scrollbar-color: var(--ux-line-strong) var(--ux-surface);
+}
+
+body[data-page="/customers"] .table-scroll:focus-visible {
+  outline: 2px solid var(--ux-orange);
+  outline-offset: -2px;
+}
+
+body[data-page="/customers"] #table-content .table-scroll table {
+  min-width: 720px;
+}
+
+body[data-page="/customers"] .customer-tiers-panel .table-scroll table {
+  min-width: 460px;
+}
+
+body[data-page="/customers"] .table-panel :is(th, td) {
+  padding: 9px clamp(9px, 1.1vw, 16px);
+  border-bottom-color: var(--ux-line);
+}
+
+body[data-page="/customers"] .table-panel th {
+  background: var(--ux-surface-2);
+  color: var(--ux-ink-soft);
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: normal;
+}
+
+body[data-page="/customers"] .table-panel td {
+  height: 52px;
+  color: var(--ux-ink-soft);
+  font-size: 13px;
+}
+
+body[data-page="/customers"] .table-panel tbody tr:is(:hover, :focus-within) {
+  background: var(--ux-surface-2);
+}
+
+body[data-page="/customers"] .table-panel td strong {
+  color: var(--ux-ink);
+  font-size: 13px;
+}
+
+body[data-page="/customers"] .table-panel td .secondary {
+  margin-top: 3px;
+  color: var(--ux-muted);
+  font-size: 11px;
+}
+
+body[data-page="/customers"] .customer-resource {
+  min-width: 175px;
+  gap: 9px;
+}
+
+body[data-page="/customers"] .customer-resource .avatar {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--ux-line-strong);
+  border-radius: 50%;
+  background: var(--ux-surface-3);
+  color: var(--ux-ink);
+}
+
+body[data-page="/customers"] .customer-resource :is(strong, .secondary) {
+  max-width: 32ch;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+body[data-page="/customers"] .table-panel .amount {
+  font-variant-numeric: tabular-nums;
+}
+
+body[data-page="/customers"] .table-panel :is(.badge, .tier-chip) {
+  --customer-chip-color: var(--ux-ink-soft);
+  padding: 3px 7px;
+  border: 1px solid var(--ux-line-strong);
+  border-color: color-mix(in srgb, var(--customer-chip-color) 28%, var(--ux-surface));
+  border-radius: 6px;
+  background: var(--ux-surface-3);
+  background: color-mix(in srgb, var(--customer-chip-color) 12%, var(--ux-surface));
+  color: var(--customer-chip-color);
+  font-size: 11px;
+  line-height: 1.25;
+}
+
+body[data-page="/customers"] .table-panel .badge.green {
+  --customer-chip-color: var(--ux-green);
+}
+
+body[data-page="/customers"] .table-panel .badge.orange {
+  --customer-chip-color: var(--ux-orange);
+}
+
+body[data-page="/customers"] .table-panel .badge.red,
+body[data-page="/customers"] #table-content tbody td:nth-last-child(2) .badge:not(.green) {
+  --customer-chip-color: var(--ux-red);
+}
+
+body[data-page="/customers"] .table-panel .tier-chip {
+  --customer-chip-color: var(--ux-purple);
+}
+
+body[data-page="/customers"] .table-panel td:has(> .icon-button) {
+  text-align: right;
+}
+
+body[data-page="/customers"] .table-panel .icon-button {
+  width: 34px;
+  height: 34px;
+  border-color: var(--ux-line-strong);
+  border-radius: var(--ux-radius-sm);
+  background: var(--ux-surface-2);
+  color: var(--ux-ink-soft);
+}
+
+body[data-page="/customers"] .table-panel .icon-button:hover {
+  border-color: var(--ux-orange);
+  color: var(--ux-orange);
+}
+
+body[data-page="/customers"] .table-bottom {
+  padding: 12px 0 0;
+  border-top: 0;
+  color: var(--ux-ink-soft);
+  font-size: 12px;
+}
+
+body[data-page="/customers"] .pagination {
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+body[data-page="/customers"] .pagination button {
+  min-width: 32px;
+  width: auto;
+  height: 32px;
+  padding-inline: 6px;
+  border-radius: 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+body[data-page="/customers"] .pagination button:not(:disabled):hover {
+  border-color: var(--ux-orange);
+}
+
+body[data-page="/customers"] .pagination button[aria-current="page"] {
+  border-color: var(--ux-orange);
+  background: var(--ux-orange);
+  color: var(--ux-bg);
+}
+
+body[data-page="/customers"] .customer-tiers-panel .panel-heading {
+  gap: 8px 12px;
+  flex-wrap: wrap;
+  padding: 12px clamp(12px, 1.4vw, 18px);
+}
+
+body[data-page="/customers"] .customer-tiers-panel .discount-value {
+  color: var(--ux-orange);
+  font-variant-numeric: tabular-nums;
+}
+
+body[data-page="/customers"] .customer-tiers-panel .period-tag {
+  background: var(--ux-surface-2);
+  color: var(--ux-ink-soft);
+}
+
+@media (max-width: 580px) {
+  body[data-page="/customers"] .toolbar .search-field {
+    max-width: none;
+  }
+
+  body[data-page="/customers"] .toolbar-count {
+    margin-left: auto;
+  }
+
+  body[data-page="/customers"] .customer-resource :is(strong, .secondary) {
+    max-width: 22ch;
+  }
+}

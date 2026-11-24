@@ -2,6 +2,10 @@
 node_modules
 data/*.sqlite-shm
 data/*.sqlite-wal
+data/postgres
+public/uploads
+*.tar.gz
+*.zip
 .env
 coverage
 dist

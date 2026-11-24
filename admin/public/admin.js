@@ -1,5 +1,5 @@
 import { escapeHtml as e, statuses, statusColor, money, toCents, date, search, paginate, revenueSeries, imageUrl } from './data.mjs';
-import { openGameEditor, openPackageEditor, openOrder, openCategoryEditor, openCustomerEditor, openTierEditor } from './editors.mjs?v=admin-image-preview-1';
+import { openGameEditor, openPackageEditor, openOrder, openCategoryEditor, openCustomerEditor, openCustomerHistory, openTierEditor } from './editors.mjs?v=customer-activity-1';
 
 const page = document.body.dataset.page;
 const content = document.querySelector('#page-content');
@@ -23,6 +23,7 @@ export const badge = (text, color) => `<span class="badge ${e(color)}">${e(text)
 export const statusBadge = status => badge(statuses[status] || status, statusColor(status));
 export const symbol = name => `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${{
   wallet: '<path d="M20 8V4H4v16h17V8H4m17 4h-6v4h6"/>',
+  shield: '<path d="m12 3 8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V7z"/><path d="m8.5 12 2.5 2.5 4.5-5"/>',
   bank: '<path d="m3 10 9-6 9 6M5 10v8M9 10v8M15 10v8M19 10v8M3 20h18"/>',
   qr: '<path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 14h2v6h-2zM14 18h2v2h-2z"/>',
   user: '<circle cx="12" cy="8" r="3"/><path d="M5 20a7 7 0 0 1 14 0"/>',
@@ -100,7 +101,9 @@ function collection() {
   const type = page.slice(1);
   const counts = { games: `${state.games.length} game trong kho`, categories: `${state.categories.length} phân loại`, packages: `${state.packages.length} gói nạp`, orders: `${state.orders.length} đơn hàng`, customers: `${state.customers.length} khách hàng`, ctvs: `${state.ctvs.length} cộng tác viên` };
   const tierPanel = type === 'customers' ? `<section class="panel table-panel customer-tiers-panel"><div class="panel-heading"><div><h2>Hạng khách &amp; giảm giá</h2><p>Chỉnh phần trăm giảm trực tiếp tại đây. Giá chỉ áp dụng cho đơn mới.</p></div><span class="period-tag">${state.tiers.length} hạng</span></div><div class="table-scroll"><table><thead><tr><th>Hạng khách</th><th>Giảm giá</th><th>Khách đang dùng</th><th>Trạng thái</th><th></th></tr></thead><tbody>${state.tiers.map(tier => `<tr><td><strong>${e(tier.name || tier.tier)}</strong><span class="secondary mono">${e(tier.tier)}</span></td><td><strong class="discount-value">${Number(tier.discount_percent || 0)}%</strong></td><td>${Number(tier.customer_count || 0).toLocaleString('vi-VN')}</td><td>${badge(tier.active ? 'Đang dùng' : 'Đã tắt', tier.active ? 'green' : 'red')}</td><td><button class="icon-button" data-edit-tier="${e(tier.tier)}" aria-label="Sửa ${e(tier.name || tier.tier)}" title="Chỉnh hạng">${symbol('edit')}</button></td></tr>`).join('') || '<tr><td colspan="5">Chưa có hạng khách.</td></tr>'}</tbody></table></div></section>` : '';
-  content.innerHTML = `<div class="collection-summary"><span><strong>${counts[type]}</strong></span><span>${type === 'orders' ? 'Ưu tiên xử lý theo trạng thái và rủi ro thanh toán' : ['games', 'packages'].includes(type) ? 'Số đơn gồm tất cả trạng thái' : 'Thay đổi được đồng bộ với cửa hàng'}</span></div>${tierPanel}<section class="panel table-panel">${toolbar()}<div id="table-content"></div><div id="table-pagination"></div></section>`;
+  content.innerHTML = `<div class="collection-summary"><span><strong>${counts[type]}</strong></span><span>${type === 'orders' ? 'Ưu tiên xử lý theo trạng thái và rủi ro thanh toán' : ['games', 'packages'].includes(type) ? 'Số đơn gồm tất cả trạng thái' : 'Thay đổi được đồng bộ với cửa hàng'}</span></div><section class="panel table-panel">${toolbar()}<div id="table-content"></div><div id="table-pagination"></div></section>${tierPanel}`;
+  const createButton = content.querySelector('[data-new-game], [data-new-package], [data-new-category]');
+  if (createButton) document.querySelector('#page-create-action').replaceChildren(createButton);
   document.querySelector('#search').value = state.query;
   const status = document.querySelector('#status-filter');
   if (status) status.value = state.status;
@@ -118,20 +121,36 @@ async function securityPage() {
   const setup = document.querySelector('#security-setup');
   const refreshSecurity = async () => {
     const data = await api('/api/admin/security/2fa');
+    passwordForm.elements.code.disabled = !data.enabled;
+    passwordForm.elements.code.required = data.enabled;
+    passwordForm.elements.code.closest('label').hidden = !data.enabled;
     status.innerHTML = data.enabled ? `<strong>2FA đang bật</strong><span>Mỗi lần đăng nhập admin cần thêm mã 6 chữ số.</span><button class="button" data-2fa-disable>Tắt 2FA</button>` : `<strong>2FA đang tắt</strong><span>Nên bật 2FA để bảo vệ khu vực quản trị.</span><button class="button primary" data-2fa-enroll>Thiết lập 2FA</button>`;
   };
-  content.dataset.securityRefresh = 'true';
-  content.refreshSecurity = refreshSecurity;
+  content.insertAdjacentHTML('beforeend', '<section class="panel security-panel"><div class="panel-heading"><h2>Đổi mật khẩu</h2></div><form class="security-setup" method="post" action="/api/admin/security/password"><label>Mật khẩu hiện tại<input name="current_password" type="password" autocomplete="current-password" maxlength="200" required></label><label>Mật khẩu mới<input name="new_password" type="password" autocomplete="new-password" minlength="8" maxlength="72" required></label><label>Nhập lại mật khẩu mới<input name="confirmation" type="password" autocomplete="new-password" required></label><label hidden>Mã 2FA<input name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}"></label><div><button class="button primary">Đổi mật khẩu</button></div></form></section>');
+  const passwordForm = content.querySelector('form');
+  passwordForm.addEventListener('submit', async event => {
+    event.preventDefault();
+    const { current_password, new_password, confirmation, code } = Object.fromEntries(new FormData(passwordForm));
+    if (new_password !== confirmation) return toast('Mật khẩu nhập lại chưa khớp.', true);
+    const button = passwordForm.querySelector('button');
+    button.disabled = true;
+    try {
+      await api('/api/admin/security/password', { current_password, new_password, ...(code ? { code } : {}) }, 'POST');
+      passwordForm.reset();
+      toast('Đã đổi mật khẩu. Các phiên khác đã được đăng xuất.');
+    } catch (error) { toast(error.message, true); }
+    finally { button.disabled = false; }
+  });
   await refreshSecurity();
-  content.addEventListener('click', async event => {
+  status.parentElement.addEventListener('click', async event => {
     const button = event.target.closest('button'); if (!button) return;
     try {
       if (button.hasAttribute('data-2fa-enroll')) {
-        const data = await api('/api/admin/security/2fa/enroll', undefined, 'POST');
-        setup.hidden = false; setup.innerHTML = `<div class="security-setup"><h3>Quét mã hoặc nhập secret</h3><p>Dùng ứng dụng xác thực để quét QR theo đường dẫn bên dưới, sau đó nhập mã 6 số để xác nhận.</p><code>${e(data.secret)}</code><small>${e(data.otpauth_url)}</small><label>Mã xác nhận<input id="twofa-code" inputmode="numeric" maxlength="6" pattern="[0-9]{6}"></label><button class="button primary" data-2fa-enable>Xác nhận bật 2FA</button></div>`;
+        const data = await api('/api/admin/security/2fa/enroll', {}, 'POST');
+        setup.hidden = false; setup.innerHTML = `<div class="security-setup"><h3>Quét mã QR</h3><p>Mở Google Authenticator, chọn dấu + rồi quét mã bên dưới.</p><img class="security-qr" src="${e(data.qr)}" width="240" height="240" alt="Mã QR thiết lập 2FA ZetGaming"><p>Bạn cũng có thể nhập khóa bên dưới và chọn loại dựa trên thời gian.</p><code>${e(data.secret)}</code><label>Mật khẩu hiện tại<input id="twofa-password" type="password" autocomplete="current-password"></label><label>Mã xác nhận<input id="twofa-code" inputmode="numeric" maxlength="6" pattern="[0-9]{6}"></label><button class="button primary" data-2fa-enable>Xác nhận bật 2FA</button></div>`;
       } else if (button.hasAttribute('data-2fa-enable')) {
         const code = document.querySelector('#twofa-code').value; const secret = setup.querySelector('code').textContent;
-        await api('/api/admin/security/2fa/enable', { secret, code }, 'POST'); toast('Đã bật 2FA cho admin.'); setup.hidden = true; await refreshSecurity();
+        await api('/api/admin/security/2fa/enable', { secret, code, current_password: setup.querySelector('#twofa-password').value }, 'POST'); toast('Đã bật 2FA cho admin.'); setup.replaceChildren(); setup.hidden = true; await refreshSecurity();
       } else if (button.hasAttribute('data-2fa-disable')) {
         const code = window.prompt('Nhập mã 2FA hiện tại để tắt:'); if (!code) return;
         await api('/api/admin/security/2fa/disable', { code }, 'POST'); toast('Đã tắt 2FA.'); await refreshSecurity();
@@ -143,9 +162,14 @@ async function securityPage() {
 async function reportsPage() {
   content.innerHTML = `<section class="panel reports-panel"><div class="panel-heading"><div><h2>Báo cáo cửa hàng</h2><p>Chọn khoảng thời gian để xem nhanh hiệu quả vận hành.</p></div><span class="panel-kicker">Chỉ admin</span></div><form class="report-filters" id="report-filters"><div class="report-presets" role="group" aria-label="Khoảng thời gian"><button type="button" class="button subtle" data-report-preset="7">7 ngày</button><button type="button" class="button subtle" data-report-preset="30">30 ngày</button><button type="button" class="button subtle" data-report-preset="90">90 ngày</button></div><label>Từ ngày<input type="date" name="from"></label><label>Đến ngày<input type="date" name="to"></label><button class="button primary" type="submit">Xem báo cáo</button><button class="button" type="button" data-report-csv>Tải CSV</button></form><div id="report-output" class="report-output">Đang tải báo cáo…</div></section>`;
   const form=document.querySelector('#report-filters'), output=document.querySelector('#report-output');
-  const loadReport=async(format='json')=>{ const params=new URLSearchParams(Object.fromEntries(new FormData(form))); if(format==='csv')params.set('format','csv'); if(format==='csv'){ window.location.assign('/api/admin/reports?'+params); return; } const report=await api('/api/admin/reports?'+params); const s=report.summary; output.innerHTML=`<div class="report-metrics"><div><strong>${Number(s.orders).toLocaleString('vi-VN')}</strong><span>Tổng đơn</span></div><div><strong>${money(s.gross)}</strong><span>Tiền đã ghi nhận</span></div><div><strong>${money(s.completed)}</strong><span>Doanh thu hoàn thành</span></div><div><strong>${Number(s.refunded).toLocaleString('vi-VN')}</strong><span>Đơn hoàn tiền</span></div></div><h3>Theo game</h3><div class="table-scroll"><table><thead><tr><th>Game</th><th>Số đơn</th><th>Doanh thu</th></tr></thead><tbody>${report.byGame.map(row=>`<tr><td>${e(row.game)}</td><td>${Number(row.orders).toLocaleString('vi-VN')}</td><td>${money(row.revenue)}</td></tr>`).join('')||'<tr><td colspan="3">Chưa có dữ liệu</td></tr>'}</tbody></table></div>`; };
+  const loadReport=async(format='json')=>{ const params=new URLSearchParams([...new FormData(form)].filter(([, value]) => value !== '')); if(format==='csv')params.set('format','csv'); if(format==='csv'){ window.location.assign('/api/admin/reports?'+params); return; } const report=await api('/api/admin/reports?'+params); const s=report.summary;
+    form.elements.from.value = report.from;
+    form.elements.to.value = report.to;
+    const total = report.byGame.reduce((sum, row) => sum + Number(row.orders), 0);
+    const chart = total ? `<section class="report-game-chart" aria-label="Tỷ trọng đơn theo game"><h3>Tỷ trọng đơn theo game</h3>${report.byGame.slice().sort((a, b) => b.orders - a.orders).slice(0, 6).map(row => `<div><span>${e(row.game)}</span><meter min="0" max="${total}" value="${Number(row.orders)}" aria-label="${e(row.game)}"></meter><strong>${Math.round(Number(row.orders) / total * 100)}%</strong></div>`).join('')}</section>` : '';
+     output.innerHTML=`<div class="report-metrics"><div><strong>${Number(s.orders).toLocaleString('vi-VN')}</strong><span>Tổng đơn</span></div><div><strong>${money(s.gross)}</strong><span>Tiền đã ghi nhận</span></div><div><strong>${money(s.completed)}</strong><span>Doanh thu hoàn thành</span></div><div><strong>${Number(s.refunded).toLocaleString('vi-VN')}</strong><span>Đơn hoàn tiền</span></div></div>${chart}<h3>Theo game</h3><div class="table-scroll"><table><thead><tr><th>Game</th><th>Số đơn</th><th>Doanh thu</th></tr></thead><tbody>${report.byGame.map(row=>`<tr><td>${e(row.game)}</td><td>${Number(row.orders).toLocaleString('vi-VN')}</td><td>${money(row.revenue)}</td></tr>`).join('')||'<tr><td colspan="3">Chưa có dữ liệu</td></tr>'}</tbody></table></div>`; };
   form.addEventListener('submit',event=>{event.preventDefault();loadReport().catch(error=>toast(error.message,true));});
-  content.addEventListener('click',event=>{const preset=event.target.closest('[data-report-preset]'); if(preset){const days=Number(preset.dataset.reportPreset); const end=new Date(); const start=new Date(end); start.setDate(end.getDate()-days+1); const iso=value=>value.toISOString().slice(0,10); form.elements.from.value=iso(start); form.elements.to.value=iso(end); loadReport().catch(error=>toast(error.message,true)); return;} if(event.target.closest('[data-report-csv]'))loadReport('csv').catch(error=>toast(error.message,true));});
+  form.addEventListener('click',event=>{const preset=event.target.closest('[data-report-preset]'); if(preset){const days=Number(preset.dataset.reportPreset); const end=new Date(); const start=new Date(end); start.setDate(end.getDate()-days+1); const iso=value=>value.toISOString().slice(0,10); form.elements.from.value=iso(start); form.elements.to.value=iso(end); loadReport().catch(error=>toast(error.message,true)); return;} if(event.target.closest('[data-report-csv]'))loadReport('csv').catch(error=>toast(error.message,true));});
   await loadReport();
 }
 
@@ -154,7 +178,7 @@ async function paymentPage() {
   const data=await api('/api/admin/payment-settings'); const target=document.querySelector('#payment-settings');
   target.innerHTML=`<div class="payment-settings-grid"><div><span class="payment-card-icon qr">${symbol('qr')}</span><strong>VietQR</strong><span>${data.bank.configured?'Đã cấu hình':'Chưa cấu hình'}</span></div><div><span class="payment-card-icon bank">${symbol('bank')}</span><strong>Ngân hàng</strong><span>${e(data.bank.label||'—')}</span></div><div><span class="payment-card-icon account">${symbol('wallet')}</span><strong>Tài khoản</strong><span>${e(data.bank.account_masked||'—')}</span></div><div><span class="payment-card-icon owner">${symbol('user')}</span><strong>Chủ tài khoản</strong><span>${e(data.bank.name||'—')}</span></div><div><span class="payment-card-icon sync">${symbol('sync')}</span><strong>Đối soát</strong><span>${e(data.reconciliation.mode)}</span></div></div><div class="detail-note">${data.reconciliation.webhook_configured?'Webhook đã có URL cấu hình, cần kiểm thử riêng trước khi bật tự động.':'Chưa có webhook ngân hàng. Admin vẫn xác nhận thủ công sau khi kiểm tra tiền thực tế vào tài khoản.'}</div>`;
   const topups=await api('/api/admin/wallet-topups'); const topupTarget=document.querySelector('#wallet-topups');
-  topupTarget.innerHTML=topups.length?`<div class="table-scroll"><table><thead><tr><th>Mã giao dịch</th><th>Khách hàng</th><th>Số tiền</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>${topups.map(item=>`<tr><td><strong class="mono">${e(item.code)}</strong><span class="secondary">${date(item.created_at)}</span></td><td>${e(item.email)}</td><td class="amount">${money(item.amount_cents)}</td><td>${badge(item.status==='completed'?'Đã cộng ví':item.status==='cancelled'?'Đã hủy':'Chờ thanh toán',item.status==='completed'?'green':item.status==='awaiting_payment'?'orange':'')}</td><td>${item.status==='awaiting_payment'?`<button class="button subtle" data-wallet-complete="${e(item.code)}">Đã nhận tiền</button> <button class="button subtle" data-wallet-cancel="${e(item.code)}">Hủy</button>`:'—'}</td></tr>`).join('')}</tbody></table></div>`:empty('Chưa có giao dịch nạp số dư','Giao dịch mới sẽ xuất hiện sau khi khách tạo yêu cầu.');
+  topupTarget.innerHTML=topups.length?`<div class="table-scroll"><table><thead><tr><th>Mã giao dịch</th><th>Khách hàng</th><th>Số tiền</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>${topups.map(item=>`<tr data-topup-code="${e(item.code)}"><td><strong class="mono">${e(item.code)}</strong><span class="secondary">${date(item.created_at)}</span></td><td>${e(item.email)}</td><td class="amount">${money(item.amount_cents)}</td><td>${badge(item.status==='completed'?'Đã cộng ví':item.status==='cancelled'?'Đã hủy':'Chờ thanh toán',item.status==='completed'?'green':item.status==='awaiting_payment'?'orange':'')}</td><td>${item.status==='awaiting_payment'?`<button class="button subtle" data-wallet-complete="${e(item.code)}">Đã nhận tiền</button> <button class="button subtle" data-wallet-cancel="${e(item.code)}">Hủy</button>`:'—'}</td></tr>`).join('')}</tbody></table></div>`:empty('Chưa có giao dịch nạp số dư','Giao dịch mới sẽ xuất hiện sau khi khách tạo yêu cầu.');
   topupTarget.addEventListener('click',async event=>{const complete=event.target.closest('[data-wallet-complete]');const cancel=event.target.closest('[data-wallet-cancel]');if(!complete&&!cancel)return;const code=(complete||cancel).dataset[complete?'walletComplete':'walletCancel'];try{if(complete){const reference=window.prompt('Nhập mã tham chiếu ngân hàng (nếu có):')||'';await api('/api/admin/wallet-topups/'+encodeURIComponent(code)+'/complete',{transaction_ref:reference},'POST');toast('Đã cộng số dư cho khách.');}else{if(!window.confirm('Hủy giao dịch nạp số dư này?'))return;await api('/api/admin/wallet-topups/'+encodeURIComponent(code)+'/cancel',{},'POST');toast('Đã hủy giao dịch.');}await paymentPage();}catch(error){toast(error.message,true);}});
 }
 
@@ -180,12 +204,29 @@ async function couponsPage() {
 async function contentPage() {
   content.innerHTML = `<section class="panel"><div class="panel-heading"><div><h2>Banner trang chủ</h2><p>Chỉnh nội dung hiển thị ở đầu trang cửa hàng. Nội dung được lưu an toàn trong database.</p></div></div><form id="content-form" class="content-form"><label>Eyebrow<input name="eyebrow" maxlength="80"></label><label>Tiêu đề<input name="title" maxlength="120" required></label><label>Mô tả<textarea name="description" maxlength="240" rows="3"></textarea></label><label>Ảnh nền<input name="image" maxlength="500" placeholder="/uploads/banner.webp hoặc URL ảnh"></label><label class="check-row"><input name="active" type="checkbox"> Hiển thị banner</label><div class="form-actions"><button class="button primary" type="submit">Lưu banner</button><a class="button" href="${document.querySelector('meta[name="storefront-origin"]')?.content || '/'}" target="_blank" rel="noopener">Xem cửa hàng ↗</a></div></form></section>`;
   const form = document.querySelector('#content-form');
+  const preview = document.createElement('img');
+  preview.className = 'content-preview';
+  preview.alt = 'Xem trước banner trang chủ';
+  preview.referrerPolicy = 'no-referrer';
+  preview.hidden = true;
+  form.prepend(preview);
+  const refreshPreview = () => {
+    const src = imageUrl(form.elements.image.value.trim());
+    preview.hidden = true;
+    if (src) preview.src = src;
+    else preview.removeAttribute('src');
+  };
+  preview.addEventListener('load', () => { preview.hidden = false; });
+  preview.addEventListener('error', () => { preview.hidden = true; });
+  form.elements.image.addEventListener('change', refreshPreview);
   const imageFile = document.createElement('input'); imageFile.type = 'file'; imageFile.accept = 'image/png,image/jpeg,image/webp'; imageFile.setAttribute('aria-label', 'Chọn ảnh banner từ máy'); form.elements.image.insertAdjacentElement('afterend', imageFile);
   try {
     const data = await api('/api/admin/content');
+    form.elements.image.value = data.hero?.image || '';
+    refreshPreview();
     for (const [key, value] of Object.entries(data.hero || {})) { const field = form.elements[key]; if (!field) continue; if (field.type === 'checkbox') field.checked = Boolean(value); else field.value = value ?? ''; }
   } catch (error) { toast(error.message, true); }
-  form.addEventListener('submit', async event => { event.preventDefault(); const button = form.querySelector('[type="submit"]'); button.disabled = true; try { if (imageFile.files[0]) { if (!['image/png', 'image/jpeg', 'image/webp'].includes(imageFile.files[0].type) || imageFile.files[0].size > 5 * 1024 * 1024) throw new Error('Chọn ảnh PNG, JPG hoặc WebP không quá 5 MB.'); const uploaded = await api('/api/admin/uploads', imageFile.files[0], 'POST'); form.elements.image.value = uploaded.url; imageFile.value = ''; } const value = Object.fromEntries(new FormData(form)); delete value.active; delete value.undefined; value.active = form.elements.active.checked; await api('/api/admin/content', { hero: value }); toast('Đã lưu banner trang chủ.'); } catch (error) { toast(error.message, true); } finally { button.disabled = false; } });
+  form.addEventListener('submit', async event => { event.preventDefault(); const button = form.querySelector('[type="submit"]'); button.disabled = true; try { if (imageFile.files[0]) { if (!['image/png', 'image/jpeg', 'image/webp'].includes(imageFile.files[0].type) || imageFile.files[0].size > 5 * 1024 * 1024) throw new Error('Chọn ảnh PNG, JPG hoặc WebP không quá 5 MB.'); const uploaded = await api('/api/admin/uploads', imageFile.files[0], 'POST'); form.elements.image.value = uploaded.url; imageFile.value = ''; refreshPreview(); } const value = Object.fromEntries(new FormData(form)); delete value.active; delete value.undefined; value.active = form.elements.active.checked; await api('/api/admin/content', { hero: value }); toast('Đã lưu banner trang chủ.'); } catch (error) { toast(error.message, true); } finally { button.disabled = false; } });
 }
 
 async function tiersPage() {
@@ -206,7 +247,7 @@ function updateTable() {
   const headers = { orders: orderHeaders, customers: ['Khách hàng', 'Vai trò', 'Hạng', 'Số đơn', 'Đã nạp', 'Phiên', 'Trạng thái', ''], games: ['Game / thumbnail', 'Ảnh nền', 'Kiểu nạp', 'Phân loại', 'Gói nạp', 'Số đơn', 'Trạng thái', ''], categories: ['Tên phân loại', 'Số game', ''], packages: ['Gói nạp / ảnh', 'Game', 'Giá khách', 'Giá CTV', 'Số đơn', 'Trạng thái', ''], ctvs: ['Cộng tác viên', 'Vai trò', 'Số dư ví', ''] };
   const rows = result.items.map(item => {
     if (type === 'orders') return orderRow(item);
-    if (type === 'customers') return `<tr><td><div class="row-resource customer-resource"><span class="avatar">${e(item.email.slice(0, 1).toUpperCase())}</span><div><strong>${e(item.email)}</strong><span class="secondary">ID ${e(item.id)}</span></div></div></td><td>${badge(item.role === 'admin' ? 'Admin' : item.role === 'ctv' ? 'CTV' : 'Khách hàng', item.role === 'admin' ? 'orange' : '')}</td><td><span class="tier-chip">${e(item.tier || 'standard')}</span></td><td class="amount"><strong>${Number(item.order_count || 0).toLocaleString('vi-VN')}</strong><span class="secondary">đơn</span></td><td class="amount"><strong>${money(item.topup_cents)}</strong><span class="secondary">đã nạp</span></td><td class="amount"><strong>${Number(item.session_count || 0).toLocaleString('vi-VN')}</strong><span class="secondary">phiên</span></td><td>${badge(item.active ? 'Đang hoạt động' : 'Đã khóa', item.active ? 'green' : '')}</td><td>${editButton('customer', item.id, item.email)}</td></tr>`;
+    if (type === 'customers') return `<tr><td><div class="row-resource customer-resource"><span class="avatar">${e(item.email.slice(0, 1).toUpperCase())}</span><div><strong>${e(item.email)}</strong><span class="secondary">ID ${e(item.id)}</span></div></div></td><td>${badge(item.role === 'admin' ? 'Admin' : item.role === 'ctv' ? 'CTV' : 'Khách hàng', item.role === 'admin' ? 'orange' : '')}</td><td><span class="tier-chip">${e(item.tier || 'standard')}</span></td><td class="amount"><strong>${Number(item.order_count || 0).toLocaleString('vi-VN')}</strong><span class="secondary">đơn</span></td><td class="amount"><strong>${money(item.topup_cents)}</strong><span class="secondary">đã nạp</span></td><td class="amount"><strong>${Number(item.session_count || 0).toLocaleString('vi-VN')}</strong><span class="secondary">phiên</span></td><td>${badge(item.active ? 'Đang hoạt động' : 'Đã khóa', item.active ? 'green' : '')}</td><td><div class="customer-row-actions"><button type="button" class="button subtle" data-customer-history="${e(item.id)}">Lịch sử</button>${editButton('customer', item.id, item.email)}</div></td></tr>`;
     if (type === 'categories') return `<tr><td><strong>${e(item.name)}</strong>${item.system ? '<span class="secondary">Nhóm hệ thống</span>' : ''}</td><td>${Number(item.game_count || 0).toLocaleString('vi-VN')} game</td><td class="row-actions">${item.system ? '<span class="category-system-note">Tự động</span>' : `${editButton('category', item.id, item.name)}${Number(item.game_count || 0) === 0 ? `<button class="icon-button danger" data-delete-category="${e(item.id)}" aria-label="Xóa ${e(item.name)}" title="Xóa phân loại">${symbol('trash')}</button>` : `<button class="icon-button" disabled title="Chuyển game ra khỏi loại này trước">${symbol('trash')}</button>`}`}</td></tr>`;
     if (type === 'games') return `<tr><td>${resource({ ...item, image: item.thumbnail || item.image }, '/' + item.slug, true)}</td><td class="banner-cell">${mediaCell(item.image, item.name, 'Ảnh nền')}</td><td>${item.mode === 'uid' ? 'Nạp UID' : 'Nạp login'}</td><td>${e(item.category_name || 'Chưa phân loại')}</td><td>${item.packages.length} gói</td><td class="amount">${Number(item.order_count || 0).toLocaleString('vi-VN')}</td><td>${badge(item.active ? 'Đang hiển thị' : 'Đang ẩn', item.active ? 'green' : '')}</td><td>${editButton('game', item.id, item.name)}</td></tr>`;
     if (type === 'packages') return `<tr><td><div class="row-resource package-resource">${image(item.image, item.name, true)}<div><strong>${e(item.name)}</strong><span class="secondary">${e(item.badge || item.nominal || 'Ảnh gói nạp')}</span></div></div></td><td>${e(item.game_name)}</td><td class="amount">${money(item.customer_cents)}</td><td>${money(item.ctv_cents)}</td><td class="amount">${Number(item.order_count || 0).toLocaleString('vi-VN')}</td><td>${badge(item.active ? 'Đang bán' : 'Đang ẩn', item.active ? 'green' : '')}</td><td>${editButton('package', item.id, item.name)}</td></tr>`;
@@ -247,6 +288,7 @@ if (content) {
     const group = button.closest('.sidebar-nav-group');
     const open = group.classList.toggle('is-open');
     button.setAttribute('aria-expanded', String(open));
+    document.getElementById(button.getAttribute('aria-controls')).inert = !open;
   }));
   content.addEventListener('error', event => {
     if (!event.target.matches('img.resource-image')) return;
@@ -260,13 +302,14 @@ if (content) {
   state.status = query.get('status') || '';
   document.querySelector('#refresh').addEventListener('click', load);
     const context = { api, toast, refresh: load, symbol, statusBadge, toCents, escapeHtml: e, money, date, getCategories: () => state.categories, getGames: () => state.games, getTiers: () => state.tiers, getSelectedGame: () => state.game };
-  content.addEventListener('click', event => {
+  document.querySelector('#main').addEventListener('click', event => {
     const button = event.target.closest('button'); if (!button) return;
     if (button.hasAttribute('data-retry')) return load();
     if (button.dataset.statusShortcut) { state.status = state.status === button.dataset.statusShortcut ? '' : button.dataset.statusShortcut; state.page = 1; collection(); return; }
     if (button.dataset.pageNumber) { state.page = Number(button.dataset.pageNumber); updateTable(); }
     if (button.dataset.edit === 'game') openGameEditor(state.games.find(g => g.id === button.dataset.id), context);
     if (button.dataset.edit === 'customer') openCustomerEditor(state.customers.find(g => g.id === button.dataset.id), context);
+    if (button.dataset.customerHistory) openCustomerHistory(state.customers.find(customer => customer.id === button.dataset.customerHistory), context);
     if (button.hasAttribute('data-new-game')) openGameEditor(null, context);
     if (button.dataset.edit === 'package') openPackageEditor(state.packages.find(p => p.id === button.dataset.id), context);
     if (button.hasAttribute('data-new-package')) openPackageEditor(null, context);
@@ -284,5 +327,16 @@ if (content) {
   menu.addEventListener('click', () => { const open = document.querySelector('.sidebar').classList.toggle('open'); menu.setAttribute('aria-expanded', String(open)); menu.setAttribute('aria-label', open ? 'Đóng menu' : 'Mở menu'); });
   document.querySelector('main').addEventListener('click', () => { document.querySelector('.sidebar').classList.remove('open'); menu.setAttribute('aria-expanded', 'false'); });
   document.addEventListener('keydown', event => { if (event.key === 'Escape') { document.querySelector('.sidebar').classList.remove('open'); menu.setAttribute('aria-expanded', 'false'); } });
-  load();
+  load().then(() => {
+    if (page === '/orders' && query.get('order')) openOrder(query.get('order'), context);
+    if (page === '/payment' && query.get('topup')) {
+      const row = Array.from(content.querySelectorAll('[data-topup-code]')).find(item => item.dataset.topupCode === query.get('topup'));
+      if (row) {
+        row.classList.add('referenced-topup');
+        row.tabIndex = -1;
+        row.focus();
+        row.scrollIntoView({ block: 'center' });
+      } else if (!content.querySelector('[data-retry]')) toast('Không tìm thấy giao dịch ví.', true);
+    }
+  });
 }

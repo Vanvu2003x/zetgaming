@@ -1,9 +1,11 @@
 export const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
-export const statuses = { awaiting_payment: 'Chờ thanh toán', pending_admin: 'Chờ duyệt', ready: 'Chờ CTV nhận', claimed: 'Đang xử lý', review: 'Chờ quyết toán', completed: 'Hoàn thành', cancelled: 'Đã hủy' };
-export const statusColor = status => ({ awaiting_payment: 'orange', pending_admin: 'orange', ready: 'blue', claimed: 'blue', review: 'purple', completed: 'green', cancelled: 'red' }[status] || '');
+export const statuses = { awaiting_payment: 'Chờ thanh toán', pending_admin: 'Chờ xử lý', processing: 'Đang nạp', needs_review: 'Cần kiểm tra', failed: 'Nạp lỗi', refund_pending: 'Chờ hoàn tiền', refunded: 'Đã hoàn tiền', ready: 'Chờ CTV nhận', claimed: 'Đang xử lý', review: 'Chờ quyết toán', completed: 'Hoàn thành', cancelled: 'Đã hủy' };
+export const statusColor = status => ({ awaiting_payment: 'orange', pending_admin: 'orange', processing: 'blue', needs_review: 'purple', failed: 'red', refund_pending: 'orange', refunded: 'green', ready: 'blue', claimed: 'blue', review: 'purple', completed: 'green', cancelled: 'red' }[status] || '');
 export function imageUrl(value) {
+  // This legacy fixture path predates the current uploaded image catalog.
+  if (value === '/game-images/mobile-legends.svg') return '';
   if (/^https:\/\//.test(value || '')) return value;
-  if (/^\/(?!\/)/.test(value || '')) return new URL(value, document.querySelector('meta[name="storefront-origin"]')?.content || 'http://localhost:4173').href;
+  if (/^\/(?!\/)/.test(value || '')) return new URL(value, window.location.origin || document.querySelector('meta[name="storefront-origin"]')?.content || 'http://localhost:4173').href;
   return '';
 }
 export const money = cents => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 2 }).format(Number(cents || 0) / 100);

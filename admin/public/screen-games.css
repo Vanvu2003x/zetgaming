@@ -1,0 +1,243 @@
+body[data-page="/games"] .page-title {
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--ux-line);
+}
+
+body[data-page="/games"] .page-title h1 {
+  color: var(--ux-ink);
+  font-size: clamp(1.75rem, 2.5vw, 2.125rem);
+  line-height: 1.15;
+}
+
+body[data-page="/games"] .page-title p {
+  margin-top: 5px;
+  color: var(--ux-ink-soft);
+  line-height: 1.5;
+}
+
+body[data-page="/games"] .page-title .eyebrow {
+  color: var(--ux-muted);
+}
+
+body[data-page="/games"] .collection-summary {
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-bottom: 12px;
+  color: var(--ux-muted);
+}
+
+body[data-page="/games"] .collection-summary strong {
+  color: var(--ux-ink-soft);
+}
+
+body[data-page="/games"] .table-panel {
+  min-width: 0;
+  overflow: visible;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+body[data-page="/games"] .toolbar {
+  gap: 10px;
+  padding: 0 0 14px;
+  border: 0;
+}
+
+body[data-page="/games"] .toolbar .search-field {
+  flex: 1 1 240px;
+  max-width: 440px;
+}
+
+body[data-page="/games"] .toolbar .search-field svg {
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ux-ink-soft);
+}
+
+body[data-page="/games"] .toolbar :is(input[type="search"], select) {
+  height: 40px;
+  border: 1px solid var(--ux-line-strong);
+  border-radius: var(--ux-radius-sm);
+  background: var(--ux-surface-2);
+  color: var(--ux-ink);
+  color-scheme: dark;
+}
+
+body[data-page="/games"] .toolbar input::placeholder,
+body[data-page="/games"] .toolbar-count {
+  color: var(--ux-muted);
+}
+
+body[data-page="/games"] [data-new-game].button.primary {
+  min-height: 40px;
+  border-color: var(--ux-orange);
+  border-radius: var(--ux-radius-sm);
+  background: var(--ux-orange);
+  color: var(--ux-bg);
+  box-shadow: none;
+}
+
+body[data-page="/games"] [data-new-game].button.primary:hover {
+  border-color: var(--ux-orange-strong);
+  background: var(--ux-orange-strong);
+}
+
+body[data-page="/games"] #table-content {
+  overflow: hidden;
+  border: 1px solid var(--ux-line);
+  border-radius: var(--ux-radius-md);
+  background: var(--ux-surface);
+}
+
+body[data-page="/games"] .table-scroll {
+  scrollbar-color: var(--ux-muted) var(--ux-surface);
+}
+
+body[data-page="/games"] .table-scroll table {
+  min-width: 720px;
+  white-space: normal;
+}
+
+body[data-page="/games"] .table-scroll :is(th, td) {
+  padding: 9px 12px;
+  border-bottom-color: var(--ux-line);
+  vertical-align: middle;
+}
+
+body[data-page="/games"] .table-scroll th {
+  background: var(--ux-surface-2);
+  color: var(--ux-ink-soft);
+  font-size: 12px;
+  letter-spacing: normal;
+}
+
+body[data-page="/games"] .table-scroll td {
+  height: 56px;
+  color: var(--ux-ink-soft);
+  line-height: 1.35;
+}
+
+body[data-page="/games"] .table-scroll tbody tr:hover {
+  background: var(--ux-surface-2);
+}
+
+body[data-page="/games"] .row-resource {
+  gap: 10px;
+  min-width: 154px;
+}
+
+body[data-page="/games"] .row-resource > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+body[data-page="/games"] .row-resource strong {
+  color: var(--ux-ink);
+}
+
+body[data-page="/games"] .row-resource .secondary,
+body[data-page="/games"] .media-cell > span {
+  color: var(--ux-muted);
+}
+
+body[data-page="/games"] .resource-image {
+  background: var(--ux-surface-3);
+}
+
+body[data-page="/games"] .row-resource .resource-image {
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+}
+
+body[data-page="/games"] .resource-fallback {
+  color: var(--ux-ink-soft);
+}
+
+body[data-page="/games"] .media-cell .resource-fallback {
+  display: grid;
+}
+
+body[data-page="/games"] .table-scroll .amount {
+  font-variant-numeric: tabular-nums;
+}
+
+body[data-page="/games"] .table-scroll .badge {
+  border-radius: 999px;
+  background: var(--ux-surface-3);
+  color: var(--ux-ink-soft);
+  white-space: nowrap;
+}
+
+body[data-page="/games"] .table-scroll .badge.green {
+  background: color-mix(in srgb, var(--ux-green) 17%, var(--ux-surface));
+  color: var(--ux-green);
+}
+
+body[data-page="/games"] .table-scroll [data-edit="game"] {
+  width: 34px;
+  height: 34px;
+  border-color: transparent;
+  background: transparent;
+  color: var(--ux-ink-soft);
+}
+
+body[data-page="/games"] .table-scroll [data-edit="game"]:hover {
+  border-color: var(--ux-line-strong);
+  background: var(--ux-surface-3);
+  color: var(--ux-ink);
+}
+
+body[data-page="/games"] .table-bottom {
+  flex-wrap: wrap;
+  padding: 14px 0 0;
+  border: 0;
+  color: var(--ux-ink-soft);
+}
+
+body[data-page="/games"] .pagination {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+body[data-page="/games"] .pagination button {
+  width: auto;
+  min-width: 34px;
+  min-height: 34px;
+  padding-inline: 8px;
+  border-color: var(--ux-line);
+  border-radius: var(--ux-radius-sm);
+  background: var(--ux-surface-2);
+  color: var(--ux-ink-soft);
+}
+
+body[data-page="/games"] .pagination button:hover:not(:disabled) {
+  border-color: var(--ux-orange);
+}
+
+body[data-page="/games"] .pagination button[aria-current="page"] {
+  border-color: var(--ux-orange);
+  background: var(--ux-orange);
+  color: var(--ux-bg);
+}
+
+@media (max-width: 580px) {
+  body[data-page="/games"] .toolbar .search-field {
+    flex-basis: 100%;
+    max-width: none;
+  }
+
+  body[data-page="/games"] .toolbar select {
+    flex: 1 1 130px;
+    max-width: 100%;
+  }
+
+  body[data-page="/games"] .toolbar-count {
+    margin-inline-start: auto;
+  }
+}

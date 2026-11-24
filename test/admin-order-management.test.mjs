@@ -1,0 +1,80 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { randomUUID } from 'node:crypto';
+import { readFile,readdir } from 'node:fs/promises';
+import pg from 'pg';
+import { env } from '../backend/config/env.mjs';
+import { pool } from '../backend/db/pool.mjs';
+import { createApp } from '../backend/app.mjs';
+import { hash } from '../backend/utils/ids.mjs';
+
+test('internal notes, issue resolution, cancellation and full refunds enforce state, privacy and exactly-once money changes', {timeout:30000}, async()=>{
+  const schema='management_'+randomUUID().replaceAll('-','');
+  const management=new pg.Pool({connectionString:env.databaseUrl});await management.query(`CREATE SCHEMA ${schema}`);pool.options.options='-c search_path='+schema;
+  Object.assign(env.bank,{bin:'970422',label:'MB Bank',account:'0966335561',name:'NGUYEN THANH DUNG'});
+  let server;
+  try {
+    for(const f of (await readdir(new URL('../backend/db/migrations/',import.meta.url))).filter(f=>f.endsWith('.sql')).sort())await pool.query(await readFile(new URL('../backend/db/migrations/'+f,import.meta.url),'utf8'));
+    await pool.query("INSERT INTO users(id,email,password_hash,role,wallet_cents) VALUES('a','admin@fixture.invalid','unused','admin',0),('b','other@fixture.invalid','unused','admin',0),('u','user@fixture.invalid','unused','customer',10000000),('c','ctv@fixture.invalid','unused','ctv',0)");
+    for(const u of ['a','b','u','c'])await pool.query("INSERT INTO sessions(token_hash,user_id,expires_at) VALUES($1,$2,now()+interval '1 hour')",[hash(u+'-token'),u]);
+    await pool.query("INSERT INTO games(id,slug,name,mode,image) VALUES('g','fixture','Fixture','uid','/fixture.png')");await pool.query("INSERT INTO packages(id,game_id,name,nominal) VALUES('p','g','Fixture package','60')");await pool.query("INSERT INTO prices(package_id,tier,customer_cents,ctv_cents) VALUES('p','standard',2000000,1800000)");
+    server=await new Promise(resolve=>{const s=createApp().listen(0,'127.0.0.1',()=>resolve(s));});const base='http://127.0.0.1:'+server.address().port;
+    async function browser(u=''){
+      const seed=await fetch(base+'/api/csrf',{headers:u?{cookie:'session='+u+'-token'}:{}});const {csrf_token}=await seed.json();const cookie=seed.headers.getSetCookie().map(c=>c.split(';')[0]).concat(u?'session='+u+'-token':[]).join('; ');
+      return (path,body,headers={})=>fetch(base+path,{method:body===undefined?'GET':'POST',headers:{cookie,'content-type':'application/json','x-csrf-token':csrf_token,...headers},...(body===undefined?{}:{body:JSON.stringify(body)})});
+    }
+    const a=await browser('a'),b=await browser('b'),u=await browser('u'),c=await browser('c'),guest=await browser();
+    async function create(who,method){const r=await who('/api/orders',{package_id:'p',target:{uid:'secret-uid'},payment_method:method,idempotency_key:randomUUID()});assert.equal(r.status,201);return (await r.json()).code;}
+    const activePath='/api/admin/orders/'+await create(guest,'direct');
+    assert.equal((await a(activePath+'/confirm-payment',{})).status,200);
+    assert.equal((await a(activePath+'/start',{})).status,200);
+    assert.equal((await a(activePath)).status,200);
+    assert.equal((await b(activePath+'/cancel',{reason:'Wrong operator',confirmed:true})).status,409);
+    const cancelled=await a(activePath+'/cancel',{reason:'Confirmed not delivered',confirmed:true});
+    assert.equal(cancelled.status,200);
+    assert.equal((await cancelled.json()).status,'cancelled');
+    const code=await create(guest,'direct'),path='/api/admin/orders/'+code;
+    assert.equal((await guest(path+'/notes',{body:'private'})).status,401);assert.equal((await u(path+'/notes',{body:'private'})).status,403);assert.equal((await c(path+'/cancel',{reason:'not allowed',confirmed:true})).status,403);
+    assert.equal((await a(path+'/notes',{body:'private'}, {'x-csrf-token':'invalid'})).status,403);
+    assert.equal((await a(path+'/notes',{body:''})).status,400);
+    assert.equal((await a(path+'/notes',{body:'<script>INTERNAL-NOTE</script>'})).status,201);
+    assert.equal((await a(path+'/cancel',{reason:'missing confirmation'})).status,400);
+    assert.equal((await a(path+'/confirm-payment',{})).status,200);
+    assert.equal((await a(path+'/start',{})).status,200);
+    assert.equal((await b(path+'/report-issue',{reason:'wrong operator',outcome:'unknown'})).status,409);
+    assert.equal((await a(path+'/report-issue',{reason:'PROVIDER-TIMEOUT-PRIVATE',outcome:'unknown'})).status,200);
+    for(const action of ['cancel','refund','retry'])assert.equal((await a(path+'/'+action,{reason:'must reconcile',confirmed:true})).status,409);
+    assert.equal((await a(path+'/complete',{confirmed:true})).status,409);
+    assert.equal((await b(path+'/resolve-issue',{reason:'wrong operator',outcome:'not_delivered',confirmed:true})).status,409);
+    assert.equal((await a(path+'/resolve-issue',{reason:'Đã đối soát chưa nạp',outcome:'not_delivered',confirmed:true})).status,200);
+    assert.equal((await a(path+'/retry',{reason:'Đã cấp coupon',confirmed:true})).status,409);
+    assert.equal((await a(path+'/cancel',{reason:'Khách yêu cầu dừng',confirmed:true})).status,200);
+    assert.equal((await a(path+'/refund',{reason:'Không được hoàn hai lần',confirmed:true})).status,409);
+    const publicData=await (await guest('/api/storefront?path=/lich-su/'+code)).json();
+    assert.equal(publicData.order.status,'cancelled');
+    assert.ok(publicData.order.coupon_code);
+    assert.equal(publicData.order.payment,null);
+    assert.doesNotMatch(JSON.stringify(publicData),/INTERNAL-NOTE|PROVIDER-TIMEOUT|secret-uid/);
+    const walletCode=await create(u,'wallet'),wp='/api/admin/orders/'+walletCode;
+    assert.equal((await a(wp+'/cancel',{reason:'Không thể cung cấp',confirmed:true})).status,200);
+    assert.equal((await (await a(wp)).json()).status,'refunded');
+    assert.equal((await a(wp+'/refund',{reason:'Không được hoàn hai lần',confirmed:true})).status,409);
+    assert.equal(Number((await pool.query("SELECT wallet_cents FROM users WHERE id='u'")).rows[0].wallet_cents),10000000);
+    assert.equal(Number((await pool.query("SELECT count(*) FROM ledger WHERE kind='refund'")).rows[0].count),1);
+    const late=await create(guest,'direct'),lp='/api/admin/orders/'+late;
+    assert.equal((await a(lp+'/cancel',{reason:'Khách chưa trả tiền',confirmed:true})).status,200);
+    assert.equal((await a(lp+'/refund',{reason:'Không có tiền để hoàn',confirmed:true})).status,409);
+    assert.equal((await a(lp+'/record-late-payment',{reason:'Đối soát chuyển tiền sau hủy',reference:'MB-LATE-123',confirmed:true})).status,200);
+    assert.equal((await a(lp+'/refund',{reason:'Đã cấp coupon',confirmed:true})).status,409);
+    const lateOrder=await (await guest('/api/storefront?path=/lich-su/'+late)).json();
+    assert.equal(lateOrder.order.status,'cancelled');
+    assert.ok(lateOrder.order.coupon_code);
+    const delivered=await create(u,'wallet'),dp='/api/admin/orders/'+delivered;
+    await a(dp+'/start',{});await a(dp+'/report-issue',{reason:'Đang xác minh',outcome:'unknown'});
+    assert.equal((await a(dp+'/resolve-issue',{reason:'Đã đối soát giao thành công',outcome:'delivered',confirmed:true})).status,200);
+    assert.equal((await a(dp+'/cancel',{reason:'Không được hủy hàng đã giao',confirmed:true})).status,409);
+    assert.equal((await a(dp+'/refund',{reason:'Không được hoàn lặp',confirmed:true})).status,409);
+    assert.equal((await (await u('/api/storefront?path=/tai-khoan')).json()).summary.pending,0);
+    assert.equal(Number((await pool.query("SELECT count(*) FROM ledger WHERE kind='ctv_earning'")).rows[0].count),0);
+  }finally{if(server)await new Promise(r=>server.close(r));await pool.end();await management.query(`DROP SCHEMA ${schema} CASCADE`);await management.end();}
+});

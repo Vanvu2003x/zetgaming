@@ -19,8 +19,10 @@ export function createPostgresGoogleStore(transaction = withTransaction) {
     return transaction(async client => {
       await client.query('SELECT pg_advisory_xact_lock(hashtext($1))', ['google:' + identity.email]);
       let user = (await client.query("SELECT u.* FROM oauth_identities i JOIN users u ON u.id=i.user_id WHERE i.provider='google' AND i.subject=$1", [identity.subject])).rows[0];
+      if (user?.active === false) throw Object.assign(new Error('Tài khoản đang bị khóa. Vui lòng liên hệ hỗ trợ.'), { statusCode: 403 });
       if (!user) {
         user = (await client.query('SELECT * FROM users WHERE lower(email)=lower($1) FOR UPDATE', [identity.email])).rows[0];
+        if (user?.active === false) throw Object.assign(new Error('Tài khoản đang bị khóa. Vui lòng liên hệ hỗ trợ.'), { statusCode: 403 });
         if (user && (!identity.authoritativeEmail || user.role !== 'customer')) { const error = new Error('Account linking requires password login'); error.code = 'OAUTH_LINK_REQUIRED'; throw error; }
         if (!user) user = (await client.query("INSERT INTO users(id,email,password_hash,role,tier,wallet_cents) VALUES($1,$2,$3,'customer','standard',0) RETURNING *", [id(), identity.email, passwordHash])).rows[0];
         await client.query("INSERT INTO oauth_identities(provider,subject,user_id) VALUES('google',$1,$2)", [identity.subject, user.id]);

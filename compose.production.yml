@@ -1,0 +1,58 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: zetgaming-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_ADMIN_PASSWORD:?Set DB_ADMIN_PASSWORD}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+  backend:
+    image: ${APP_IMAGE:?Set APP_IMAGE}
+    container_name: zetgaming-backend-v2
+    restart: unless-stopped
+    network_mode: host
+    env_file: ${APP_ENV_FILE:-.env}
+    command: ["node", "backend/server.mjs"]
+    volumes:
+      - ./uploads:/app/public/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+  notifications:
+    image: ${APP_IMAGE:?Set APP_IMAGE}
+    container_name: zetgaming-notifications-v2
+    restart: unless-stopped
+    network_mode: host
+    env_file: ${APP_ENV_FILE:-.env}
+    command: ["node", "scripts/notification-worker.mjs"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+  storefront:
+    image: ${APP_IMAGE:?Set APP_IMAGE}
+    container_name: zetgaming-storefront-v2
+    restart: unless-stopped
+    network_mode: host
+    env_file: ${APP_ENV_FILE:-.env}
+    command: ["node", "server.mjs"]
+    volumes:
+      - ./uploads:/app/public/uploads
+  admin:
+    image: ${APP_IMAGE:?Set APP_IMAGE}
+    container_name: zetgaming-admin-v2
+    restart: unless-stopped
+    network_mode: host
+    env_file: ${APP_ENV_FILE:-.env}
+    command: ["node", "admin/server.mjs"]
+    volumes:
+      - ./uploads:/app/public/uploads

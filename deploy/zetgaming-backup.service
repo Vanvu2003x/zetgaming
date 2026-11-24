@@ -1,0 +1,12 @@
+[Unit]
+Description=ZetGaming PostgreSQL and file backup
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/zetgaming-v2/release
+Environment=APP_ROOT=/opt/zetgaming-v2
+Environment=BACKUP_ROOT=/opt/zetgaming-v2/backups
+Environment=BACKUP_RETENTION_DAYS=14
+ExecStart=/usr/bin/node /opt/zetgaming-v2/release/scripts/backup-production.mjs

@@ -1,0 +1,228 @@
+body[data-page="/categories"] #main {
+  min-width: 0;
+  padding-inline: clamp(16px, 3vw, 36px);
+}
+
+body[data-page="/categories"] .page-title {
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--ux-line);
+}
+
+body[data-page="/categories"] .page-title .eyebrow {
+  display: none;
+}
+
+body[data-page="/categories"] .page-title h1 {
+  font-size: clamp(25px, 2.6vw, 34px);
+  line-height: 1.12;
+}
+
+body[data-page="/categories"] .page-title p {
+  margin-top: 6px;
+  color: var(--ux-ink-soft);
+  line-height: 1.5;
+}
+
+body[data-page="/categories"] .page-title-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+}
+
+body[data-page="/categories"] .collection-summary {
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-bottom: 12px;
+  color: var(--ux-muted);
+  font-size: 12px;
+}
+
+body[data-page="/categories"] .collection-summary strong {
+  margin-right: 0;
+  color: var(--ux-ink-soft);
+}
+
+body[data-page="/categories"] .table-panel {
+  overflow: visible;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+body[data-page="/categories"] .toolbar {
+  gap: 8px 12px;
+  margin-bottom: 14px;
+  padding: 0;
+  border: 0;
+}
+
+body[data-page="/categories"] .toolbar .search-field {
+  flex: 1 1 240px;
+  min-width: 0;
+  max-width: 340px;
+}
+
+body[data-page="/categories"] .search-field input {
+  height: 40px;
+  border-color: var(--ux-line-strong);
+  border-radius: var(--ux-radius-sm);
+  background: var(--ux-surface-2);
+  color: var(--ux-ink);
+  color-scheme: dark;
+}
+
+body[data-page="/categories"] .search-field input::placeholder {
+  color: var(--ux-muted);
+}
+
+body[data-page="/categories"] .search-field svg {
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ux-ink-soft);
+  pointer-events: none;
+}
+
+body[data-page="/categories"] .toolbar-count {
+  margin-inline-start: auto;
+  color: var(--ux-ink-soft);
+  white-space: nowrap;
+}
+
+body[data-page="/categories"] .button[data-new-category] {
+  min-height: 40px;
+  padding-inline: 12px;
+  border-radius: var(--ux-radius-sm);
+  box-shadow: none;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+body[data-page="/categories"] #table-content {
+  min-width: 0;
+  border: 1px solid var(--ux-line);
+  border-radius: var(--ux-radius-md);
+  background: var(--ux-surface);
+}
+
+body[data-page="/categories"] #table-content .table-scroll {
+  border-radius: inherit;
+  scrollbar-color: var(--ux-line-strong) var(--ux-surface);
+}
+
+body[data-page="/categories"] #table-content table {
+  min-width: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+body[data-page="/categories"] #table-content :is(th, td) {
+  padding: 9px clamp(8px, 1.5vw, 18px);
+}
+
+body[data-page="/categories"] #table-content th {
+  background: var(--ux-surface-2);
+  color: var(--ux-ink-soft);
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+body[data-page="/categories"] #table-content td {
+  height: 54px;
+}
+
+body[data-page="/categories"] #table-content :is(th, td):first-child {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+body[data-page="/categories"] #table-content :is(th, td):nth-child(2) {
+  width: 1%;
+  text-align: center;
+}
+
+body[data-page="/categories"] #table-content .row-actions {
+  display: table-cell;
+  width: 1%;
+  text-align: right;
+  vertical-align: middle;
+}
+
+body[data-page="/categories"] .row-actions .icon-button {
+  display: inline-grid;
+  width: 34px;
+  height: 34px;
+  vertical-align: middle;
+  border-color: transparent;
+  background: transparent;
+}
+
+body[data-page="/categories"] .row-actions .icon-button + .icon-button {
+  margin-inline-start: 4px;
+}
+
+body[data-page="/categories"] .row-actions .icon-button:enabled:hover {
+  border-color: var(--ux-line-strong);
+  background: var(--ux-surface-3);
+}
+
+body[data-page="/categories"] .row-actions .icon-button.danger:enabled:hover {
+  border-color: var(--ux-red);
+  background: color-mix(in srgb, var(--ux-red) 12%, var(--ux-surface));
+  color: var(--ux-red);
+}
+
+body[data-page="/categories"] .row-actions .icon-button:disabled:hover {
+  border-color: transparent;
+  background: transparent;
+  color: var(--ux-ink-soft);
+}
+
+body[data-page="/categories"] .category-system-note {
+  border: 1px solid var(--ux-line);
+  background: var(--ux-surface-2);
+  color: var(--ux-ink-soft);
+  vertical-align: middle;
+}
+
+body[data-page="/categories"] .table-bottom {
+  flex-wrap: wrap;
+  padding: 14px 0 0;
+  border: 0;
+  color: var(--ux-ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+body[data-page="/categories"] .pagination {
+  flex-wrap: wrap;
+}
+
+body[data-page="/categories"] .pagination button {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--ux-radius-sm);
+}
+
+body[data-page="/categories"] .pagination button:enabled:hover:not(.active) {
+  border-color: var(--ux-line-strong);
+  background: var(--ux-surface-3);
+}
+
+body[data-page="/categories"] .pagination button.active {
+  border-color: var(--ux-orange);
+  background: var(--ux-orange);
+  color: var(--ux-bg);
+}
+
+@media (max-width: 580px) {
+  body[data-page="/categories"] .page-title {
+    flex-wrap: wrap;
+  }
+
+  body[data-page="/categories"] .toolbar .search-field {
+    flex-basis: 100%;
+    max-width: none;
+  }
+}

@@ -11,9 +11,15 @@ export const adminCustomersRouter = Router();
 adminCustomersRouter.get('/admin/customers', requireRole('admin'), async (req, res, next) => {
   try {
     const { rows } = await req.db.query(`SELECT u.id,u.email,u.role,u.tier,u.active,u.created_at,u.locked_at,
-      COALESCE(o.order_count,0)::int order_count,COALESCE(o.topup_cents,0)::bigint topup_cents,COALESCE(s.session_count,0)::int session_count
+      COALESCE(o.order_count,0)::int order_count,
+      (COALESCE(o.direct_paid_cents,0)+COALESCE(w.credited_cents,0))::bigint topup_cents,
+      COALESCE(s.session_count,0)::int session_count
       FROM users u
-      LEFT JOIN (SELECT customer_id,COUNT(*) order_count,SUM(price_cents) FILTER (WHERE status IN ('pending_admin','processing','completed')) topup_cents FROM orders GROUP BY customer_id) o ON o.customer_id=u.id
+      LEFT JOIN (SELECT customer_id,COUNT(*) order_count,
+        SUM(price_cents) FILTER (WHERE payment_method='direct' AND paid_at IS NOT NULL) direct_paid_cents
+        FROM orders GROUP BY customer_id) o ON o.customer_id=u.id
+      LEFT JOIN (SELECT user_id,SUM(amount_cents) credited_cents FROM wallet_topups
+        WHERE status='completed' GROUP BY user_id) w ON w.user_id=u.id
       LEFT JOIN (SELECT user_id,COUNT(*) session_count FROM sessions WHERE expires_at>now() GROUP BY user_id) s ON s.user_id=u.id
       ORDER BY u.created_at DESC`);
     res.set('Cache-Control', 'no-store').json(rows.map(row => ({ ...row, wallet_cents: Number(row.wallet_cents || 0), topup_cents: Number(row.topup_cents || 0) })));
@@ -24,11 +30,19 @@ adminCustomersRouter.get('/admin/customers/:id/history', requireRole('admin'), a
   try {
     const customer = (await req.db.query('SELECT id,email,tier,wallet_cents FROM users WHERE id=$1', [req.params.id])).rows[0];
     if (!customer) return res.status(404).json({ error: 'Không tìm thấy tài khoản.' });
-    const [orders, ledger] = await Promise.all([
+    const [orders, ledger, topups, totals] = await Promise.all([
       req.db.query(`SELECT o.code,o.status,o.price_cents,o.payment_method,o.created_at,o.updated_at,p.name package_name,g.name game_name FROM orders o JOIN packages p ON p.id=o.package_id JOIN games g ON g.id=o.game_id WHERE o.customer_id=$1 ORDER BY o.created_at DESC LIMIT 50`, [req.params.id]),
-      req.db.query(`SELECT l.kind,l.amount_cents,l.reference,l.note,l.created_at,o.code order_code FROM ledger l LEFT JOIN orders o ON o.id=l.order_id WHERE l.user_id=$1 ORDER BY l.created_at DESC LIMIT 50`, [req.params.id]),
+      req.db.query(`SELECT l.kind,l.amount_cents,l.reference,l.note,l.created_at,o.code order_code,t.code topup_code
+        FROM ledger l LEFT JOIN orders o ON o.id=l.order_id AND o.customer_id=l.user_id
+        LEFT JOIN wallet_topups t ON l.reference='wallet-topup:' || t.id AND t.user_id=l.user_id
+        WHERE l.user_id=$1 ORDER BY l.created_at DESC,l.id DESC LIMIT 50`, [req.params.id]),
+      req.db.query(`SELECT code,amount_cents,status,COALESCE(paid_at,created_at) created_at FROM wallet_topups WHERE user_id=$1 ORDER BY COALESCE(paid_at,created_at) DESC,id DESC LIMIT 50`, [req.params.id]),
+      req.db.query(`SELECT
+        COALESCE((SELECT SUM(amount_cents) FROM wallet_topups WHERE user_id=$1 AND status='completed'),0) wallet_topup_cents,
+        COALESCE((SELECT SUM(price_cents) FROM orders WHERE customer_id=$1 AND payment_method='direct' AND paid_at IS NOT NULL),0) direct_paid_cents,
+        COALESCE((SELECT SUM(-amount_cents) FROM ledger WHERE user_id=$1 AND kind='purchase' AND amount_cents<0),0) wallet_spent_cents`, [req.params.id]),
     ]);
-    res.set('Cache-Control', 'private, no-store').json({ customer: { ...customer, wallet_cents: Number(customer.wallet_cents || 0) }, orders: orders.rows.map(row => ({ ...row, price_cents: Number(row.price_cents || 0) })), ledger: ledger.rows.map(row => ({ ...row, amount_cents: Number(row.amount_cents || 0) })) });
+    res.set('Cache-Control', 'private, no-store').json({ customer: { ...customer, wallet_cents: Number(customer.wallet_cents || 0) }, totals: totals.rows[0], topups: topups.rows, orders: orders.rows.map(row => ({ ...row, price_cents: Number(row.price_cents || 0) })), ledger: ledger.rows.map(row => ({ ...row, amount_cents: Number(row.amount_cents || 0) })) });
   } catch (error) { next(error); }
 });
 

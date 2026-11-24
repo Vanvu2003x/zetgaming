@@ -1,0 +1,8 @@
+import { escapeHtml as e, money } from './shared.mjs';
+
+export function paymentPanel(order) {
+  const payment = order.payment;
+  if (!payment || order.status !== 'awaiting_payment') return '';
+  const detail = (label, value, copy = false) => `<div><dt>${label}</dt><dd><span>${e(value)}</span>${copy ? `<button type="button" class="transfer-copy" data-copy-payment="${e(value)}" aria-label="Sao chép ${label}">Sao chép</button>` : ''}</dd></div>`;
+  return `<section class="transfer-panel" aria-labelledby="transferTitle"><header><span class="transfer-kicker">${e(payment.bank)} · VIETQR</span><h2 id="transferTitle">Quét mã để thanh toán</h2><p>QR đã điền sẵn số tiền và nội dung của đơn này.</p></header><div class="transfer-grid"><div class="transfer-qr"><img src="${e(payment.qr_url)}" alt="Mã VietQR thanh toán đơn ${e(order.code)}" referrerpolicy="no-referrer"><span class="transfer-qr-caption">VietQR · Quét bằng ứng dụng ngân hàng</span></div><div class="transfer-info"><div class="transfer-amount"><span>Số tiền cần chuyển</span><strong>${money(payment.amount_cents)}</strong></div><dl>${detail('Ngân hàng', payment.bank)}${detail('Chủ tài khoản', payment.name)}${detail('Số tài khoản', payment.account, true)}${detail('Nội dung chuyển khoản', payment.content, true)}</dl><p class="transfer-notice">Chuyển đúng số tiền và giữ nguyên nội dung để đối soát. Đơn chỉ được xác nhận sau khi kiểm tra tiền vào tài khoản.</p><button type="button" class="outline-button" data-payment-refresh>Cập nhật trạng thái</button><p class="transfer-feedback" role="status"></p></div></div><p class="transfer-browser-note">Lưu mã đơn để tra cứu trạng thái tại <a href="/lich-su">Lịch sử đơn hàng</a>.</p></section>`;
+}

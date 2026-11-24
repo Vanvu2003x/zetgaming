@@ -1,0 +1,197 @@
+/* Adapted from Lucian UX/UI Prompt patterns (MIT): https://github.com/Seokwoooo/lucian-uxui-prompt */
+:root {
+  --ux-bg: #070d18;
+  --ux-surface: #0d1625;
+  --ux-surface-2: #111e31;
+  --ux-surface-3: #15243a;
+  --ux-line: #22344c;
+  --ux-line-strong: #2e4664;
+  --ux-ink: #f4f7fb;
+  --ux-ink-soft: #c8d4e5;
+  --ux-muted: #8292a9;
+  --ux-orange: #ff7a45;
+  --ux-orange-strong: #ff5c2f;
+  --ux-green: #42d39b;
+  --ux-amber: #f5b955;
+  --ux-red: #ff6f6f;
+  --ux-blue: #75a9ff;
+  --ux-purple: #b18cff;
+  --ux-radius-sm: 8px;
+  --ux-radius-md: 12px;
+  --ux-radius-lg: 16px;
+  --ux-shadow: 0 18px 48px rgba(0, 0, 0, .22);
+}
+
+/* The admin workspace is intentionally separate from the customer storefront. */
+.admin-shell {
+  background:
+    radial-gradient(circle at 90% -10%, rgba(61, 111, 177, .16), transparent 34rem),
+    var(--ux-bg);
+  color: var(--ux-ink);
+}
+
+.admin-shell .sidebar {
+  background: rgba(8, 15, 27, .96);
+  border-right: 1px solid var(--ux-line);
+  box-shadow: 18px 0 48px rgba(0, 0, 0, .12);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(130, 146, 169, .35) transparent;
+}
+
+.admin-shell .workspace { background: transparent; }
+.admin-shell .topbar {
+  background: rgba(7, 13, 24, .82);
+  border-bottom-color: var(--ux-line);
+  color: var(--ux-ink-soft);
+}
+
+.admin-shell .breadcrumb,
+.admin-shell .breadcrumb strong,
+.admin-shell .page-title p,
+.admin-shell .connection,
+.admin-shell .page-footnote,
+.admin-shell .workspace-label,
+.admin-shell .sidebar-nav-toggle,
+.admin-shell .store-link { color: var(--ux-muted); }
+
+.admin-shell .sidebar-nav-group { margin-bottom: 8px; }
+.admin-shell .sidebar-nav-group + .sidebar-nav-group { padding-top: 8px; border-top: 0; }
+.admin-shell .sidebar-nav-toggle { letter-spacing: .14em; font-size: 9px; opacity: .78; }
+.admin-shell .sidebar-nav-toggle svg { opacity: .65; }
+.admin-shell .sidebar nav a { color: var(--ux-ink-soft); }
+.admin-shell .sidebar nav a { position: relative; min-height: 36px; border: 1px solid transparent; }
+.admin-shell .sidebar nav a:hover { background: var(--ux-surface-2); color: var(--ux-ink); }
+.admin-shell .sidebar nav a.active {
+  background: linear-gradient(90deg, rgba(255, 122, 69, .18), rgba(255, 122, 69, .06));
+  color: #ffc0a4;
+  box-shadow: inset 3px 0 0 var(--ux-orange);
+}
+.admin-shell .sidebar nav a.active:before { display: none; }
+.admin-shell .sidebar nav a.active::after { content: ''; position: absolute; right: 11px; width: 5px; height: 5px; border-radius: 50%; background: var(--ux-orange); box-shadow: 0 0 0 4px rgba(255, 122, 69, .12); }
+.admin-shell .sidebar-nav-toggle:hover { color: var(--ux-ink); }
+.admin-shell .sidebar-bottom { border-top-color: var(--ux-line); }
+.admin-shell .admin-identity { border-top-color: var(--ux-line); }
+
+.admin-shell main { max-width: 1720px; }
+.admin-shell .page-title { margin-bottom: 24px; }
+.admin-shell .page-title h1 { color: var(--ux-ink); letter-spacing: -.045em; }
+.admin-shell .eyebrow { color: #ff9d78; }
+
+.admin-shell .button,
+.admin-shell .icon-button,
+.admin-shell .toolbar select,
+.admin-shell .search-field input,
+.admin-shell label input:not([type=checkbox]),
+.admin-shell label select {
+  background: var(--ux-surface-2);
+  border-color: var(--ux-line);
+  color: var(--ux-ink-soft);
+}
+.admin-shell .button:hover,
+.admin-shell .icon-button:hover { background: var(--ux-surface-3); border-color: var(--ux-line-strong); color: var(--ux-ink); }
+.admin-shell .button.primary { background: var(--ux-orange); border-color: var(--ux-orange); color: #1f0d08; box-shadow: 0 8px 22px rgba(255, 92, 47, .2); }
+.admin-shell .button.primary:hover { background: var(--ux-orange-strong); }
+
+.admin-shell .panel,
+.admin-shell .metric,
+.admin-shell .quick-link,
+.admin-shell .loading-panel {
+  background: rgba(13, 22, 37, .92);
+  border-color: var(--ux-line);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .08);
+}
+.admin-shell .panel-heading { border-bottom-color: var(--ux-line); }
+.admin-shell .panel-heading h2,
+.admin-shell .metric-value,
+.admin-shell .workflow strong,
+.admin-shell .quick-link,
+.admin-shell .metric-head { color: var(--ux-ink); }
+.admin-shell .panel-heading p,
+.admin-shell .metric-foot,
+.admin-shell .workflow small,
+.admin-shell .helper-line,
+.admin-shell .chart-labels,
+.admin-shell .chart-legend,
+.admin-shell .period-tag { color: var(--ux-muted); }
+.admin-shell .period-tag { border-color: var(--ux-line); }
+.admin-shell .metric-symbol { background: var(--ux-surface-3); color: var(--ux-blue); }
+.admin-shell .metric-symbol.orange { background: rgba(255, 122, 69, .16); color: #ffad8d; }
+.admin-shell .metric-symbol.green { background: rgba(66, 211, 155, .15); color: var(--ux-green); }
+.admin-shell .metric-symbol.blue { background: rgba(117, 169, 255, .14); color: var(--ux-blue); }
+.admin-shell .workflow { border-top-color: var(--ux-line); }
+.admin-shell .workflow:hover { background: rgba(117, 169, 255, .06); }
+.admin-shell .workflow-icon { background: var(--ux-surface-3); color: var(--ux-blue); }
+.admin-shell .workflow:nth-child(2) .workflow-icon { background: rgba(245, 185, 85, .14); color: var(--ux-amber); }
+.admin-shell .workflow:nth-child(3) .workflow-icon { background: rgba(177, 140, 255, .14); color: var(--ux-purple); }
+.admin-shell .workflow:nth-child(4) .workflow-icon { background: rgba(255, 111, 111, .14); color: var(--ux-red); }
+.admin-shell .chart { border-bottom-color: var(--ux-line); background: repeating-linear-gradient(to top, transparent 0, transparent 48px, rgba(46, 70, 100, .35) 49px, rgba(46, 70, 100, .35) 50px); }
+.admin-shell .chart-total { color: var(--ux-ink); }
+
+.admin-shell th { background: #0f1b2c; border-bottom-color: var(--ux-line); color: var(--ux-muted); }
+.admin-shell td { color: var(--ux-ink-soft); border-bottom-color: var(--ux-line); }
+.admin-shell td strong { color: var(--ux-ink); }
+.admin-shell td .secondary { color: var(--ux-muted); }
+.admin-shell tbody tr:hover { background: rgba(117, 169, 255, .045); }
+.admin-shell .table-bottom { border-top-color: var(--ux-line); color: var(--ux-muted); }
+.admin-shell .pagination button { background: var(--ux-surface-2); border-color: var(--ux-line); color: var(--ux-ink-soft); }
+.admin-shell .pagination button.active { background: rgba(255, 122, 69, .16); border-color: rgba(255, 122, 69, .5); color: #ffb192; }
+.admin-shell .empty { color: var(--ux-muted); }
+.admin-shell .empty strong { color: var(--ux-ink-soft); }
+.admin-shell .quick-link:hover { border-color: rgba(255, 122, 69, .55); color: #ffad8d; }
+.admin-shell .priority-filter { background: transparent; border-color: var(--ux-line); color: var(--ux-muted); }
+.admin-shell .priority-filter:hover, .admin-shell .priority-filter.is-active { background: rgba(255, 122, 69, .14); border-color: rgba(255, 122, 69, .6); color: #ffb192; }
+.admin-shell .payment-state { color: var(--ux-muted); }
+.admin-shell .payment-state.is-waiting { color: var(--ux-amber); }
+.admin-shell .payment-state.is-paid { color: var(--ux-green); }
+.admin-shell .coupon-overview>div { background: var(--ux-surface-2); border-color: var(--ux-line); }
+.admin-shell .coupon-overview strong { color: var(--ux-ink); }
+.admin-shell .coupon-overview>div:first-child { border-top-color: var(--ux-green); }
+.admin-shell .coupon-overview>div:nth-child(2) { border-top-color: var(--ux-blue); }
+.admin-shell .coupon-overview>div:nth-child(3) { border-top-color: var(--ux-red); }
+.admin-shell .tier-chip { background: rgba(255,255,255,.04); border-color: var(--ux-line); color: var(--ux-muted); }
+.admin-shell .icon-button.danger { color: var(--ux-red); border-color: rgba(255, 111, 111, .35); }
+.admin-shell .icon-button.danger:hover { background: rgba(255, 111, 111, .12); border-color: var(--ux-red); }
+.admin-shell .panel-kicker { border-color: var(--ux-line); color: var(--ux-muted); }
+.admin-shell .report-presets .button:hover { border-color: var(--ux-orange); color: var(--ux-orange); }
+.admin-shell .payment-settings-grid div { background: var(--ux-surface-2); border-color: var(--ux-line); }
+.admin-shell .payment-settings-grid strong { color: var(--ux-ink); }
+.admin-shell .payment-settings-grid span { color: var(--ux-muted); }
+.admin-shell .payment-card-icon { background: rgba(117, 169, 255, .14); color: var(--ux-blue); }
+.admin-shell .payment-card-icon.bank { background: rgba(255, 122, 69, .14); color: #ffad8d; }
+.admin-shell .payment-card-icon.account { background: rgba(66, 211, 155, .14); color: var(--ux-green); }
+.admin-shell .payment-card-icon.owner { background: rgba(177, 140, 255, .14); color: var(--ux-purple); }
+.admin-shell .payment-card-icon.sync { background: rgba(245, 185, 85, .14); color: var(--ux-amber); }
+.admin-shell .page-footnote { border-top: 1px solid var(--ux-line); }
+
+.admin-shell dialog { background: var(--ux-surface); border-color: var(--ux-line-strong); color: var(--ux-ink); box-shadow: var(--ux-shadow); }
+.admin-shell .dialog-head,
+.admin-shell .dialog-footer { border-color: var(--ux-line); background: var(--ux-surface-2); }
+.admin-shell .dialog-head p,
+.admin-shell label,
+.admin-shell label small,
+.admin-shell .detail-grid dt { color: var(--ux-muted); }
+.admin-shell label input:not([type=checkbox]),
+.admin-shell label select,
+.admin-shell .order-management textarea,
+.admin-shell .order-management select,
+.admin-shell .order-management input:not([type=checkbox]) { background: var(--ux-surface-2); border-color: var(--ux-line); color: var(--ux-ink); }
+.admin-shell .detail-grid dd { color: var(--ux-ink-soft); }
+.admin-shell .detail-note { background: var(--ux-surface-2); color: var(--ux-muted); }
+.admin-shell .inline-error { background: rgba(255, 111, 111, .1); border-color: rgba(255, 111, 111, .35); color: #ffb4b4; }
+
+@media (max-width: 800px) {
+  .admin-shell .topbar { backdrop-filter: blur(18px); }
+  .admin-shell .sidebar { box-shadow: 18px 0 54px rgba(0, 0, 0, .45); }
+  .admin-shell .sidebar-nav-group + .sidebar-nav-group { padding-top: 8px; }
+  .admin-shell .sidebar nav a.active::after { right: 14px; }
+  .admin-shell main { padding-bottom: 36px; }
+}
+
+@media (min-width: 801px) {
+  .admin-shell .sidebar-nav-group:not(.is-open) .sidebar-nav-items { max-height: 500px; opacity: 1; }
+  .admin-shell .sidebar-nav-group:not(.is-open) .sidebar-nav-toggle svg { transform: rotate(90deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-shell *, .admin-shell *::before, .admin-shell *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}

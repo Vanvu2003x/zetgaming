@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { adminDocument, loginDocument } from './views.mjs';
 
-const pages = new Set(['/', '/orders', '/games', '/categories', '/packages', '/ctvs']);
+const pages = new Set(['/', '/orders', '/coupons', '/customers', '/games', '/categories', '/packages', '/ctvs', '/tiers', '/security', '/reports', '/payment', '/content']);
 export function createAdminRouter(backend) {
   const router = Router();
   router.use((_req, res, next) => { res.set('Cache-Control', 'private, no-store'); next(); });

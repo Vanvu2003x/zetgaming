@@ -1,4 +1,5 @@
-import { navPath } from '/navigation.js';
+import { navPath } from '/navigation.js?v=6';
+import { bindAuthFit } from '/auth-fit.mjs';
 import { matchesCatalog, compareGameNames } from '/catalog-model.mjs';
 const $ = (selector) => document.querySelector(selector);
 const money = (cents) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 2 }).format(Number(cents || 0) / 100);
@@ -13,13 +14,44 @@ function bindHomeImageFallbacks() {
   });
 }
 async function api(path, body, headers = {}) {
-  const response = await fetch(path, { method: 'POST', credentials: 'same-origin', headers: { 'content-type': 'application/json', 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content || '', ...headers }, body: JSON.stringify(body) });
+  const response = await fetch(path, { method: 'POST', credentials: 'same-origin', headers: { 'content-type': 'application/json', 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content || '', ...headers }, body: JSON.stringify(body), signal: AbortSignal.timeout(15000) });
   const data = await response.json();
   if (!response.ok) throw new Error(data.error || 'Có lỗi xảy ra. Vui lòng thử lại.');
   return data;
 }
 
+let releaseAuthFit = () => {};
 function bindForms() {
+  releaseAuthFit();
+  releaseAuthFit = bindAuthFit();
+  document.querySelectorAll('[data-payment-refresh]').forEach(button => button.addEventListener('click', () => location.reload()));
+  document.querySelectorAll('[data-copy-payment]').forEach(button => button.addEventListener('click', async () => {
+    const message = document.querySelector('.transfer-feedback') || document.querySelector('.order-feedback');
+    try {
+      await navigator.clipboard.writeText(button.dataset.copyPayment);
+      if (message) message.textContent = 'Đã sao chép.';
+    } catch {
+      if (message) message.textContent = 'Chưa sao chép được. Bạn có thể chọn và sao chép thông tin bên trên.';
+    }
+  }));
+  document.querySelector('[data-open-guide]')?.addEventListener('click', event => {
+    const guide = $('#uidGuide');
+    if (!guide) return;
+    event.preventDefault();
+    if (guide instanceof HTMLDetailsElement) guide.open = true;
+    guide.scrollIntoView({ behavior: reducedMotion.matches ? 'instant' : 'smooth', block: 'center' });
+    guide.querySelector('summary')?.focus({ preventScroll: true });
+  });
+  document.querySelectorAll('a.google-signin').forEach(link => {
+    link.addEventListener('click', event => {
+      const consent = link.closest('form')?.elements.namedItem('terms');
+      if (consent && !consent.checked) {
+        event.preventDefault();
+        consent.focus();
+        consent.reportValidity();
+      }
+    });
+  });
   const loginForm = $('#loginForm');
   loginForm?.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -59,6 +91,45 @@ function bindForms() {
   });
 
   const orderForm = $('#orderForm');
+  if (orderForm && !orderForm.querySelector('[name="coupon_code"]')) {
+    const orderPanel = orderForm.querySelector('.order-submit-panel');
+    if (orderPanel) {
+      const coupon = document.createElement('div');
+      coupon.className = 'checkout-coupon-field';
+      coupon.innerHTML = '<label for="couponCode">Mã coupon hoàn tiền <span>(nếu có)</span></label><div><input id="couponCode" name="coupon_code" maxlength="80" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Nhập mã coupon"><small data-coupon-message>Coupon chỉ dùng một lần.</small></div><p class="coupon-warning" data-coupon-warning role="status" aria-live="polite"></p>';
+      const total = orderPanel.querySelector('.order-total');
+      orderPanel.insertBefore(coupon, total || orderPanel.querySelector('#createOrderBtn'));
+    }
+  }
+  const couponInput = $('#couponCode');
+  const couponMessage = document.querySelector('[data-coupon-message]');
+  const couponWarning = document.querySelector('[data-coupon-warning]');
+  let couponRequest;
+  const refreshCouponWarning = (couponCents = Number(couponInput?.dataset.amountCents || 0)) => {
+    const selected = orderForm?.querySelector('[name=package_id]:checked');
+    const grossCents = Number(selected?.dataset.price || 0);
+    if (!couponWarning || !couponCents || !grossCents) return;
+    const unusedCents = Math.max(0, couponCents - grossCents);
+    couponWarning.textContent = unusedCents > 0
+      ? `Coupon trị giá ${money(couponCents)} lớn hơn đơn ${money(grossCents)}. Nếu sử dụng, phần dư ${money(unusedCents)} sẽ không được hoàn lại.`
+      : `Coupon sẽ trừ ${money(couponCents)} vào đơn này.`;
+    couponWarning.classList.toggle('is-over', unusedCents > 0);
+    couponWarning.hidden = false;
+  };
+  couponInput?.addEventListener('input', () => {
+    couponInput.value = couponInput.value.toUpperCase().replace(/[^A-Z0-9_-]/g, '');
+    delete couponInput.dataset.amountCents;
+    if (couponWarning) { couponWarning.hidden = true; couponWarning.textContent = ''; }
+    if (couponMessage) couponMessage.textContent = 'Đang kiểm tra mã…';
+    couponRequest?.abort();
+    const code = couponInput.value.trim();
+    if (!code) { if (couponMessage) couponMessage.textContent = 'Coupon chỉ dùng một lần.'; return; }
+    couponRequest = new AbortController();
+    fetch(`/api/coupons/preview?code=${encodeURIComponent(code)}`, { credentials: 'same-origin', signal: couponRequest.signal })
+      .then(async response => { const data = await response.json(); if (!response.ok) throw new Error(data.error || 'Mã coupon không hợp lệ'); return data; })
+      .then(data => { couponInput.dataset.amountCents = String(data.amount_cents); if (couponMessage) couponMessage.textContent = 'Mã coupon hợp lệ.'; refreshCouponWarning(data.amount_cents); })
+      .catch(error => { if (error.name === 'AbortError') return; if (couponMessage) couponMessage.textContent = error.message; if (couponWarning) { couponWarning.hidden = false; couponWarning.classList.add('is-error'); couponWarning.textContent = error.message; } });
+  });
   const updatePackage = () => {
     const selected = orderForm?.querySelector('[name=package_id]:checked');
     if (!selected) return;
@@ -71,31 +142,11 @@ function bindForms() {
   const targetInput = $('#target');
   const targetValue = $('#orderTargetValue');
   targetInput?.addEventListener('input', () => { if (targetValue) targetValue.textContent = targetInput.value.trim() || 'Chưa nhập'; });
-  orderForm?.addEventListener('change', updatePackage);
+  orderForm?.addEventListener('change', () => { updatePackage(); refreshCouponWarning(); });
   orderForm?.querySelectorAll('[data-payment-choice]').forEach(choice => choice.addEventListener('change', () => {
     if (choice.checked) $('#payment').value = choice.dataset.paymentChoice;
   }));
-  orderForm?.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const selected = orderForm.querySelector('[name=package_id]:checked');
-    if (!selected) return;
-    const button = $('#createOrderBtn');
-    const message = $('#orderMsg');
-    button.disabled = true;
-    message.textContent = 'Đang tạo đơn…';
-    const target = $('#target');
-    try {
-      const result = await api('/api/orders', { package_id: selected.value, target: { [target.name]: target.value.trim() }, payment_method: $('#payment').value }, { 'idempotency-key': orderForm.elements.idempotency_key.value });
-      await visitPage('/lich-su/' + encodeURIComponent(result.code));
-    } catch (error) {
-      if (error.message === 'Vui lòng đăng nhập') {
-        await visitPage('/dang-nhap?next=' + encodeURIComponent(orderForm.elements.return_to.value));
-      } else {
-        message.textContent = error.message;
-        button.disabled = false;
-      }
-    }
-  });
+  // Checkout uses the native POST/303 flow so the receipt gets a fresh document.
   const logoutForm = $('form[action="/dang-xuat"]');
   logoutForm?.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -105,6 +156,28 @@ function bindForms() {
       await visitPage('/da-dang-xuat');
     } catch { logoutForm.submit(); }
   });
+
+  document.querySelectorAll('.account-page a[href="/nap-so-du"]').forEach(link => link.addEventListener('click', event => {
+    event.preventDefault();
+    const existing = document.querySelector('#walletTopupDialog');
+    if (existing) { existing.showModal?.(); existing.querySelector('input[name="amount_vnd"]')?.focus(); return; }
+    const dialog = document.createElement('dialog');
+    dialog.id = 'walletTopupDialog';
+    dialog.className = 'wallet-topup-dialog';
+    dialog.innerHTML = `<div class="wallet-dialog-glow" aria-hidden="true"></div><button class="wallet-dialog-close" type="button" aria-label="Đóng">×</button><div class="wallet-dialog-kicker">ZETGAMING WALLET</div><h2>Nạp tiền vào tài khoản</h2><p class="wallet-dialog-lead">Chọn số tiền và thanh toán qua VietQR trong vài giây.</p><form action="/nap-so-du" method="post"><input type="hidden" name="_csrf" value="${document.querySelector('meta[name="csrf-token"]')?.content || ''}"><div class="wallet-presets" role="group" aria-label="Số tiền gợi ý"><button type="button" data-wallet-amount="50000">50.000đ</button><button type="button" data-wallet-amount="100000">100.000đ</button><button type="button" data-wallet-amount="200000">200.000đ</button><button type="button" data-wallet-amount="500000">500.000đ</button></div><label for="walletDialogAmount">Số tiền muốn nạp</label><div class="wallet-amount-input"><input id="walletDialogAmount" name="amount_vnd" type="number" min="10000" max="50000000" step="1000" placeholder="Nhập số tiền" required><span>VNĐ</span></div><div class="wallet-dialog-total"><span>Bạn sẽ thanh toán</span><strong data-wallet-total>0đ</strong></div><input type="hidden" name="idempotency_key" value="wallet-${Date.now()}-${Math.random().toString(36).slice(2)}"><button class="action-button wide wallet-dialog-submit" type="submit">Tạo mã QR thanh toán <span aria-hidden="true">↗</span></button></form><small class="wallet-dialog-note">Hệ thống sẽ giữ nguyên số tiền và nội dung chuyển khoản để đối soát tự động.</small></div>`;
+    document.body.append(dialog);
+    const form = dialog.querySelector('form');
+    const input = dialog.querySelector('input[name="amount_vnd"]');
+    const total = dialog.querySelector('[data-wallet-total]');
+    const update = value => { const amount = Number(value || 0); total.textContent = amount ? new Intl.NumberFormat('vi-VN').format(amount) + 'đ' : '0đ'; dialog.querySelectorAll('[data-wallet-amount]').forEach(button => button.classList.toggle('is-selected', Number(button.dataset.walletAmount) === amount)); };
+    input.addEventListener('input', () => update(input.value));
+    dialog.querySelectorAll('[data-wallet-amount]').forEach(button => button.addEventListener('click', () => { input.value = button.dataset.walletAmount; update(input.value); input.focus(); }));
+    dialog.querySelector('.wallet-dialog-close').addEventListener('click', () => dialog.close());
+    dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
+    dialog.addEventListener('close', () => dialog.remove(), { once: true });
+    dialog.showModal();
+    input.focus();
+  }));
 }
 bindForms();
 window.addEventListener('pageshow', () => document.querySelectorAll('form button[type=submit]').forEach(button => { button.disabled = false; }));
@@ -249,7 +322,7 @@ async function visitPage(destination, { push = true, scrollY = 0 } = {}) {
   $('#mainContent')?.classList.remove('route-leave');
   moveNavTo(tabForPath(url.pathname));
   try {
-    const response = await fetch(url, { credentials: 'same-origin', headers: { accept: 'text/html' }, signal: routeController.signal });
+    const response = await fetch(url, { credentials: 'same-origin', headers: { accept: 'text/html' }, signal: AbortSignal.any([routeController.signal, AbortSignal.timeout(12000)]) });
     if (!response.ok || !response.headers.get('content-type')?.includes('text/html')) throw new Error('Không tải được trang');
     const finalUrl = new URL(response.url);
     if (finalUrl.origin !== location.origin) throw new Error('Đường dẫn không hợp lệ');
@@ -314,6 +387,7 @@ document.addEventListener('click', (event) => {
   if (!link || link.target || link.hasAttribute('download')) return;
   const url = new URL(link.href);
   if (url.origin !== location.origin || !storefrontRoute.test(url.pathname)) return;
+  if (/^\/lich-su\/[a-zA-Z0-9-]+$/.test(url.pathname)) return;
   if (url.hash && url.pathname === location.pathname && url.search === location.search) return;
   event.preventDefault();
   if (url.href === location.href) { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }

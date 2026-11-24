@@ -7,6 +7,18 @@ import { requireCsrf } from '../../middleware/csrf.mjs';
 
 export const dispatchRouter = Router();
 
+dispatchRouter.post('/admin/orders/:code/confirm-payment', requireCsrf, requireRole('admin'), async (req, res, next) => {
+  try {
+    const result = await withTransaction(async client => {
+      const order = (await client.query("UPDATE orders SET status='pending_admin',paid_at=now(),updated_at=now() WHERE code=$1 AND payment_method='direct' AND status='awaiting_payment' RETURNING id,code,status,price_cents", [req.params.code])).rows[0];
+      if (!order) { const error = new Error('Đơn không còn chờ xác nhận chuyển khoản'); error.statusCode = 409; throw error; }
+      await audit(client, req.user.id, 'order.payment_confirmed', order.id, { amount_cents: String(order.price_cents), method: 'manual_bank_reconciliation' });
+      return { code: order.code, status: order.status };
+    });
+    res.json(result);
+  } catch (error) { next(error); }
+});
+
 dispatchRouter.get('/admin/ctvs', requireRole('admin'), async (req, res, next) => {
   try { res.json((await req.db.query("SELECT id,email,wallet_cents FROM users WHERE role='ctv' ORDER BY email")).rows.map(row => ({ ...row, wallet_cents: Number(row.wallet_cents) }))); }
   catch (error) { next(error); }

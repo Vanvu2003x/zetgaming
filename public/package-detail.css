@@ -18,3 +18,56 @@
 @media(max-width:760px){.topup-detail-page{padding-top:12px}.game-topup-hero{min-height:220px;padding:49px 20px 25px;gap:16px}.game-hero-art{width:92px;height:92px;border-radius:16px}.game-hero-copy h1{font-size:30px}.game-hero-copy p{font-size:13px;margin-bottom:12px}.game-hero-badges span{padding:5px 7px;font-size:9px}.detail-shell{display:block;margin-top:14px}.detail-game-sidebar{display:none}.game-checkout{display:flex;flex-direction:column;gap:14px}.account-panel,.package-panel,.payment-panel,.order-submit-panel{width:100%}.account-panel,.payment-panel{padding:18px 15px}.package-panel{padding-top:2px}.payment-panel{order:3}.order-submit-panel{position:static;order:4;padding:16px}.package-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.package-choice{min-height:126px;grid-template-columns:1fr;padding:10px 7px;column-gap:4px}.package-visual{grid-row:auto;width:100%;height:68px;border-radius:11px}.package-copy{align-self:start}.package-copy>small{font-size:8px;margin:5px 0 2px}.package-name{font-size:11px}.package-choice>strong{grid-column:1;font-size:15px;margin-top:4px}.package-check{position:absolute;right:6px;top:6px;width:21px;height:21px;font-size:12px}.target-field{gap:7px;padding:0 10px}.target-field input{font-size:15px}.verify-uid{padding:0 9px;font-size:10px}.uid-help{font-size:10px}.detail-section-heading h2{font-size:22px}.payment-choice-grid{grid-template-columns:1fr}.payment-choice{min-height:66px}}
 @media(max-width:390px){.package-grid{grid-template-columns:1fr}.package-choice{min-height:102px;grid-template-columns:70px 1fr auto}.package-visual{width:70px;height:70px}}
 @media(min-width:1100px){.package-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+/* Package cards are product-first: uploaded artwork, quantity, then the payable price. */
+.topup-detail-page .package-nominal{display:block;margin:0 0 3px;color:#9eadd0;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.topup-detail-page .package-copy .package-name{display:block}
+
+/* Game detail redesign: image-led hero, clearer checkout hierarchy, and mobile-safe CTA. */
+.topup-detail-page{max-width:1180px;padding-top:24px;padding-bottom:128px}
+.topup-detail-page .breadcrumbs{margin-bottom:18px;color:#91a2bb}
+.game-topup-hero{display:grid;grid-template-columns:176px minmax(0,1fr);align-items:center;min-height:300px;padding:60px 54px 38px;gap:28px;border-radius:26px;border-color:#385474;background:#0b1421;box-shadow:0 26px 62px #0009}
+.game-topup-hero:before{background:linear-gradient(90deg,#07101bf2 0%,#07101bd9 38%,#07101b63 72%,#07101b12 100%),linear-gradient(180deg,#07101b18,#07101bd1 100%)}
+.game-topup-hero:after{right:-4%;bottom:-58%;height:210px;background:radial-gradient(ellipse,#ff76584d,transparent 68%);filter:blur(20px)}
+.game-hero-background{object-position:72% center;filter:saturate(.9) contrast(1.04)}
+.game-hero-art{width:176px;height:176px;border-radius:28px;border-color:#ffffff66;box-shadow:0 20px 42px #000c,0 0 0 5px #ffffff0b,0 0 36px #ff795833}
+.game-hero-copy{max-width:650px}
+.game-eyebrow{color:#ffae89;letter-spacing:2.2px}
+.game-hero-copy h1{font-size:52px;letter-spacing:-1.1px;margin:8px 0 10px}
+.game-hero-copy p{max-width:560px;color:#d3ddec;font-size:17px;line-height:1.5;margin:0 0 20px}
+.game-hero-badges span{padding:8px 12px;border-color:#587093;background:#0c192bcc;box-shadow:inset 0 1px #ffffff0b}
+.game-back{width:50px;height:50px;left:22px;top:18px;border-radius:15px;background:#0b1728b8;box-shadow:0 8px 20px #0005}
+.game-support{right:22px;top:18px;padding:7px 10px;border:1px solid #ffffff25;border-radius:999px;background:#0b1728a8;backdrop-filter:blur(8px)}
+.detail-shell{grid-template-columns:210px minmax(0,1fr);gap:22px;margin-top:22px}
+.detail-game-sidebar{top:100px;padding:17px 11px;border-radius:18px;background:linear-gradient(155deg,#121f33,#0b1421);box-shadow:0 18px 38px #0005}
+.detail-sidebar-title{font-size:12px;letter-spacing:.9px;text-transform:uppercase;color:#ffae89}
+.detail-game-link{min-height:50px;padding:8px 9px}
+.detail-game-link.is-active{border-color:#ff9d79;background:linear-gradient(100deg,#392a2a,#1b2032);box-shadow:inset 3px 0 #ff916c}
+.game-checkout{gap:20px}
+.account-panel,.payment-panel,.order-submit-panel{box-shadow:0 18px 38px #0005}
+.account-panel{padding:25px 26px}
+.package-panel{padding-top:8px}
+.detail-section-heading{margin-bottom:17px}
+.detail-section-heading h2{font-size:26px}
+.package-count{padding:6px 9px;border:1px solid #304b6d;border-radius:999px;background:#101e32;color:#b8c9df}
+.package-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.package-choice{min-height:152px;grid-template-columns:82px minmax(0,1fr) auto;padding:14px;border-radius:17px;background:linear-gradient(145deg,#132238,#0c1727);border-color:#2d4668}
+.package-choice:hover{transform:translateY(-3px);border-color:#ff9a78;box-shadow:0 14px 28px #0008}
+.package-visual{width:82px;height:82px;border-radius:14px}
+.package-name{font-size:15px}
+.package-choice>strong{font-size:20px;color:#ffc09d}
+.package-choice:has(input:checked){border-color:#ff9b76;background:linear-gradient(145deg,#2b2527,#171b28);box-shadow:0 0 0 2px #ff9b7622,0 16px 30px #0008}
+.package-check{background:#ff9b76;color:#241617}
+.target-field{height:66px;border-radius:15px;box-shadow:inset 0 1px #ffffff08}
+.target-field:focus-within{border-color:#ff9f7c;box-shadow:0 0 0 3px #ff9f7c1f,inset 0 1px #ffffff08}
+.payment-panel{padding:24px 22px}
+.payment-choice{min-height:70px}
+.payment-choice:has(input:checked){border-color:#ff9b76;background:linear-gradient(145deg,#2a2528,#171c29);box-shadow:0 0 0 2px #ff9b7620}
+.order-submit-panel{padding:24px 25px;border-color:#ff8d6a;background:radial-gradient(circle at 100% 0,#ff7d4826,transparent 36%),linear-gradient(155deg,#17243a,#111827)}
+.order-submit-panel .action-button{background:linear-gradient(105deg,#ffb16d,#ff6048);color:#241617;box-shadow:0 12px 28px #ff70434a}
+.order-submit-panel .action-button:hover{filter:brightness(1.06);transform:translateY(-2px)}
+.checkout-security{border-top:1px solid #2c3f5d;padding-top:14px}
+@media(max-width:900px){.game-topup-hero{grid-template-columns:130px minmax(0,1fr);padding:56px 30px 32px;gap:20px}.game-hero-art{width:130px;height:130px}.game-hero-copy h1{font-size:42px}.detail-shell{grid-template-columns:1fr}.detail-game-sidebar{display:none}.game-checkout{grid-column:1}}
+@media(max-width:760px){.topup-detail-page{padding-top:12px;padding-bottom:138px}.game-topup-hero{grid-template-columns:90px minmax(0,1fr);min-height:232px;padding:52px 18px 24px;gap:14px;border-radius:20px}.game-hero-art{width:90px;height:90px;border-radius:16px}.game-hero-copy h1{font-size:30px;letter-spacing:-.5px}.game-hero-copy p{font-size:13px;line-height:1.4;margin-bottom:12px}.game-hero-badges{gap:5px}.game-hero-badges span{padding:6px 8px;font-size:9px}.game-back{left:14px;top:13px;width:40px;height:40px}.game-support{right:12px;top:12px;font-size:10px}.game-support strong{width:25px;height:25px}.detail-shell{margin-top:15px}.account-panel,.payment-panel,.order-submit-panel{border-radius:17px}.account-panel{padding:19px 16px}.package-panel{padding-top:2px}.package-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.package-choice{min-height:145px;grid-template-columns:64px minmax(0,1fr) auto;grid-template-rows:1fr auto;padding:11px 9px;column-gap:8px}.package-visual{width:64px;height:64px;border-radius:12px}.package-name{font-size:13px}.package-choice>strong{font-size:17px;margin-top:5px}.package-check{width:24px;height:24px;font-size:14px}.detail-section-heading h2{font-size:22px}.payment-panel{padding:18px 15px}.order-submit-panel{padding:17px 15px}.order-submit-panel .action-button{min-height:58px;font-size:17px}}
+@media(max-width:390px){.game-topup-hero{grid-template-columns:76px minmax(0,1fr);gap:11px;padding-inline:14px}.game-hero-art{width:76px;height:76px}.game-hero-copy h1{font-size:26px}.game-hero-copy p{font-size:12px}.package-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.package-choice{min-height:136px;grid-template-columns:1fr;grid-template-rows:auto 1fr auto;gap:6px;padding:9px}.package-visual{width:100%;height:60px}.package-choice>strong{grid-column:1}.package-check{right:6px;top:6px}.detail-section-heading{gap:8px}.detail-section-heading h2{font-size:20px}}
+@media(prefers-reduced-motion:reduce){.package-choice,.order-submit-panel .action-button{transition:none}.package-choice:hover,.order-submit-panel .action-button:hover{transform:none}}

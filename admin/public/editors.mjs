@@ -94,7 +94,7 @@ export function openGameEditor(game, context) {
   game ||= { name: '', slug: '', mode: 'uid', image: '', thumbnail: '', platform: 'mobile', category_id: '', active: true, input_config: {} };
   const creating = !game.id;
   const config = game.input_config || {};
-  const blockedFields = new Set(game.mode === 'login' ? ['tài khoản game', 'tên tài khoản', 'mật khẩu', 'mật khẩu game'] : ['uid', 'uid người chơi']);
+  const blockedFields = new Set(game.mode === 'login' ? ['tài khoản', 'tài khoản game', 'tên tài khoản', 'tên tkhoan', 'username', 'user name', 'mật khẩu', 'mật khẩu game', 'thông tin thêm', 'zalo', 'zalo liên hệ', 'ghi chú', 'ghi chú của khách'] : ['uid', 'uid người chơi']);
   const customFields = (config.custom_fields || [config.server_required && 'Máy chủ', config.region_required && 'Khu vực', config.character_required && 'Tên nhân vật']).filter(Boolean).filter(value => !blockedFields.has(String(value).trim().toLowerCase()));
   editor('games', game, [
     input('name', 'Tên game', game.name, { full: true, required: true }),
@@ -137,16 +137,53 @@ export function openTierEditor(tier, context) {
   });
 }
 
+export async function openCustomerHistory(customer, context) {
+  const target = mount('Lịch sử hoạt động', customer.email,
+    '<section class="customer-history" aria-live="polite"><p>Đang tải lịch sử…</p></section>', context);
+  const history = target.querySelector('.customer-history');
+  try {
+    const data = await context.api('/api/admin/customers/' + encodeURIComponent(customer.id) + '/history');
+    const topupLink = code => '/payment?topup=' + encodeURIComponent(code);
+    const orderLink = code => '/orders?order=' + encodeURIComponent(code);
+    const topupCodes = new Set(data.topups.map(item => item.code));
+    const activity = [
+      ...data.orders.map(order => ({ type: 'orders', category: order.payment_method === 'wallet' ? 'Đơn trả bằng ví' : 'Đơn chuyển khoản', label: order.game_name + ' · ' + order.package_name, code: order.code, href: orderLink(order.code), amount: money(order.price_cents), status: context.statusBadge(order.status), time: order.created_at })),
+      ...data.topups.map(item => ({ type: 'wallet', category: 'Nạp số dư', label: item.status === 'completed' ? 'Đã cộng vào ví' : item.status === 'cancelled' ? 'Đã hủy nạp ví' : 'Chờ nhận tiền nạp ví', code: item.code, href: topupLink(item.code), amount: (item.status === 'completed' ? '+' : '') + money(item.amount_cents), time: item.created_at })),
+      ...data.ledger.filter(item => !topupCodes.has(item.topup_code)).map(item => ({
+        type: 'wallet',
+        category: ({ deposit: 'Cộng tiền vào ví', purchase: 'Trừ ví để trả đơn', refund: 'Hoàn tiền về ví' })[item.kind] || 'Biến động ví',
+        label: item.note || (item.order_code ? 'Giao dịch liên quan đến đơn' : 'Giao dịch ví'),
+        code: item.order_code || item.topup_code || item.reference,
+        href: item.order_code ? orderLink(item.order_code) : item.topup_code ? topupLink(item.topup_code) : '',
+        amount: (item.amount_cents > 0 ? '+' : '') + money(item.amount_cents), time: item.created_at,
+      })),
+    ].sort((a, b) => new Date(b.time) - new Date(a.time));
+    history.innerHTML = `<div class="history-summary"><span>Số dư ví <strong>${money(data.customer.wallet_cents)}</strong></span><label>Hiển thị <select><option value="">Tất cả</option><option value="orders">Đơn nạp</option><option value="wallet">Ví</option></select></label></div><ol class="customer-activity"></ol>`;
+    const totals = document.createElement('dl');
+    totals.className = 'customer-activity-totals';
+    totals.innerHTML = [
+      ['Tổng nạp số dư', data.totals.wallet_topup_cents],
+      ['Tổng đơn chuyển khoản đã trả', data.totals.direct_paid_cents],
+      ['Tổng đã trừ ví', data.totals.wallet_spent_cents],
+    ].map(([label, amount]) => `<div><dt>${label}</dt><dd>${money(amount)}</dd></div>`).join('');
+    history.prepend(totals);
+    const filter = history.querySelector('select');
+    const list = history.querySelector('ol');
+    function render() {
+      list.innerHTML = activity.filter(item => !filter.value || item.type === filter.value).map(item =>
+        `<li><div><strong>${e(item.category)}</strong><span>${e(item.label)}</span><small>${date(item.time)}</small>${item.href ? `<a href="${e(item.href)}">${e(item.code)} ↗</a>` : `<span>${e(item.code)}</span>`}</div><div><strong class="${item.amount.startsWith('+') ? 'ledger-positive' : item.amount.startsWith('-') ? 'ledger-negative' : ''}">${e(item.amount)}</strong>${item.status || ''}</div></li>`).join('') || '<li>Chưa có giao dịch.</li>';
+    }
+    filter.addEventListener('change', render);
+    render();
+  } catch (error) {
+    history.textContent = error.message;
+  }
+}
+
 export function openCustomerEditor(customer, context) {
   const tiers = context.getTiers?.() || [{ tier: 'standard', name: 'Standard', discount_percent: 0 }];
   const tierOptions = tiers.map(tier => [tier.tier, `${tier.name || tier.tier} · giảm ${Number(tier.discount_percent || 0)}%`]);
-  const target = mount('Quản lý khách hàng', customer.email, `<div class="field-grid">${select('role', 'Vai trò', customer.role, [['customer', 'Khách hàng'], ['ctv', 'CTV'], ['admin', 'Admin']])}${select('tier', 'Hạng khách', customer.tier || 'standard', tierOptions)}<label class="check-field full"><input name="active" type="checkbox" ${customer.active ? 'checked' : ''}> Tài khoản đang hoạt động</label><div class="full detail-note">Giá gói sẽ tự giảm theo hạng khi khách tạo đơn mới. Đơn cũ không thay đổi.</div><section class="full customer-history" data-customer-history><strong>Lịch sử tài khoản</strong><p>Đang tải đơn nạp và biến động ví…</p></section></div>`, context, 'Lưu tài khoản');
-  const history = target.querySelector('[data-customer-history]');
-  context.api('/api/admin/customers/' + encodeURIComponent(customer.id) + '/history').then(data => {
-    const orders = data.orders.length ? data.orders.map(order => `<li><div><strong class="mono">${context.escapeHtml(order.code)}</strong><span>${context.escapeHtml(order.game_name)} · ${context.escapeHtml(order.package_name)}</span></div><div>${context.statusBadge(order.status)}<strong>${context.money(order.price_cents)}</strong><small>${context.date(order.created_at)}</small></div></li>`).join('') : '<li>Chưa có đơn nạp.</li>';
-    const ledger = data.ledger.length ? data.ledger.map(item => `<li><div><strong>${context.escapeHtml(item.kind)}</strong><span>${context.escapeHtml(item.note || item.order_code || item.reference)}</span></div><strong class="${item.amount_cents >= 0 ? 'ledger-positive' : 'ledger-negative'}">${item.amount_cents >= 0 ? '+' : ''}${context.money(item.amount_cents)}</strong></li>`).join('') : '<li>Chưa có biến động ví.</li>';
-    history.innerHTML = `<div class="history-summary"><span>Số dư ví <strong>${context.money(data.customer.wallet_cents)}</strong></span><span>${data.orders.length} đơn gần nhất</span></div><div class="history-columns"><div><h3>Lịch sử nạp</h3><ul>${orders}</ul></div><div><h3>Biến động ví</h3><ul>${ledger}</ul></div></div>`;
-  }).catch(error => { history.innerHTML = `<strong>Không tải được lịch sử</strong><p>${context.escapeHtml(error.message)}</p>`; });
+  const target = mount('Quản lý khách hàng', customer.email, `<div class="field-grid">${select('role', 'Vai trò', customer.role, [['customer', 'Khách hàng'], ['ctv', 'CTV'], ['admin', 'Admin']])}${select('tier', 'Hạng khách', customer.tier || 'standard', tierOptions)}<label class="check-field full"><input name="active" type="checkbox" ${customer.active ? 'checked' : ''}> Tài khoản đang hoạt động</label><div class="full detail-note">Giá gói sẽ tự giảm theo hạng khi khách tạo đơn mới. Đơn cũ không thay đổi.</div></div>`, context, 'Lưu tài khoản');
   const form = target.querySelector('form');
   form.addEventListener('submit', async event => {
     event.preventDefault();

@@ -1,0 +1,187 @@
+body[data-page="/tiers"] #main {
+  min-width: 0;
+  padding-top: clamp(20px, 3vw, 32px);
+}
+
+body[data-page="/tiers"] .page-title {
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--ux-line);
+}
+
+body[data-page="/tiers"] .page-title .eyebrow {
+  display: none;
+}
+
+body[data-page="/tiers"] .page-title h1 {
+  color: var(--ux-ink);
+  font-size: clamp(25px, 2.6vw, 34px);
+  line-height: 1.15;
+}
+
+body[data-page="/tiers"] .page-title p {
+  max-width: none;
+  color: var(--ux-ink-soft);
+}
+
+body[data-page="/tiers"] #refresh {
+  flex: none;
+  min-height: 40px;
+  padding-inline: 12px;
+  border-color: var(--ux-orange);
+  border-radius: var(--ux-radius-sm);
+  background: var(--ux-orange);
+  color: var(--ux-bg);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+body[data-page="/tiers"] #refresh:hover {
+  border-color: var(--ux-orange-strong);
+  background: var(--ux-orange-strong);
+}
+
+body[data-page="/tiers"] .tiers-panel {
+  max-width: none;
+  min-width: 0;
+  border-color: var(--ux-line);
+  border-radius: var(--ux-radius-sm);
+  background: var(--ux-surface);
+}
+
+body[data-page="/tiers"] .tiers-panel .panel-heading {
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--ux-line);
+}
+
+body[data-page="/tiers"] .tiers-panel .panel-heading h2 {
+  color: var(--ux-ink);
+}
+
+body[data-page="/tiers"] .tiers-panel .panel-heading p {
+  margin-top: 4px;
+  color: var(--ux-ink-soft);
+  line-height: 1.5;
+}
+
+body[data-page="/tiers"] .tiers-panel .table-scroll {
+  scrollbar-color: var(--ux-line-strong) var(--ux-surface);
+}
+
+body[data-page="/tiers"] .tiers-panel .table-scroll:focus-visible {
+  outline: 2px solid var(--ux-orange);
+  outline-offset: -2px;
+}
+
+body[data-page="/tiers"] .tiers-panel .table-scroll table {
+  min-width: 560px;
+}
+
+body[data-page="/tiers"] .tiers-panel :is(th, td) {
+  padding: 9px clamp(10px, 1.4vw, 18px);
+  border-bottom-color: var(--ux-line);
+}
+
+body[data-page="/tiers"] .tiers-panel th {
+  background: var(--ux-surface-2);
+  color: var(--ux-ink);
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: normal;
+  white-space: nowrap;
+}
+
+body[data-page="/tiers"] .tiers-panel td {
+  height: 52px;
+  color: var(--ux-ink-soft);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+body[data-page="/tiers"] .tiers-panel tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+body[data-page="/tiers"] .tiers-panel tbody tr:is(:hover, :focus-within) {
+  background: var(--ux-surface-2);
+}
+
+body[data-page="/tiers"] .tiers-panel td:first-child > strong {
+  display: inline-block;
+  padding: 3px 8px;
+  border: 1px solid color-mix(in srgb, var(--tier-color, var(--ux-ink-soft)) 28%, transparent);
+  border-radius: var(--ux-radius-sm);
+  background: color-mix(in srgb, var(--tier-color, var(--ux-ink-soft)) 12%, transparent);
+  color: var(--tier-color, var(--ux-ink-soft));
+  overflow-wrap: anywhere;
+}
+
+body[data-page="/tiers"] .tiers-panel tr:has([data-edit-tier="bronze"]) {
+  --tier-color: var(--ux-orange);
+}
+
+body[data-page="/tiers"] .tiers-panel tr:has([data-edit-tier="silver"]) {
+  --tier-color: var(--ux-ink-soft);
+}
+
+body[data-page="/tiers"] .tiers-panel tr:has([data-edit-tier="gold"]) {
+  --tier-color: var(--ux-amber);
+}
+
+body[data-page="/tiers"] .tiers-panel td .secondary {
+  color: var(--ux-muted);
+  overflow-wrap: anywhere;
+}
+
+body[data-page="/tiers"] .tiers-panel td .discount-value {
+  color: var(--ux-orange);
+  font-size: 16px;
+  white-space: nowrap;
+}
+
+body[data-page="/tiers"] .tiers-panel .badge {
+  padding: 4px 8px;
+  border: 1px solid color-mix(in srgb, var(--tier-status-color) 32%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--tier-status-color) 12%, transparent);
+  color: var(--tier-status-color);
+  white-space: nowrap;
+  --tier-status-color: var(--ux-muted);
+}
+
+body[data-page="/tiers"] .tiers-panel .badge.green {
+  --tier-status-color: var(--ux-green);
+}
+
+body[data-page="/tiers"] .tiers-panel .badge.red {
+  --tier-status-color: var(--ux-red);
+}
+
+body[data-page="/tiers"] .tiers-panel td:has([data-edit-tier]) {
+  width: 1%;
+  text-align: right;
+}
+
+body[data-page="/tiers"] .tiers-panel [data-edit-tier] {
+  width: 34px;
+  height: 34px;
+  border-color: var(--ux-line);
+  border-radius: var(--ux-radius-sm);
+  background: var(--ux-surface-2);
+  color: var(--ux-ink-soft);
+}
+
+body[data-page="/tiers"] .tiers-panel [data-edit-tier]:hover {
+  border-color: var(--ux-orange);
+  background: var(--ux-surface-3);
+  color: var(--ux-orange);
+}
+
+body[data-page="/tiers"] .tiers-panel td[colspan] {
+  padding-block: 24px;
+  color: var(--ux-muted);
+  text-align: center;
+}

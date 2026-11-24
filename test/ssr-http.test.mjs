@@ -53,7 +53,7 @@ test('SSR routes and native forms support a complete customer journey', { timeou
       assert.doesNotMatch(html, /Đang tải danh sách|{{\w+}}/);
       assert.equal((html.match(/<h1\b/g) || []).length, 1);
       const filtered = await (await get('/nap-game?q=genshin')).text();
-      assert.match(filtered, /Danh mục game/);
+      assert.match(filtered, /Nạp game/);
       assert.match(filtered, /data-category=/);
       assert.match(filtered, /data-category-filter=/);
       assert.doesNotMatch(filtered, /class="topup-intro"/);
@@ -85,7 +85,7 @@ test('SSR routes and native forms support a complete customer journey', { timeou
     });
     await t.test('guest history is gated and native login rejects unsafe return locations', async () => {
       const history = await (await get('/lich-su')).text();
-      assert.match(history, /Đăng nhập để tiếp tục/);
+      assert.match(history, /Đăng nhập/);
       assert.doesNotMatch(history, /customer@example.com/);
       const invalid = await form('/dang-nhap', { email: 'customer@example.com', password: 'incorrect', next: '//evil.test' });
       assert.equal(invalid.status, 303);

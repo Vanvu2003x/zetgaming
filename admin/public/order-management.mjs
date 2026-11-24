@@ -26,7 +26,7 @@ export function orderManagement(order){
   const quick=[];
   if(order.status==='pending_admin')quick.push(['start','Nhận đơn']);
   if(order.status==='processing' && order.can_complete)quick.push(['complete','Hoàn thành đơn']);
-  if(['pending_admin','failed'].includes(order.status))quick.push(['cancel','Hủy đơn']);
+  if(['pending_admin','failed'].includes(order.status) || order.can_cancel_processing)quick.push(['cancel','Hủy đơn']);
   const quickHtml=quick.length?`<section class="order-management quick-order-actions"><h3>Thao tác nhanh</h3><div>${quick.map(([key,label])=>`<button type="button" class="button ${key==='cancel'?'danger':'primary'}" data-quick-operation="${key}">${label}</button>`).join('')}</div></section>`:'';
   return refund+quickHtml;
 }
@@ -57,6 +57,8 @@ export function bindOrderManagement(target,order,context,reopen,showError){
   target.querySelector('[data-direct-operation="cancel"]')?.addEventListener('click',()=>save('cancel',{reason:'Admin hủy đơn khi chưa xác nhận thanh toán.',confirmed:true}));
   target.querySelectorAll('[data-quick-operation]').forEach(button => button.addEventListener('click', () => {
     const action = button.dataset.quickOperation;
+    if (action === 'cancel' && order.status === 'processing' &&
+        !window.confirm('Xác nhận chưa giao vật phẩm và muốn hủy đơn? Nếu đã thanh toán, hệ thống sẽ hoàn vào ví hoặc cấp coupon cho khách vãng lai.')) return;
     const reason = action === 'cancel' ? 'Admin hủy đơn chưa nạp.' : '';
     void save(action, { confirmed: true, ...(reason ? { reason } : {}) });
   }));

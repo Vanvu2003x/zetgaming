@@ -1,6 +1,11 @@
 const invalid=message=>Object.assign(new Error(message),{statusCode:400});
 const booleanFields=['server_required','region_required','password_required','character_required'];
 const allowed=new Set(['guide','custom_fields','server_options','region_options',...booleanFields]);
+const normalizeLabel=value=>String(value).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+const builtInFields={
+  uid:new Set(['uid','uid nguoi choi']),
+  login:new Set(['tai khoan','tai khoan game','ten tai khoan','ten tkhoan','username','user name','mat khau','mat khau game','thong tin them','zalo','zalo lien he','ghi chu','ghi chu cua khach']),
+};
 export function normalizeGameInputs(value={},mode='uid'){
   if(!value || typeof value!=='object' || Array.isArray(value) || Object.keys(value).some(key=>!allowed.has(key)))throw invalid('Cấu hình thông tin nạp không hợp lệ.');
   const guide=value.guide??'';
@@ -8,7 +13,8 @@ export function normalizeGameInputs(value={},mode='uid'){
   const result={guide:guide.trim(),custom_fields:[]};
   const custom=value.custom_fields??[];
   if(!Array.isArray(custom) || custom.length>20 || custom.some(item=>typeof item!=='string' || !item.trim() || item.length>80))throw invalid('Danh sách thông tin tối đa 20 dòng, mỗi dòng 1–80 ký tự.');
-  result.custom_fields=[...new Set(custom.map(item=>item.trim()))];
+  const reserved=builtInFields[mode]||builtInFields.uid;
+  result.custom_fields=[...new Set(custom.map(item=>item.trim()).filter(item=>!reserved.has(normalizeLabel(item))))];
   for(const field of booleanFields){if(value[field]!==undefined && typeof value[field]!=='boolean')throw invalid('Cấu hình bắt buộc phải là bật/tắt.');result[field]=value[field]??(field==='password_required'&&mode==='login');}
   for(const field of ['server_options','region_options']){
     const list=value[field]??[];

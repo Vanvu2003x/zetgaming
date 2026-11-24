@@ -30,7 +30,7 @@ const accountLimit = rateLimit({
   keyGenerator:req=>hash(String(req.body?.email || '').trim().toLowerCase()),
   message:{error:'Bạn đã thử quá nhiều lần. Vui lòng thử lại sau.'},
 });
-async function passwordMatches(password, stored) {
+export async function passwordMatches(password, stored) {
   if (/^[a-f0-9]{32}:[a-f0-9]{128}$/.test(stored || '')) {
     const [salt,digest] = stored.split(':');
     return timingSafeEqual(await scrypt(password,salt,64),Buffer.from(digest,'hex'));

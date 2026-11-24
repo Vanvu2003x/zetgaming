@@ -1,0 +1,214 @@
+body[data-page="/coupons"] {
+  background: var(--ux-bg);
+  color: var(--ux-ink);
+}
+
+body[data-page="/coupons"] #main {
+  min-width: 0;
+  padding-top: clamp(20px, 3vw, 32px);
+}
+
+body[data-page="/coupons"] .page-title {
+  margin-bottom: 18px;
+}
+
+body[data-page="/coupons"] .page-title h1 {
+  color: var(--ux-ink);
+  font-size: clamp(24px, 2.6vw, 32px);
+  line-height: 1.15;
+}
+
+body[data-page="/coupons"] .page-title :is(.eyebrow, p) {
+  color: var(--ux-ink-soft);
+}
+
+body[data-page="/coupons"] #refresh {
+  flex-shrink: 0;
+  min-height: 40px;
+  border-color: var(--ux-orange);
+  border-radius: var(--ux-radius-sm);
+  background: var(--ux-orange);
+  color: var(--ux-bg);
+}
+
+body[data-page="/coupons"] #refresh:hover {
+  border-color: var(--ux-orange-strong);
+  background: var(--ux-orange-strong);
+}
+
+body[data-page="/coupons"] .coupon-overview {
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+body[data-page="/coupons"] .coupon-overview > div {
+  min-width: 0;
+  gap: 5px;
+  padding: 12px 16px;
+  border: 1px solid var(--ux-line);
+  border-radius: var(--ux-radius-sm);
+  background: var(--ux-surface);
+}
+
+body[data-page="/coupons"] .coupon-overview > div:first-child {
+  border-top-color: var(--ux-green);
+}
+
+body[data-page="/coupons"] .coupon-overview > div:nth-child(2) {
+  border-top-color: var(--ux-blue);
+}
+
+body[data-page="/coupons"] .coupon-overview > div:nth-child(3) {
+  border-top-color: var(--ux-red);
+}
+
+body[data-page="/coupons"] .coupon-overview :is(.overview-label, small) {
+  color: var(--ux-ink-soft);
+}
+
+body[data-page="/coupons"] .coupon-overview strong {
+  color: var(--ux-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+body[data-page="/coupons"] .coupons-panel {
+  max-width: none;
+  border-color: var(--ux-line);
+  border-radius: var(--ux-radius-sm);
+  background: var(--ux-surface);
+}
+
+body[data-page="/coupons"] .coupons-panel .panel-heading {
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--ux-line);
+}
+
+body[data-page="/coupons"] .coupons-panel .panel-heading h2 {
+  color: var(--ux-ink);
+}
+
+body[data-page="/coupons"] .coupons-panel :is(.panel-heading p, .period-tag, .empty) {
+  color: var(--ux-ink-soft);
+}
+
+body[data-page="/coupons"] .coupons-panel .period-tag {
+  border-color: var(--ux-line-strong);
+  border-radius: var(--ux-radius-sm);
+  background: var(--ux-surface-2);
+}
+
+body[data-page="/coupons"] #coupons-table .table-scroll {
+  scrollbar-color: var(--ux-line-strong) var(--ux-surface);
+}
+
+body[data-page="/coupons"] #coupons-table :is(th, td) {
+  padding: 9px 12px;
+  border-bottom-color: var(--ux-line);
+}
+
+body[data-page="/coupons"] #coupons-table th {
+  background: var(--ux-surface-2);
+  color: var(--ux-ink);
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: normal;
+}
+
+body[data-page="/coupons"] #coupons-table td {
+  height: 48px;
+  color: var(--ux-ink-soft);
+  font-size: 13px;
+}
+
+body[data-page="/coupons"] #coupons-table tbody tr:hover,
+body[data-page="/coupons"] #coupons-table tbody tr:focus-within {
+  background: var(--ux-surface-2);
+}
+
+body[data-page="/coupons"] #coupons-table .coupon-code {
+  color: var(--ux-ink);
+  font-size: 13px;
+}
+
+body[data-page="/coupons"] #coupons-table .secondary {
+  max-width: 24ch;
+  color: var(--ux-muted);
+  font-size: 11px;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+body[data-page="/coupons"] #coupons-table .amount {
+  color: var(--ux-orange);
+  font-variant-numeric: tabular-nums;
+}
+
+body[data-page="/coupons"] #coupons-table a {
+  color: var(--ux-blue);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+body[data-page="/coupons"] #coupons-table .badge {
+  --coupon-status: var(--ux-ink-soft);
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: var(--ux-surface-3);
+  background: color-mix(in srgb, var(--coupon-status) 15%, var(--ux-surface));
+  color: var(--coupon-status);
+  font-size: 11px;
+}
+
+body[data-page="/coupons"] #coupons-table .badge.green {
+  --coupon-status: var(--ux-green);
+}
+
+body[data-page="/coupons"] #coupons-table .badge.blue {
+  --coupon-status: var(--ux-blue);
+}
+
+body[data-page="/coupons"] #coupons-table .badge.red {
+  --coupon-status: var(--ux-red);
+}
+
+body[data-page="/coupons"] #coupons-table .badge.orange {
+  --coupon-status: var(--ux-amber);
+}
+
+body[data-page="/coupons"] #coupons-table [data-revoke-coupon] {
+  min-height: 32px;
+  padding-inline: 9px;
+  border: 1px solid var(--ux-line-strong);
+  border-radius: var(--ux-radius-sm);
+  background: var(--ux-surface-2);
+  color: var(--ux-red);
+}
+
+body[data-page="/coupons"] #coupons-table [data-revoke-coupon]:hover {
+  border-color: var(--ux-red);
+  background: var(--ux-surface-3);
+}
+
+body[data-page="/coupons"] #refresh:focus-visible,
+body[data-page="/coupons"] #coupons-table :is(a, [data-revoke-coupon], .table-scroll):focus-visible {
+  outline: 2px solid var(--ux-orange);
+  outline-offset: 2px;
+}
+
+body[data-page="/coupons"] #coupons-table .table-scroll:focus-visible {
+  outline-offset: -3px;
+}
+
+@media (max-width: 580px) {
+  body[data-page="/coupons"] #refresh {
+    min-width: 40px;
+  }
+
+  body[data-page="/coupons"] .coupon-overview > div {
+    padding: 10px 12px;
+  }
+
+  body[data-page="/coupons"] .coupons-panel .panel-heading {
+    padding-inline: 12px;
+  }
+}

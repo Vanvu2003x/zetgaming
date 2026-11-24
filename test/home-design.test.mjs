@@ -22,6 +22,6 @@ test('homepage styles are also loaded on other routes for client-side navigation
   for (const path of ['/', '/tin-tuc']) {
     const page = renderStorefront({ url: new URL(path, 'http://localhost'), data: { rows: [game] }, user: null, layout });
     assert.equal(page.status, 200);
-    assert.match(page.html, /href="\/home-discovery.css\?v=1"/);
+    assert.match(page.html, /href="\/home-discovery.css\?v=\d+"/);
   }
 });

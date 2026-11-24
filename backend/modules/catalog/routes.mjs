@@ -3,13 +3,15 @@ import { id } from '../../utils/ids.mjs';
 import { audit } from '../../utils/audit.mjs';
 import { requireRole } from '../../middleware/auth.mjs';
 import { requireCsrf } from '../../middleware/csrf.mjs';
+import { normalizeGameInputs } from '../../../shared/game-inputs.mjs';
 
 export const catalogRouter = Router();
 catalogRouter.get('/games', async (req, res, next) => {
   try {
-    const { rows } = await req.db.query(`SELECT g.id,g.slug,g.name,g.mode,g.image,g.thumbnail,g.platform,p.id package_id,p.name package_name,p.nominal,p.image package_image,p.badge,pr.tier,pr.customer_cents
-      FROM games g JOIN packages p ON p.game_id=g.id JOIN prices pr ON pr.package_id=p.id
-      WHERE g.active=true AND p.active=true ORDER BY g.name,pr.customer_cents`);
+    const { rows } = await req.db.query(`SELECT g.id,g.slug,g.name,g.mode,g.image,g.thumbnail,g.platform,p.id package_id,p.name package_name,p.nominal,p.image package_image,p.badge,pr.tier,ROUND(pr.customer_cents * (100 - COALESCE(ct.discount_percent,0)) / 100)::bigint customer_cents
+      FROM games g JOIN packages p ON p.game_id=g.id JOIN prices pr ON pr.package_id=p.id AND pr.tier='standard'
+      LEFT JOIN customer_tiers ct ON ct.code=$1
+      WHERE g.active=true AND p.active=true ORDER BY g.name,customer_cents`, [req.user?.tier || 'standard']);
     res.json(rows);
   } catch (error) { next(error); }
 });
@@ -21,7 +23,7 @@ catalogRouter.get('/admin/games', requireRole('admin'), async (req, res, next) =
       ), package_orders AS (
         SELECT package_id,COUNT(*)::int total FROM orders GROUP BY package_id
       )
-      SELECT g.id,g.slug,g.name,g.mode,g.image,g.thumbnail,g.platform,g.active,g.category_id,c.name category_name,COALESCE(MAX(go.total),0) order_count,
+      SELECT g.id,g.slug,g.name,g.mode,g.image,g.thumbnail,g.platform,g.active,g.input_config,g.category_id,c.name category_name,COALESCE(MAX(go.total),0) order_count,
       COALESCE(json_agg(json_build_object('id',p.id,'name',p.name,'nominal',p.nominal,'image',p.image,'badge',p.badge,'active',p.active,'tier',pr.tier,'customer_cents',pr.customer_cents,'ctv_cents',pr.ctv_cents,'order_count',COALESCE(po.total,0)) ORDER BY pr.customer_cents) FILTER (WHERE p.id IS NOT NULL),'[]') packages
       FROM games g LEFT JOIN packages p ON p.game_id=g.id LEFT JOIN prices pr ON pr.package_id=p.id AND pr.tier='standard'
       LEFT JOIN game_orders go ON go.game_id=g.id LEFT JOIN package_orders po ON po.package_id=p.id
@@ -32,24 +34,46 @@ catalogRouter.get('/admin/games', requireRole('admin'), async (req, res, next) =
   catch (error) { next(error); }
 });
 
+catalogRouter.get('/admin/tiers', requireRole('admin'), async (req, res, next) => {
+  try {
+    const { rows } = await req.db.query("SELECT ct.code tier,ct.name,ct.discount_percent,ct.active,COUNT(DISTINCT pr.package_id)::int package_count,COUNT(DISTINCT u.id)::int customer_count FROM customer_tiers ct LEFT JOIN prices pr ON pr.tier=ct.code LEFT JOIN users u ON u.tier=ct.code AND u.role <> 'admin' GROUP BY ct.code ORDER BY CASE WHEN ct.code='standard' THEN 0 ELSE 1 END,ct.code");
+    res.json(rows);
+  } catch (error) { next(error); }
+});
+
+catalogRouter.patch('/admin/tiers/:code', requireCsrf, requireRole('admin'), async (req, res, next) => {
+  try {
+    const code = String(req.params.code || '').trim().toLowerCase();
+    const name = String(req.body.name || '').trim().slice(0, 80);
+    const discount = Number(req.body.discount_percent);
+    const active = req.body.active === undefined ? true : Boolean(req.body.active);
+    if (!/^[a-z0-9][a-z0-9_-]{0,39}$/.test(code) || !name || !Number.isFinite(discount) || discount < 0 || discount > 100) return res.status(400).json({ error: 'Thông tin hạng khách không hợp lệ.' });
+    const result = await req.db.query('UPDATE customer_tiers SET name=$1,discount_percent=$2,active=$3 WHERE code=$4 RETURNING code,name,discount_percent,active', [name, discount, active, code]);
+    if (!result.rowCount) return res.status(404).json({ error: 'Không tìm thấy hạng khách.' });
+    await audit(req.db, req.user.id, 'customer_tier.updated', code, { discount_percent: discount, active });
+    res.json(result.rows[0]);
+  } catch (error) { next(error); }
+});
+
 catalogRouter.patch('/admin/games/:id', requireCsrf, requireRole('admin'), async (req, res, next) => {
   try {
     const current = (await req.db.query('SELECT * FROM games WHERE id=$1', [req.params.id])).rows[0];
     if (!current) return res.status(404).json({ error: 'Không tìm thấy game' });
     const name = String(req.body.name ?? current.name).trim().slice(0, 120);
+    const slug = String(req.body.slug ?? current.slug).trim().toLowerCase().slice(0, 100);
     const mode = String(req.body.mode ?? current.mode).trim().toLowerCase().slice(0, 40);
     const platform = String(req.body.platform ?? current.platform).trim().toLowerCase().slice(0, 20);
     const image = String(req.body.image ?? current.image).trim().slice(0, 1000);
     const thumbnail = String(req.body.thumbnail ?? current.thumbnail).trim().slice(0, 1000);
     const categoryId = req.body.category_id === undefined ? current.category_id : String(req.body.category_id || '').trim();
+    const config=normalizeGameInputs(req.body.input_config??current.input_config,mode);
     if (categoryId && !(await req.db.query('SELECT id FROM game_categories WHERE id=$1', [categoryId])).rowCount) return res.status(400).json({ error: 'Phân loại không tồn tại. Vui lòng chọn lại.' });
     const active = req.body.active === undefined ? current.active : Boolean(req.body.active);
     const validImage = value => /^(https:\/\/|\/(?!\/))/.test(value) && !/[<>]/.test(value);
-    if (!name || !['uid', 'login'].includes(mode) || !platform || !validImage(image) || (thumbnail && !validImage(thumbnail))) return res.status(400).json({ error: 'Thông tin game không hợp lệ' });
-    const result = await req.db.query('UPDATE games SET name=$1,mode=$2,image=$3,platform=$4,active=$5,thumbnail=$7,category_id=$8 WHERE id=$6 RETURNING id,slug,name,mode,image,thumbnail,platform,active,category_id', [name, mode, image, platform, active, req.params.id, thumbnail, categoryId || null]);
-    await audit(req.db, req.user.id, 'game.updated', req.params.id, { fields: ['name', 'mode', 'image', 'thumbnail', 'category_id', 'active'] });
+    if (!name || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || !['uid', 'login'].includes(mode) || !platform || !validImage(image) || (thumbnail && !validImage(thumbnail))) return res.status(400).json({ error: 'Thông tin game không hợp lệ' });
+    const result = await req.db.query(`WITH updated AS (UPDATE games SET name=$1,slug=$2,mode=$3,image=$4,platform=$5,active=$6,thumbnail=$8,category_id=$9,input_config=$10 WHERE id=$7 RETURNING *), logged AS (INSERT INTO audit_events(id,actor_id,action,entity_id,metadata) SELECT $11,$12,'game.updated',id,'{"fields":["name","slug","mode","image","thumbnail","category_id","active","input_config"]}'::jsonb FROM updated) SELECT * FROM updated`, [name, slug, mode, image, platform, active, req.params.id, thumbnail, categoryId || null,JSON.stringify(config),id(),req.user.id]);
     res.json(result.rows[0]);
-  } catch (error) { next(error); }
+  } catch (error) { if (error.code === '23505') return res.status(409).json({ error: 'Đường dẫn game đã tồn tại.' }); next(error); }
 });
 
 catalogRouter.patch('/admin/packages/:id', requireCsrf, requireRole('admin'), async (req, res, next) => {
@@ -60,14 +84,13 @@ catalogRouter.patch('/admin/packages/:id', requireCsrf, requireRole('admin'), as
     const nominal = String(req.body.nominal ?? current.nominal).trim().slice(0, 80);
     const image = String(req.body.image ?? current.image ?? '').trim().slice(0, 1000);
     const badge = String(req.body.badge ?? current.badge ?? '').trim().slice(0, 40) || null;
+    const tier = String(req.body.tier ?? 'standard').trim().toLowerCase().slice(0, 40);
     const customer = Number(req.body.customer_cents ?? current.customer_cents);
     const ctv = Number(req.body.ctv_cents ?? current.ctv_cents);
     const active = req.body.active === undefined ? current.active : Boolean(req.body.active);
     if (!name || !nominal || !Number.isSafeInteger(customer) || customer < 0 || !Number.isSafeInteger(ctv) || ctv < 0 || (image && /[<>]/.test(image))) return res.status(400).json({ error: 'Thông tin gói nạp không hợp lệ' });
-    const result = await req.db.query(`WITH updated AS (UPDATE packages SET name=$1,nominal=$2,image=NULLIF($3,''),badge=$4,active=$5 WHERE id=$6 RETURNING *)
-      SELECT u.*,pr.customer_cents,pr.ctv_cents FROM updated u JOIN prices pr ON pr.package_id=u.id AND pr.tier='standard'`, [name, nominal, image, badge, active, req.params.id]);
-    await req.db.query(`UPDATE prices SET customer_cents=$1,ctv_cents=$2 WHERE package_id=$3 AND tier='standard'`, [customer, ctv, req.params.id]);
-    await audit(req.db, req.user.id, 'package.updated', req.params.id, { fields: ['name','nominal','image','badge','active','customer_cents','ctv_cents'] });
+    if (!/^[a-z0-9][a-z0-9_-]{0,39}$/.test(tier)) return res.status(400).json({ error: 'Hạng khách không hợp lệ.' });
+    const result = await req.db.query(`WITH updated AS (UPDATE packages SET name=$1,nominal=$2,image=NULLIF($3,''),badge=$4,active=$5 WHERE id=$6 RETURNING *), priced AS (INSERT INTO prices(package_id,tier,customer_cents,ctv_cents) SELECT id,$7,$8,$9 FROM updated ON CONFLICT(package_id,tier) DO UPDATE SET customer_cents=excluded.customer_cents,ctv_cents=excluded.ctv_cents RETURNING *), logged AS (INSERT INTO audit_events(id,actor_id,action,entity_id,metadata) SELECT $10,$11,'package.updated',id,jsonb_build_object('tier',$7) FROM updated) SELECT u.*,p.tier,p.customer_cents,p.ctv_cents FROM updated u JOIN priced p ON p.package_id=u.id`, [name, nominal, image, badge, active, req.params.id,tier,customer,ctv,id(),req.user.id]);
     res.json({ ...result.rows[0], customer_cents: customer, ctv_cents: ctv });
   } catch (error) { next(error); }
 });

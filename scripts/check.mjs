@@ -1,6 +1,6 @@
 import { readdir } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
-const files = ['server.mjs', 'public/app.js', 'public/navigation.js', ...(await readdir('storefront')).filter(file => file.endsWith('.mjs')).map(file => 'storefront/' + file)];
+const files = ['server.mjs', 'public/app.js', 'public/auth-fit.mjs', 'public/navigation.js', ...(await readdir('storefront')).filter(file => file.endsWith('.mjs')).map(file => 'storefront/' + file)];
 const backendFiles = [];
 async function collectBackend(dir) {
   for (const entry of await readdir(dir, { withFileTypes: true })) {
@@ -11,6 +11,7 @@ async function collectBackend(dir) {
 }
 await collectBackend('backend');
 await collectBackend('admin');
+await collectBackend('shared');
 files.push(...backendFiles);
 for (const file of files) {
   const result = spawnSync(process.execPath, ['--check', file], { stdio: 'inherit' });

@@ -1,109 +1,139 @@
-# Kế hoạch triển khai toàn bộ hệ thống nạp game
+# Implementation Plan: Coupon hoàn tiền cho đơn khách ẩn danh
 
-Ngày: 12/10/2026. Trạng thái: kế hoạch để người dùng xem; chưa triển khai code.
-Nguồn yêu cầu: ../HIEU_HE_THONG_NAP_GAME.md. Yêu cầu đã xác nhận trong tài liệu đó ưu tiên hơn các phương án đề xuất ở đây.
+## Overview
 
-## 1. Công nghệ đề xuất
+Cho phép đơn chuyển khoản của khách không đăng nhập được xử lý như đơn vãng lai. Khi đơn vãng lai thất bại, hệ thống tự phát hành một coupon có giá trị hoàn tương ứng. Coupon được dùng một lần cho một đơn mới, được trừ server-side trong transaction và có màn quản lý riêng trong Admin.
 
-- JavaScript ESM cho toàn bộ mã ứng dụng; Node.js 24 LTS cho API, worker và công cụ. Không dùng PHP/Python làm backend.
-- React + Vite cho giao diện khách, admin và CTV; CSS với hệ token dùng chung, animation có chế độ giảm chuyển động.
-- Fastify cho API, validation schema và kiểm tra quyền phía server.
-- PostgreSQL cho đơn, thanh toán và sổ giao dịch ví; dùng pg và migration SQL có phiên bản để kiểm soát transaction/constraint trực tiếp.
-- Worker Node.js đọc transactional outbox trong PostgreSQL để gửi Telegram và xử lý tác vụ nền. Chưa cần Redis ở giai đoạn đầu.
-- npm workspaces: apps/web, apps/api, apps/worker, packages/contracts; migrations, tests, docs và infra ở thư mục gốc.
-- node:test cho nghiệp vụ và integration test với PostgreSQL thật; Playwright cho kiểm thử luồng trình duyệt.
-- Docker Compose cho môi trường chạy; reverse proxy HTTPS cho production. Chốt phiên bản dependency và lockfile khi khởi tạo.
+## Architecture Decisions
 
-Node.js chạy mã ứng dụng; PostgreSQL vẫn là dịch vụ dữ liệu riêng. Không hiểu “Node hết” là lưu ví/đơn trong file hoặc bộ nhớ Node.
+- Coupon được lưu riêng, liên kết với đơn nguồn và đơn sử dụng; không lưu plaintext ở audit ngoài mã coupon cần hiển thị cho khách/admin.
+- Mã coupon là một lần dùng, khóa row bằng `FOR UPDATE` khi áp dụng để chống double-spend.
+- Đơn direct không đăng nhập dùng `guest_token_hash`; ví ZetGaming vẫn bắt buộc tài khoản.
+- Coupon phát hành tự động khi admin xác nhận đơn vãng lai `failed`; khách xem coupon trên trang chi tiết/tra cứu đơn.
+- Giá thanh toán cuối được lưu ở `orders.price_cents`; giá gốc và mức giảm được lưu riêng để admin/audit minh bạch.
 
-Nguồn kỹ thuật đã tham khảo: https://nodejs.org/en/about/previous-releases ; https://fastify.dev/docs/latest/ ; https://www.postgresql.org/docs/current/transaction-iso.html .
+## Task List
 
-## 2. Các quyết định nghiệp vụ cần chốt trước phần phụ thuộc
+### Phase 1: Foundation
+- [ ] Migration coupon, liên kết đơn nguồn/đơn sử dụng, giá gốc và giảm giá.
+- [ ] API/service phát hành coupon idempotent cho đơn vãng lai thất bại.
+- [ ] Mở direct checkout cho guest, giữ wallet checkout bắt buộc đăng nhập.
 
-| Vấn đề | Phương án đề xuất, chưa được người dùng duyệt |
-| --- | --- |
-| Tiền trả CTV | Mức trả cố định cho mỗi gói; lưu mức trả tại lúc phân đơn. Chưa chốt giá riêng từng CTV |
-| Ghi có ví CTV | Admin duyệt bằng chứng hoàn thành rồi ghi có một lần |
-| Thanh toán trực tiếp/nạp ví | Bước đầu admin đối soát chuyển khoản; tích hợp tự động khi có nhà cung cấp và thông tin kết nối |
-| Hạng khách | Admin tạo hạng và gán thủ công trước; chưa làm tự nâng hạng |
-| Trùng đơn khách | Chặn gửi lặp cùng yêu cầu; quy tắc chặn đơn mới cùng tài khoản đang xử lý còn cần xác nhận |
-| Rút CTV | Giữ số dư khi tạo yêu cầu; admin xác minh và chi trả; không tự động chuyển tiền ngân hàng khi chưa có tích hợp |
-| Login/OTP | Trường nhập theo cấu hình game; cần chốt game đầu tiên và cách trao đổi OTP |
-| Thu hồi đơn | Chỉ phân lại khi đã xác minh chưa nạp; kết quả không rõ phải vào trạng thái cần kiểm tra |
-| Dữ liệu login | Chỉ người được phép xử lý xem; cần chốt thời hạn xóa và quyền xem của admin |
+### Checkpoint: Foundation
+- [ ] Migration chạy được.
+- [ ] Build và test transaction coupon pass.
 
-Có thể làm nền tảng tài khoản, danh mục và bố cục trước. Không mặc định các phương án trên là yêu cầu đã được duyệt.
+### Phase 2: Checkout
+- [ ] Thêm ô nhập coupon vào form thanh toán.
+- [ ] Áp dụng coupon atomically, chỉ dùng một lần, tính lại số tiền QR.
+- [ ] Hiển thị mã coupon ở trang chi tiết đơn thất bại/tra cứu.
 
-## 3. Phạm vi hoàn chỉnh
+### Phase 3: Admin
+- [ ] API danh sách coupon và thu hồi coupon chưa dùng.
+- [ ] Khu vực Coupon trong Admin: mã, giá trị, đơn nguồn, đơn dùng, trạng thái, thời gian.
+- [ ] Audit thao tác phát hành, dùng và thu hồi.
 
-Khách: đăng ký/đăng nhập, danh mục game, tìm kiếm, gói và giá theo hạng, form UID/login, thanh toán trực tiếp/ví, nạp ví, lịch sử giao dịch, trạng thái đơn và thông tin tài khoản.
+### Checkpoint: Complete
+- [ ] Guest tạo đơn direct → admin đánh dấu thất bại → coupon xuất hiện.
+- [ ] Guest dùng coupon cho đơn mới → discount đúng, coupon chuyển redeemed.
+- [ ] Gửi lại request hoặc dùng lại mã không thể trừ lần hai.
 
-CTV: đăng nhập, đơn được phân, nhận đơn độc quyền, xem thông tin login có kiểm soát, gửi kết quả/bằng chứng, báo lỗi, ví thu nhập và yêu cầu rút.
+## Risks and Mitigations
 
-Admin: danh mục game/gói, hạng và giá, khách, CTV, duyệt thanh toán, duyệt/phân đơn bằng checkbox chọn một số/tất cả, kiểm tra hoàn thành, hoàn tiền, rút CTV, phân quyền nhân viên, Telegram, nội dung web, nhật ký và báo cáo.
+| Risk | Impact | Mitigation |
+|---|---|---|
+| Double-spend coupon | High | Row lock + trạng thái redeemed trong cùng transaction |
+| Coupon bị đoán | High | Mã random đủ dài, rate limit và không liệt kê mã đầy đủ ở log |
+| Đơn coupon = 0 | Medium | Đánh dấu đã thanh toán và chuyển pending_admin, không tạo QR 0đ |
+| Khách mất cookie guest | Medium | Tra cứu bằng mã đơn; coupon được hiển thị lại trong trang đơn |
 
-UID: xây contract nhà cung cấp và bộ giả lập để kiểm thử. Tích hợp live chỉ khi có game/API thật; không coi mock là nạp game thực tế.
+## Open Questions
 
-## 4. Mô hình dữ liệu và trạng thái
+- Coupon hiện chưa gửi email tự động; trước mắt hiển thị ngay trên trang đơn và Admin.
 
-Các nhóm bảng: users, roles/permissions, sessions, customer_tiers, games, packages, tier_prices, ctv_rates, orders, order_assignments, order_events, encrypted_credentials, payment_intents, payment_events, wallet_accounts, ledger_transactions/entries, wallet_holds, withdrawal_requests, fulfillment_attempts, evidence_files, idempotency_requests, outbox_events, audit_events và site_settings.
+---
 
-- Tiền VND dùng số nguyên, không tính bằng số thực; server tính lại giá, không tin giá từ trình duyệt.
-- Giá, gói và mức trả lưu snapshot; thay đổi cấu hình không sửa lịch sử đơn.
-- Số dư có thể dùng cache trong DB nhưng sổ giao dịch là căn cứ đối soát; ghi cache và ledger trong cùng transaction.
-- Trạng thái thanh toán tách khỏi trạng thái thực hiện đơn.
-- Luồng đề xuất: chờ thanh toán → chờ admin duyệt → sẵn sàng nhận → đã nhận → đang nạp → chờ duyệt kết quả → hoàn thành. Nhánh: bị từ chối, đã hủy, cần kiểm tra. Hoàn tiền theo nghiệp vụ thanh toán riêng.
-- Chuyển trạng thái chỉ qua lệnh nghiệp vụ có điều kiện và audit; không có API tùy ý sửa status/số dư.
+# Implementation Plan: Gmail Pub/Sub ACB Reconciliation
 
-## 5. Chống trùng và ACID
+## Overview
 
-1. Tạo đơn có khóa idempotency gắn người dùng và nội dung yêu cầu: gửi lại trả cùng kết quả; cùng khóa nhưng nội dung khác bị từ chối. Unique constraint là hàng rào cuối.
-2. Nhận đơn dùng cập nhật có điều kiện trong transaction, kiểm tra CTV được phân và trạng thái hiện tại. Chỉ một claim thành công; các lượt khác nhận HTTP 409 với thông báo ngắn.
-3. Thanh toán, hoàn tiền, ghi có CTV có mã nghiệp vụ duy nhất. Webhook lặp hoặc admin bấm lại không tạo bút toán lần hai.
-4. Mua bằng ví phải tạo đơn, trừ tiền/ghi ledger và ghi outbox trong cùng transaction. Các luồng nhiều điều kiện dùng khóa hàng hoặc SERIALIZABLE phù hợp, retry có giới hạn khi transaction xung đột.
-5. Rút tiền phải giữ số dư nguyên tử; duyệt/chi trả/từ chối không được tiêu cùng khoản giữ hai lần. Chi trả ngoài hệ thống chưa rõ kết quả phải đối soát, không gửi lại mù quáng.
-6. Outbox commit cùng nghiệp vụ; worker có thể chạy lại. Thông báo Telegram có thể bị lặp trong trường hợp phản hồi không rõ, nhưng không được gây nạp hoặc ghi tiền lặp.
-7. Nạp UID chỉ retry an toàn khi nhà cung cấp hỗ trợ khóa chống lặp hoặc tra cứu xác minh. Timeout đưa vào cần kiểm tra.
-8. Nạp login thủ công không thể bảo đảm exactly-once bên ngoài web bằng ACID. Không tự giải phóng đơn đang nạp do hết giờ; yêu cầu xác minh trước khi phân lại.
+Nhận thông báo email biến động số dư ACB qua Gmail API + Google Cloud Pub/Sub, bóc tách nội dung `ZET<MÃ ĐƠN>ZET`, rồi đối soát an toàn với đơn chuyển khoản và nạp ví.
 
-## 6. Bảo mật cần triển khai và nghiệm thu
+## Architecture Decisions
 
-- Session server-side với cookie HttpOnly/Secure/SameSite, bảo vệ CSRF, thu hồi phiên; mật khẩu web hash Argon2id. MFA cho admin/CTV, recovery có kiểm soát.
-- Phân quyền server-side theo vai trò, chủ sở hữu và CTV được phân/đã nhận; chống đọc đơn, ví, tệp của người khác bằng đổi ID.
-- Thông tin login game mã hóa xác thực, ví dụ AES-256-GCM, khóa ngoài DB, quản lý phiên bản/rotation. Mật khẩu web phải hash, không mã hóa để giải ngược.
-- Không đưa login/OTP vào Telegram, URL, log, analytics hoặc API danh sách. Màn hình xem bí mật có audit và không cache; hạn chế dữ liệu trả về.
-- Validation, SQL tham số, chống XSS, CSP, giới hạn request/login, quản lý secrets, kiểm tra upload và tệp bằng chứng có quyền truy cập.
-- Sự kiện tiền/đơn/quyền được audit; chỉnh sửa tài chính bằng bút toán điều chỉnh có lý do. Không cho người vận hành sửa lịch sử tùy ý.
-- Backup DB mã hóa, bảo vệ và lưu dự phòng khóa mã hóa, kiểm thử phục hồi. Nếu thiếu khóa thì dữ liệu login không phục hồi được.
-- Kiểm thử bảo mật và cập nhật dependency trước production. Không đưa ra cam kết không thể bị hack.
+- Pub/Sub chỉ đánh thức worker; worker dùng `historyId` để đọc message mới từ Gmail API.
+- Parser chỉ nhận email từ sender/subject đã cấu hình, mã đơn phải đúng định dạng và số tiền phải khớp.
+- Lưu `provider_event_id`/Message-ID để idempotent; giao dịch mơ hồ đi vào `needs_review`, không tự xác nhận.
+- Gmail watch phải được gia hạn định kỳ; khi chưa đủ cấu hình thì integration tắt và không ảnh hưởng luồng thủ công.
 
-## 7. Giao diện
+## Task List
 
-Khách phối hợp ShopThinhSang (luồng nạp), Eris (shop ngắn gọn) và Easyup (tham khảo chuyển động). Cần khảo sát runtime ShopThinhSang và animation Easyup kỹ hơn trước khi chốt thiết kế.
+### Phase 1: Contract and parser
+- [x] Thêm cấu hình Gmail/PubSub vào env example.
+- [x] Parser email ACB: sender, amount, reference, content, occurredAt, order code.
+- [x] Test mã `ZET...ZET`, email lỗi, số tiền lỗi và nội dung nhiễu.
 
-Trang chủ: header gọn, banner ngắn, tìm game, lưới game. Trang game: ảnh, gói/giá, form phù hợp và tổng tiền rõ. Các màn ví/lịch sử ưu tiên số tiền và trạng thái. Admin/CTV ưu tiên bảng, lọc và thao tác rõ ràng; không áp dụng ít chữ bằng cách bỏ dữ liệu cần thiết.
+### Phase 2: Secure ingestion
+- [x] Endpoint Pub/Sub push có xác thực OIDC/audience.
+- [x] Gmail history/message client với scope readonly.
+- [x] Migration lưu mailbox cursor, raw event hash và trạng thái xử lý.
 
-Animation tập trung ở thẻ game, chọn gói, chuyển bước và phản hồi thao tác; responsive/mobile, keyboard, reduced-motion. Chưa chốt thương hiệu, bảng màu và tài sản hình/video.
+### Phase 3: Reconciliation
+- [ ] Match đơn nạp game và wallet top-up trong transaction.
+- [ ] Chống duplicate, mismatch amount, duplicate order và replay.
+- [ ] Ghi audit và đưa trường hợp bất thường vào `needs_review`.
 
-## 8. Thứ tự triển khai
+### Checkpoint: Config-ready
+- [x] Không bật auto-confirm khi thiếu config.
+- [x] Parser/unit/integration tests pass.
+- [x] Build pass và manual test bằng fixture email.
 
-Chi tiết từng việc và điều kiện nghiệm thu nằm trong todo.md.
+## Open Questions
 
-1. Chốt contract/quy tắc tiền → khởi tạo workspace và database → tài khoản/quyền.
-2. Danh mục và giá theo hạng → ledger/ví → tạo đơn bằng ví chống lặp. Kiểm thử cạnh tranh sớm.
-3. Thanh toán trực tiếp/nạp ví → duyệt và phân checkbox → CTV nhận độc quyền.
-4. Bí mật login → kết quả nạp/duyệt → thu nhập CTV → rút tiền/hoàn tiền.
-5. Telegram → giao diện hoàn thiện → báo cáo/quản lý nội dung → contract UID.
-6. Kiểm thử toàn luồng, lỗi/khôi phục và bảo mật → môi trường staging → kiểm thử backup/restore → chuẩn bị release.
+- Gmail nhận thông báo nào và email sender/subject cụ thể của ACB là gì?
+- Dùng Pub/Sub push URL hay pull subscription trên VPS?
+- Có cần tự động xác nhận cả wallet top-up và đơn game trong cùng worker không?
 
-Sau mỗi 2–3 việc chạy kiểm thử liên quan và build. Làm từng lát tính năng từ DB đến API/UI; không đợi viết xong toàn bộ API mới nối giao diện. Schema/tiền/claim làm tuần tự; màn hình độc lập có thể làm song song sau khi contract ổn định.
+---
 
-## 9. Điều kiện hoàn tất
+# Implementation Plan: ZetGaming Admin UI/UX Redesign with Lucian
 
-- Khách thanh toán cả hai cách; giá đúng hạng; admin duyệt/phân; một CTV xử lý; tiền ghi đúng; rút/hoàn có đối soát.
-- Kiểm thử đồng thời chứng minh một lượt nhận thành công, không âm ví, không bút toán trùng; injection lỗi chứng minh transaction rollback.
-- Restart/retry/webhook lặp không làm mất hoặc lặp nghiệp vụ; trạng thái không rõ không bị nạp lại tự động.
-- Kiểm thử quyền không lộ đơn, ví, login hay bằng chứng; kiểm tra log và Telegram không chứa bí mật.
-- Giao diện mobile/desktop và reduced-motion đạt kiểm tra; hướng dẫn chạy, quản trị, khôi phục và triển khai đầy đủ.
-- Tích hợp chưa có thông tin thật được ghi là chưa kết nối; không công bố sẵn sàng bán game UID trước khi xác minh live.
-- Production cần thông tin hạ tầng, domain, thanh toán và Telegram thật; việc triển khai production là bước riêng sau nghiệm thu.
+Chi tiết đầy đủ nằm ở [docs/admin-redesign-lucian-plan.md](../docs/admin-redesign-lucian-plan.md). Phạm vi lần này là redesign UI/UX, chưa thay đổi API/nghiệp vụ.
+
+## Task List
+
+### Phase 1: Foundation
+- [ ] Tách admin design tokens và chuẩn hóa typography, spacing, color/status, focus.
+- [ ] Làm lại admin shell: sidebar nhóm, topbar, breadcrumb, drawer mobile, toast/dialog.
+- [ ] Port có scope các Lucian elements cho navigation, feedback và filter surface; giữ MIT credit.
+
+### Checkpoint: Shell
+- [ ] Tất cả route admin hiện tại vẫn mở.
+- [ ] Responsive pass ở 375/768/1024/1440px.
+- [ ] Keyboard/focus/reduced-motion pass.
+
+### Phase 2: Operations first
+- [ ] Redesign dashboard theo priority queue + KPI + chart + activity.
+- [ ] Redesign đơn hàng thành data table/card responsive và detail drawer.
+- [ ] Redesign payment/reconciliation và trạng thái needs-review.
+
+### Checkpoint: Money flows
+- [ ] Không nhầm payment state với fulfillment state.
+- [ ] Confirm/retry/refund có lý do, loading, success/error feedback.
+- [ ] Không lộ secret/login game trong UI hoặc log.
+
+### Phase 3: Catalog and management
+- [ ] Redesign kho game, upload/preview banner-thumbnail và editor.
+- [ ] Redesign gói nạp compact, có ảnh, số đơn và doanh thu nếu API có dữ liệu.
+- [ ] Redesign phân loại, nội dung cửa hàng, khách hàng, CTV và coupon.
+
+### Phase 4: Analytics and hardening
+- [ ] Redesign báo cáo, thanh toán cấu hình và bảo mật.
+- [ ] Visual regression + browser smoke + accessibility checklist.
+- [ ] Build image, deploy staging, kiểm tra rồi mới promote production.
+
+## Open Questions
+
+- Chốt ưu tiên màu tối OLED hoàn toàn hay dark navy có light surface cho bảng.
+- Admin muốn ưu tiên desktop hay dùng mobile tablet thường xuyên.
+- Có cần command search toàn hệ thống và phím tắt cho các thao tác đơn hàng không.

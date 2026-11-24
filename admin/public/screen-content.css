@@ -1,0 +1,207 @@
+body[data-page="/content"] #main {
+  min-width: 0;
+  padding-inline: clamp(16px, 3vw, 36px);
+}
+
+body[data-page="/content"] .page-title {
+  margin-bottom: 18px;
+}
+
+body[data-page="/content"] .page-title .eyebrow {
+  display: none;
+}
+
+body[data-page="/content"] .page-title h1 {
+  font-size: clamp(25px, 2.6vw, 34px);
+  line-height: 1.12;
+  letter-spacing: -.035em;
+}
+
+body[data-page="/content"] .page-title p {
+  margin-top: 6px;
+  color: var(--ux-ink-soft);
+  line-height: 1.55;
+}
+
+body[data-page="/content"] #page-content > .panel:has(> .content-form) {
+  max-width: 960px;
+  border: 1px solid var(--ux-line);
+  border-radius: var(--ux-radius-md);
+  background: var(--ux-surface);
+  box-shadow: none;
+}
+
+body[data-page="/content"] #page-content > .panel:has(> .content-form) > .panel-heading {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--ux-line);
+  border-radius: var(--ux-radius-md) var(--ux-radius-md) 0 0;
+  background: var(--ux-surface-2);
+  box-shadow: inset 3px 0 var(--ux-orange);
+}
+
+body[data-page="/content"] #page-content .panel-heading h2 {
+  color: var(--ux-ink);
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+body[data-page="/content"] #page-content .panel-heading p {
+  color: var(--ux-ink-soft);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+body[data-page="/content"] #page-content .content-form {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  max-width: none;
+  gap: 16px;
+  padding: 20px;
+  color-scheme: dark;
+}
+
+body[data-page="/content"] .content-form label {
+  min-width: 0;
+  color: var(--ux-ink-soft);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+body[data-page="/content"] .content-form > :is(label:has(textarea, [name="image"]), .check-row, .form-actions, .content-preview) {
+  grid-column: 1 / -1;
+}
+
+body[data-page="/content"] .content-form :is(input:not([type="checkbox"]), textarea) {
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 40px;
+  border: 1px solid var(--ux-line-strong);
+  border-radius: var(--ux-radius-sm);
+  background: var(--ux-surface-2);
+  color: var(--ux-ink);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+body[data-page="/content"] .content-form input::placeholder {
+  color: var(--ux-muted);
+}
+
+body[data-page="/content"] .content-form input[type="file"] {
+  padding: 5px;
+  color: var(--ux-ink-soft);
+  font-size: 12px;
+}
+
+body[data-page="/content"] .content-form input::file-selector-button {
+  min-height: 28px;
+  margin-inline-end: 8px;
+  padding-inline: 10px;
+  border: 1px solid var(--ux-line-strong);
+  border-radius: 5px;
+  background: var(--ux-surface-3);
+  color: var(--ux-ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+body[data-page="/content"] .content-form .check-row {
+  width: fit-content;
+  min-height: 36px;
+  cursor: pointer;
+}
+
+body[data-page="/content"] .content-form .check-row input {
+  flex: none;
+  margin: 0;
+  accent-color: var(--ux-orange);
+  cursor: pointer;
+}
+
+@media (forced-colors: none) {
+  body[data-page="/content"] .content-form .check-row input {
+    appearance: none;
+    display: grid;
+    align-items: center;
+    width: 36px;
+    height: 20px;
+    padding: 2px;
+    border: 1px solid var(--ux-muted);
+    border-radius: 999px;
+    background: var(--ux-surface-3);
+  }
+
+  body[data-page="/content"] .content-form .check-row input::before {
+    content: "";
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--ux-ink);
+  }
+
+  body[data-page="/content"] .content-form .check-row input:checked {
+    justify-items: end;
+    border-color: var(--ux-orange);
+    background: var(--ux-orange);
+  }
+
+  body[data-page="/content"] .content-form .check-row input:checked::before {
+    background: var(--ux-bg);
+  }
+}
+
+body[data-page="/content"] .content-form :is(input, textarea, .button):focus-visible {
+  outline: 2px solid var(--ux-orange);
+  outline-offset: 2px;
+}
+
+body[data-page="/content"] .content-form .content-preview {
+  display: block;
+  width: 100%;
+  max-height: 280px;
+  aspect-ratio: 12 / 5;
+  object-fit: contain;
+  border: 1px solid var(--ux-line);
+  border-radius: var(--ux-radius-sm);
+  background: var(--ux-bg);
+}
+
+body[data-page="/content"] .content-form .content-preview[hidden] {
+  display: none;
+}
+
+body[data-page="/content"] .content-form .form-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--ux-line);
+}
+
+body[data-page="/content"] .content-form .form-actions .button {
+  min-height: 40px;
+  border-radius: var(--ux-radius-sm);
+  box-shadow: none;
+}
+
+body[data-page="/content"] .content-form .form-actions .button.primary:disabled {
+  opacity: .65;
+  cursor: wait;
+}
+
+@media (max-width: 720px) {
+  body[data-page="/content"] #page-content .content-form {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 16px;
+  }
+
+  body[data-page="/content"] #page-content > .panel:has(> .content-form) > .panel-heading {
+    padding-inline: 16px;
+  }
+
+  body[data-page="/content"] .content-form .form-actions .button {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+}

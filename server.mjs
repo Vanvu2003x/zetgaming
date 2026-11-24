@@ -13,7 +13,7 @@ const production=process.env.NODE_ENV==='production';
 const formRoutes={
   '/dang-nhap':'/api/auth/login','/dang-ky':'/api/auth/register',
   '/quen-mat-khau':'/api/auth/forgot-password','/dat-lai-mat-khau':'/api/auth/reset-password',
-  '/dang-xuat':'/api/auth/logout','/dat-don':'/api/orders',
+  '/dang-xuat':'/api/auth/logout','/dat-don':'/api/orders','/nap-so-du':'/api/wallet-topups',
 };
 export function createFrontend({backendUrl=process.env.BACKEND_URL || 'http://127.0.0.1:4180', adminOnly=false}={}) {
   const app=express();
@@ -27,8 +27,13 @@ export function createFrontend({backendUrl=process.env.BACKEND_URL || 'http://12
       upgradeInsecureRequests:production ? [] : null,
     }},
     strictTransportSecurity:production ? {maxAge:31536000,includeSubDomains:true} : false,
-    referrerPolicy:{policy:'no-referrer'},
+    referrerPolicy:{policy:'same-origin'},
   }));
+  // OAuth codes must never become referrers; ordinary native forms need their origin.
+  app.use((req,res,next)=>{
+    if(/^\/api\/auth\/oauth\/google(?:\/callback)?$/.test(req.path))res.set('Referrer-Policy','no-referrer');
+    next();
+  });
   app.use('/api/admin/uploads', express.raw({type:['image/png','image/jpeg','image/webp'],limit:'5mb'}));
   app.use(express.json({limit:'64kb'}));
   app.use(express.urlencoded({extended:false,limit:'64kb'}));
@@ -56,14 +61,18 @@ export function createFrontend({backendUrl=process.env.BACKEND_URL || 'http://12
       res.status(response.status).set('Cache-Control','no-store').type('json').send(await response.text());
     }catch(error){next(error);}
   });
+  app.get('/styles.css',(_req,res)=>res.sendFile(join(ROOT,'public','storefront.css')));
+  app.use(express.static(join(ROOT,'public'),{index:false,dotfiles:'deny',maxAge:0}));
   if (adminOnly) {
+    // Admin previews use the same uploaded game assets as the storefront.
+    app.use('/uploads', express.static(join(ROOT, 'public', 'uploads'), { index: false, dotfiles: 'deny', maxAge: 0 }));
     app.use('/assets', express.static(join(ROOT, 'admin', 'public'), { index: false, dotfiles: 'deny', maxAge: 0, setHeaders: res => res.setHeader('Cache-Control', 'no-store') }));
     app.use(createAdminRouter(backend));
   }
   app.post(Object.keys(formRoutes),async(req,res,next)=>{
     try{
       const body={...req.body};
-      if(req.path==='/dat-don')body.target={uid:body.uid||'',login:body.login||''};
+      if(req.path==='/dat-don')body.target={...Object.fromEntries(['uid','login','password','server','region','character'].map(key=>[key,body[key]||''])),custom:Object.fromEntries(Object.entries(body).filter(([key])=>/^custom_\d+$/.test(key)).map(([key,value])=>[key.slice(7),String(value||'')]))};
       const response=await backend(req,res,formRoutes[req.path],body);
       const result=await response.json();
       res.set('Cache-Control','no-store');
@@ -79,18 +88,19 @@ export function createFrontend({backendUrl=process.env.BACKEND_URL || 'http://12
       if(req.path==='/dang-xuat')return res.redirect(303,'/da-dang-xuat');
       if(req.path==='/quen-mat-khau')return res.redirect(303,'/quen-mat-khau?sent=1');
       if(req.path==='/dat-lai-mat-khau')return res.redirect(303,'/dat-lai-mat-khau?success=1');
+      if(req.path==='/nap-so-du')return res.redirect(303,'/nap-so-du/'+encodeURIComponent(result.code));
       return res.redirect(303,'/lich-su/'+encodeURIComponent(result.code));
     }catch(error){next(error);}
   });
   app.get('/admin', (_req, res) => res.redirect(303, process.env.ADMIN_ORIGIN || 'http://localhost:4174'));
-  app.get('/styles.css',(_req,res)=>res.sendFile(join(ROOT,'public','storefront.css')));
-  app.use(express.static(join(ROOT,'public'),{index:false,dotfiles:'deny',maxAge:0}));
   app.use(async(req,res,next)=>{
     if(!['GET','HEAD'].includes(req.method))return res.status(404).json({error:'Không tìm thấy đường dẫn'});
     try{
       const url=new URL(req.originalUrl,'http://localhost');
       const query=new URLSearchParams({path:url.pathname,status:url.searchParams.get('status')||'all'});
+      if(url.pathname==='/lich-su')query.set('code',(url.searchParams.get('code')||'').slice(0,40));
       const response=await backend(req,res,'/api/storefront?'+query);
+      if(response.status===429)return res.status(429).set('Cache-Control','no-store').type('text').send('Bạn thao tác quá nhanh. Vui lòng chờ một phút rồi tra cứu lại.');
       if(!response.ok)throw new Error('Backend unavailable');
       const data=await response.json();
       const page=renderStorefront({url,user:data.user,data,csrfToken:data.csrf_token,layout:await readFile(join(ROOT,'views','layout.html'),'utf8')});
