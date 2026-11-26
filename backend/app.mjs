@@ -32,6 +32,7 @@ import { adminLifecycleRouter } from './modules/orders/admin-lifecycle.mjs';
 import { couponPreviewRouter } from './modules/orders/coupon-preview.mjs';
 import { dispatchRouter } from './modules/dispatch/routes.mjs';
 import { storefrontRouter } from './modules/storefront/routes.mjs';
+import { savedInputsRouter } from './modules/storefront/saved-inputs.mjs';
 import { walletRouter } from './modules/wallet/routes.mjs';
 import { khoablackSyncRouter } from './modules/providers/khoablack-sync.mjs';
 
@@ -70,6 +71,7 @@ export function createApp() {
   app.use('/api', categoriesRouter);
   app.use('/api', createUploadsRouter());
   app.use('/api', storefrontRouter);
+  app.use('/api', savedInputsRouter);
   app.use('/api', reconciliationRouter);
   app.use('/api', gmailReconciliationRouter);
   app.use('/api', walletRouter);

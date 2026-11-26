@@ -34,11 +34,14 @@ export function gameCheckout(game, rows, user, key) {
   const targetLabel = login ? 'Tài khoản game' : 'UID người chơi';
   const first = rows[0];
   if (!first) return `<section id="uidGuide" class="checkout-empty" role="status"><span>${icon('wallet')}</span><h2>Gói nạp đang được cập nhật</h2><p>Bạn có thể chọn game khác hoặc quay lại sau.</p><a href="/nap-game">Quay lại danh sách game ${icon('arrow')}</a></section>`;
-  return `<form id="orderForm" action="/dat-don" method="post" class="game-checkout">
+  const savedActions = user
+    ? `<span class="checkout-saved-actions"><button type="button" class="checkout-saved-button" id="useSavedInput">Dùng thông tin đã lưu</button><button type="button" class="checkout-saved-button checkout-saved-button-primary" id="saveInput">Lưu thông tin</button></span>`
+    : `<a class="checkout-saved-login" href="${loginHref('/nap-game/' + game.slug)}">Đăng nhập để lưu thông tin</a>`;
+  return `<form id="orderForm" action="/dat-don" method="post" class="game-checkout" data-game-slug="${e(game.slug)}">
     <input type="hidden" name="idempotency_key" value="${e(key)}">
     <input type="hidden" name="return_to" value="/nap-game/${e(game.slug)}">
     <section class="account-panel">
-      ${heading('01', 'Thông tin người chơi', `<span class="checkout-required">Bắt buộc</span>`)}
+      ${heading('01', 'Thông tin người chơi', savedActions)}
       <label class="checkout-target-label" for="target">${targetLabel}</label>
       <div class="target-field">${icon('player')}<input id="target" name="${login ? 'login' : 'uid'}" placeholder="${login ? 'Nhập tài khoản game của bạn' : 'Nhập UID của bạn'}" inputmode="${login ? 'text' : 'numeric'}" autocomplete="off" aria-describedby="uidHint" maxlength="120" required></div>
       ${config.password_required ? `<label class="checkout-target-label" for="password">Mật khẩu game</label><div class="target-field">${icon('lock')}<input id="password" name="password" type="password" placeholder="Nhập mật khẩu game" autocomplete="off" maxlength="200" required></div>` : ''}

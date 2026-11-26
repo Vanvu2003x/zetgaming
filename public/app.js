@@ -91,6 +91,43 @@ function bindForms() {
   });
 
   const orderForm = $('#orderForm');
+  const savedInputTarget = () => {
+    const target = {};
+    for (const name of ['uid', 'login', 'password', 'additional_info', 'zalo', 'note', 'server', 'region', 'character']) {
+      const field = orderForm?.elements.namedItem(name);
+      if (field?.value) target[name] = field.value;
+    }
+    const custom = {};
+    orderForm?.querySelectorAll('[name^="custom_"]').forEach(field => { custom[field.name.slice(7)] = field.value; });
+    if (Object.keys(custom).length) target.custom = custom;
+    return target;
+  };
+  const fillSavedInput = target => {
+    for (const [name, value] of Object.entries(target || {})) {
+      if (name === 'custom') continue;
+      const field = orderForm?.elements.namedItem(name);
+      if (field) { field.value = value || ''; field.dispatchEvent(new Event('input', { bubbles: true })); }
+    }
+    for (const [index, value] of Object.entries(target?.custom || {})) {
+      const field = orderForm?.elements.namedItem(`custom_${index}`);
+      if (field) field.value = value || '';
+    }
+    $('#target')?.dispatchEvent(new Event('input', { bubbles: true }));
+  };
+  const savedSlug = orderForm?.dataset.gameSlug;
+  $('#saveInput')?.addEventListener('click', async event => {
+    const button = event.currentTarget;
+    if (!orderForm.reportValidity()) return;
+    button.disabled = true;
+    try { await api(`/api/saved-inputs/${encodeURIComponent(savedSlug)}`, { target: savedInputTarget() }); button.textContent = 'Đã lưu'; setTimeout(() => { button.textContent = 'Lưu thông tin'; button.disabled = false; }, 1800); }
+    catch (error) { button.disabled = false; window.alert(error.message); }
+  });
+  $('#useSavedInput')?.addEventListener('click', async event => {
+    const button = event.currentTarget;
+    button.disabled = true;
+    try { const response = await fetch(`/api/saved-inputs/${encodeURIComponent(savedSlug)}`, { credentials: 'same-origin' }); const data = await response.json(); if (!response.ok) throw new Error(data.error || 'Chưa có thông tin được lưu.'); fillSavedInput(data.target); button.textContent = 'Đã điền thông tin'; setTimeout(() => { button.textContent = 'Dùng thông tin đã lưu'; button.disabled = false; }, 1800); }
+    catch (error) { button.disabled = false; window.alert(error.message); }
+  });
   if (orderForm && !orderForm.querySelector('[name="coupon_code"]')) {
     const orderPanel = orderForm.querySelector('.order-submit-panel');
     if (orderPanel) {

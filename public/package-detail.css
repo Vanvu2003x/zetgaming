@@ -90,4 +90,9 @@
 .topup-detail-page .account-panel .checkout-guide{margin-top:18px;padding-top:15px;border-top:1px solid #ffffff0d}
 .topup-detail-page .account-panel .checkout-guide summary{padding:5px 0;color:#ffad88;font-weight:700}
 .topup-detail-page .account-panel .checkout-guide p{margin-top:10px;border-color:#304761;background:#121f30;color:#b7c7da}
+.topup-detail-page .checkout-saved-actions{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:wrap}
+.topup-detail-page .checkout-saved-button,.topup-detail-page .checkout-saved-login{min-height:30px;padding:0 10px;border:1px solid #304867;border-radius:8px;background:#101d2e;color:#b7c9dd;font-size:10px;font-weight:700;text-decoration:none;cursor:pointer}
+.topup-detail-page .checkout-saved-button:hover,.topup-detail-page .checkout-saved-login:hover{border-color:#ff9f7c;color:#fff}
+.topup-detail-page .checkout-saved-button-primary{border-color:#98664f;background:#2b211f;color:#ffb08d}
+@media(max-width:620px){.topup-detail-page .checkout-saved-actions{width:100%;justify-content:flex-start;margin-top:4px}.topup-detail-page .checkout-saved-button,.topup-detail-page .checkout-saved-login{font-size:9px}}
 @media(max-width:760px){.topup-detail-page .account-panel{padding:22px 17px 18px}.topup-detail-page .account-panel .detail-section-heading{margin-bottom:20px}.topup-detail-page .account-panel .detail-section-heading h2{font-size:21px}.topup-detail-page .account-panel .target-field{height:56px}.topup-detail-page .account-panel .checkout-target-label{margin-top:14px}}
