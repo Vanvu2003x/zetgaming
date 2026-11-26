@@ -34,6 +34,25 @@ function bindForms() {
       if (message) message.textContent = 'Chưa sao chép được. Bạn có thể chọn và sao chép thông tin bên trên.';
     }
   }));
+  const orderPage = document.querySelector('.order-page[data-order-code]');
+  if (orderPage) {
+    const code = orderPage.dataset.orderCode;
+    const initialStatus = orderPage.dataset.orderStatus;
+    const terminalStatuses = new Set(['completed', 'cancelled', 'refunded']);
+    let pollBusy = false;
+    const pollOrderStatus = async () => {
+      if (pollBusy || terminalStatuses.has(orderPage.dataset.orderStatus)) return;
+      pollBusy = true;
+      try {
+        const response = await fetch(`/api/orders/${encodeURIComponent(code)}`, { credentials: 'same-origin', cache: 'no-store', headers: { accept: 'application/json' }, signal: AbortSignal.timeout(8000) });
+        if (!response.ok) return;
+        const order = await response.json();
+        if (order.status && order.status !== initialStatus) window.location.reload();
+      } catch { /* A temporary poll failure should not interrupt checkout. */ }
+      finally { pollBusy = false; }
+    };
+    if (!terminalStatuses.has(initialStatus)) window.setInterval(pollOrderStatus, 5000);
+  }
   document.querySelector('[data-open-guide]')?.addEventListener('click', event => {
     const guide = $('#uidGuide');
     if (!guide) return;
