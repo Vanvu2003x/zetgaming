@@ -200,7 +200,6 @@ export function openPackageEditor(pkg, context) {
     input('name', 'Tên gói nạp', pkg.name, { full: true, required: true }),
     input('nominal', 'Số lượng (tùy chọn)', pkg.nominal || '', { required: Boolean(pkg.id), max: '80' }),
     input('badge', 'Nhãn nổi bật', pkg.badge || '', { max: '40' }),
-    select('tier', 'Hạng khách', pkg.tier || 'standard', (context.getTiers?.() || [{ tier: 'standard' }]).map(tier => [tier.tier, tier.tier === 'standard' ? 'Standard' : tier.tier])),
     input('customer_price', 'Giá khách (₫)', pkg.id ? Number(pkg.customer_cents || 0) / 100 : '', { type: 'number', required: true }),
     input('ctv_price', 'Giá CTV (₫)', Number(pkg.ctv_cents || 0) / 100, { type: 'number', required: true }),
     `<div class="full">${imagePicker('image', 'Ảnh gói nạp', pkg.image, 'Ảnh sản phẩm hiển thị tại bước chọn gói', true)}</div>`,
