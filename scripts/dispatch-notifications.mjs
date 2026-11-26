@@ -4,8 +4,18 @@ import { env } from '../backend/config/env.mjs';
 import { deliverEmail } from '../backend/modules/auth/email-delivery.mjs';
 import { notificationText, notificationEmail } from '../backend/modules/notifications/service.mjs';
 import { pathToFileURL } from 'node:url';
+import https from 'node:https';
 
-const telegram = async (chatId, text) => { const response = await fetch(`https://api.telegram.org/bot${env.telegramBotToken}/sendMessage`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ chat_id: chatId, text, disable_web_page_preview: true }), signal: AbortSignal.timeout(8000) }); if (!response.ok) throw new Error('Telegram từ chối gửi thông báo.'); };
+const telegram = (chatId, text) => new Promise((resolve, reject) => {
+  const body = JSON.stringify({ chat_id: chatId, text, disable_web_page_preview: true });
+  const request = https.request(`https://api.telegram.org/bot${env.telegramBotToken}/sendMessage`, { method: 'POST', family: 4, headers: { 'content-type': 'application/json', 'content-length': Buffer.byteLength(body) } }, response => {
+    response.resume();
+    response.on('end', () => response.statusCode >= 200 && response.statusCode < 300 ? resolve() : reject(new Error('Telegram từ chối gửi thông báo.')));
+  });
+  request.setTimeout(8000, () => request.destroy(new Error('Telegram hết thời gian kết nối.')));
+  request.on('error', reject);
+  request.end(body);
+});
 const zalo = async (groupId, text) => {
   const headers = { 'content-type': 'application/json' };
   if (env.zalo.accessToken) headers.authorization = `Bearer ${env.zalo.accessToken}`;
