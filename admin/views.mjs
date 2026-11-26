@@ -20,11 +20,11 @@ const paths = {
   edit: '<path d="m16 3 5 5-12 12-6 1 1-6zM13 6l5 5"/>',
 };
 export const icon = name => `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name] || paths.grid}</svg>`;
-const pages = [['/', 'Tổng quan', 'grid'], ['/orders', 'Đơn hàng', 'orders'], ['/coupons', 'Coupon hoàn tiền', 'wallet'], ['/customers', 'Khách hàng', 'users'], ['/games', 'Kho game', 'game'], ['/categories', 'Phân loại', 'grid'], ['/packages', 'Gói nạp', 'box'], ['/content', 'Nội dung cửa hàng', 'edit'], ['/ctvs', 'Cộng tác viên', 'users'], ['/tiers', 'Hạng khách', 'users'], ['/reports', 'Báo cáo', 'grid'], ['/payment', 'Thanh toán', 'wallet'], ['/security', 'Bảo mật', 'shield']];
+const pages = [['/', 'Tổng quan', 'grid'], ['/orders', 'Đơn hàng', 'orders'], ['/coupons', 'Coupon hoàn tiền', 'wallet'], ['/customers', 'Khách hàng', 'users'], ['/games', 'Kho game', 'game'], ['/categories', 'Phân loại', 'grid'], ['/packages', 'Gói nạp', 'box'], ['/ctvs', 'Cộng tác viên', 'users'], ['/tiers', 'Hạng khách', 'users'], ['/reports', 'Báo cáo', 'grid'], ['/payment', 'Thanh toán', 'wallet'], ['/security', 'Bảo mật', 'shield']];
 const navGroups = [
   { label: 'Tổng quan', items: ['/'] },
   { label: 'Vận hành', items: ['/orders', '/coupons', '/payment'] },
-  { label: 'Cửa hàng', items: ['/games', '/packages', '/categories', '/content'] },
+  { label: 'Cửa hàng', items: ['/games', '/packages', '/categories'] },
   { label: 'Hệ thống', items: ['/customers', '/ctvs', '/reports', '/security'] },
 ];
 const storefront = () => e(process.env.STOREFRONT_ORIGIN || 'http://localhost:4173');
