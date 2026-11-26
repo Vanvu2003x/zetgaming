@@ -72,7 +72,7 @@ export function createFrontend({backendUrl=process.env.BACKEND_URL || 'http://12
   app.post(Object.keys(formRoutes),async(req,res,next)=>{
     try{
       const body={...req.body};
-      if(req.path==='/dat-don')body.target={...Object.fromEntries(['uid','login','password','server','region','character'].map(key=>[key,body[key]||''])),custom:Object.fromEntries(Object.entries(body).filter(([key])=>/^custom_\d+$/.test(key)).map(([key,value])=>[key.slice(7),String(value||'')]))};
+      if(req.path==='/dat-don')body.target={...Object.fromEntries(['uid','login','password','additional_info','zalo','note','server','region','character'].map(key=>[key,body[key]||''])),custom:Object.fromEntries(Object.entries(body).filter(([key])=>/^custom_\d+$/.test(key)).map(([key,value])=>[key.slice(7),String(value||'')]))};
       const response=await backend(req,res,formRoutes[req.path],body);
       const result=await response.json();
       res.set('Cache-Control','no-store');
