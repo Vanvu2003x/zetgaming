@@ -1,5 +1,6 @@
 export const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 export const statuses = { awaiting_payment: 'Chờ thanh toán', pending_admin: 'Chờ xử lý', processing: 'Đang nạp', needs_review: 'Cần kiểm tra', failed: 'Nạp lỗi', refund_pending: 'Chờ hoàn tiền', refunded: 'Đã hoàn tiền', ready: 'Chờ CTV nhận', claimed: 'Đang xử lý', review: 'Chờ quyết toán', completed: 'Hoàn thành', cancelled: 'Đã hủy' };
+export const orderFilterStatuses = { pending_admin: 'Chờ xử lý', processing: 'Đang nạp', failed: 'Thất bại', completed: 'Thành công' };
 export const statusColor = status => ({ awaiting_payment: 'orange', pending_admin: 'orange', processing: 'blue', needs_review: 'purple', failed: 'red', refund_pending: 'orange', refunded: 'green', ready: 'blue', claimed: 'blue', review: 'purple', completed: 'green', cancelled: 'red' }[status] || '');
 export function imageUrl(value) {
   // This legacy fixture path predates the current uploaded image catalog.
