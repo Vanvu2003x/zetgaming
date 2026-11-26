@@ -12,6 +12,7 @@ test('game input configuration is bounded and keeps credentials minimal',()=>{
   assert.throws(()=>validateGameTarget('login',config,{uid:'123'}));
   assert.throws(()=>validateGameTarget('login',config,{login:'player',password:'secret',server:'fake'}));
   assert.deepEqual(validateGameTarget('login',config,{login:'player',password:' secret ',additional_info:'Asia server',zalo:'0900000000',server:'Asia'}),{login:'player',password:' secret ',additional_info:'Asia server',zalo:'0900000000',server:'Asia'});
+  assert.deepEqual(validateGameTarget('login',config,{login:'player',password:' secret ',zalo:'0900000000',server:'Asia'}),{login:'player',password:' secret ',zalo:'0900000000',server:'Asia'});
   assert.throws(()=>validateGameTarget('uid',normalizeGameInputs({},'uid'),{uid:'123',password:'unneeded'}));
 });
 test('checkout renders configured fields and escaped help while preserving native form names',()=>{

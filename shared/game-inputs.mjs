@@ -46,10 +46,10 @@ export function validateGameTarget(mode,configuration,input){
   }
   if(mode==='login'){
     const additional=String(input.additional_info||'').trim();
-    if(!additional)throw invalid('Vui lòng nhập thông tin thêm.');
     const zalo=String(input.zalo||'').trim();
     if(!zalo)throw invalid('Vui lòng nhập Zalo liên hệ.');
-    result.additional_info=additional.slice(0,1000);result.zalo=zalo.slice(0,120);
+    if(additional)result.additional_info=additional.slice(0,1000);
+    result.zalo=zalo.slice(0,120);
     const note=String(input.note||'').trim();if(note)result.note=note.slice(0,1000);
   }
   return result;
